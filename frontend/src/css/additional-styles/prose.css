@@ -1,0 +1,111 @@
+/*
+  Post body typography. Hand-rolled rather than @tailwindcss/typography: the
+  plugin ships a full colour scheme of its own that would have to be unpicked
+  token by token to track the six palettes, which is more work than the dozen
+  rules below.
+
+  Scoped to .prose so it can never leak into the component-styled sections.
+*/
+
+.prose {
+  color: var(--muted-foreground);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.prose > * + * {
+  margin-top: 1.25em;
+}
+
+.prose h2,
+.prose h3 {
+  color: var(--foreground);
+  font-family: var(--font-inter-tight);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  scroll-margin-top: 2rem;
+}
+
+.prose h2 {
+  font-size: 1.125rem;
+  margin-top: 2.25em;
+}
+
+.prose h3 {
+  font-size: 1rem;
+  margin-top: 1.75em;
+}
+
+.prose strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in oklch, var(--primary) 40%, transparent);
+}
+
+.prose a:hover {
+  text-decoration-color: var(--primary);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.25rem;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li::marker {
+  color: color-mix(in oklch, var(--muted-foreground) 60%, transparent);
+}
+
+.prose li + li {
+  margin-top: 0.4em;
+}
+
+/* Inline code. The :not() keeps these off the spans inside a <pre>, which
+   carry the block's styling and would otherwise get a second border and
+   background each. */
+.prose code:not(pre code) {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--foreground);
+  font-size: 0.85em;
+  padding: 0.1em 0.35em;
+}
+
+.prose pre {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  line-height: 1.6;
+  /* The card is only ~600px wide; long lines scroll in the block rather than
+     pushing the page into a horizontal scroll. */
+  overflow-x: auto;
+  padding: 1rem 1.125rem;
+}
+
+.prose blockquote {
+  border-left: 2px solid var(--primary);
+  color: var(--muted-foreground);
+  font-style: italic;
+  padding-left: 1rem;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin-block: 2.5em;
+}

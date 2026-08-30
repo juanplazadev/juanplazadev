@@ -1,0 +1,170 @@
+/*
+  Palette layer. Each block below binds two scales — an accent and a neutral —
+  to the same set of intermediate variables. style.css maps those onto the
+  semantic tokens (--background, --primary, …) exactly once, for light and for
+  dark, so a palette is only ever a list of scale aliases: no palette needs to
+  know what a "muted foreground" is, and adding one never touches style.css.
+
+  These are authored in oklch rather than pulled from Tailwind's built-in
+  scales. Two reasons. The accents sit at hues and chroma the stock scales do
+  not offer, and — the part that actually matters — every neutral carries a
+  little chroma pulled toward its accent's hue. Ember's grays are warm taupe,
+  Cobalt's are blue-shadowed, Moss's are sage. That shared tint is what makes a
+  palette read as designed instead of "an accent dropped onto gray"; an
+  untinted neutral fights the accent everywhere the two meet, which is most of
+  the page.
+
+  Lightness is held to a common ramp across all six, so contrast behaves the
+  same whichever is active: the 700 step carries white text in light mode, the
+  400 step carries near-black in dark mode.
+
+  To add a palette:
+    1. copy a block, give it a new [data-palette="…"] name,
+    2. add its 500 step to the swatch list below,
+    3. add the matching entry to PALETTES in src/palette-context.ts.
+  Only these steps are needed for the picker, the pre-paint script and
+  localStorage to pick it up.
+
+  The first selector doubles as the default: if the pre-paint script in
+  index.html never ran (storage blocked, JS off) there is no data-palette
+  attribute, and bare :root still resolves.
+*/
+
+/*
+  Swatches for the picker's dots, defined globally rather than per palette. The
+  dots have to show all six at once, so they cannot read --accent-500, which
+  only ever resolves to the active palette. Keeping them here rather than as
+  literals in the TypeScript keeps every colour value in this one file.
+*/
+:root {
+  --swatch-ember: oklch(66% 0.175 45);
+  --swatch-moss: oklch(63.5% 0.155 153);
+  --swatch-lagoon: oklch(64% 0.107 198);
+  --swatch-cobalt: oklch(60.5% 0.205 263);
+  --swatch-orchid: oklch(62.5% 0.215 326);
+  --swatch-crimson: oklch(62.5% 0.208 24);
+}
+
+/* Ember — burnt orange on warm taupe. The closest to the original amber, and
+   the default. */
+:root,
+[data-palette="ember"] {
+  --accent-50: oklch(97.2% 0.017 60);
+  --accent-300: oklch(80.5% 0.125 52);
+  --accent-400: oklch(73.5% 0.155 48);
+  --accent-500: oklch(66% 0.175 45);
+  --accent-600: oklch(58% 0.168 42);
+  --accent-700: oklch(49% 0.142 40);
+  --accent-800: oklch(42% 0.115 38);
+
+  --neutral-50: oklch(98.4% 0.005 75);
+  --neutral-100: oklch(96.4% 0.008 75);
+  --neutral-200: oklch(92.2% 0.01 72);
+  --neutral-400: oklch(70.8% 0.016 68);
+  --neutral-500: oklch(55.2% 0.017 65);
+  --neutral-800: oklch(28.5% 0.014 60);
+  --neutral-900: oklch(21.2% 0.013 58);
+  --neutral-950: oklch(14.8% 0.012 55);
+}
+
+/* Moss — deep olive green on sage. */
+[data-palette="moss"] {
+  --accent-50: oklch(97.3% 0.018 150);
+  --accent-300: oklch(80% 0.115 152);
+  --accent-400: oklch(72% 0.14 152);
+  --accent-500: oklch(63.5% 0.155 153);
+  --accent-600: oklch(55% 0.133 155);
+  --accent-700: oklch(46.5% 0.109 157);
+  --accent-800: oklch(40% 0.092 158);
+
+  --neutral-50: oklch(98.4% 0.005 150);
+  --neutral-100: oklch(96.4% 0.008 150);
+  --neutral-200: oklch(92.2% 0.01 148);
+  --neutral-400: oklch(70.8% 0.015 145);
+  --neutral-500: oklch(55% 0.016 145);
+  --neutral-800: oklch(28.5% 0.014 150);
+  --neutral-900: oklch(21.2% 0.013 152);
+  --neutral-950: oklch(14.8% 0.012 155);
+}
+
+/* Lagoon — muted teal on cool blue-gray. The quietest of the six: teal has the
+   least chroma headroom at these lightnesses, so it reads as restraint rather
+   than as a washed-out version of something louder. */
+[data-palette="lagoon"] {
+  --accent-50: oklch(97.3% 0.017 195);
+  --accent-300: oklch(80% 0.105 195);
+  --accent-400: oklch(72% 0.12 196);
+  --accent-500: oklch(64% 0.107 198);
+  --accent-600: oklch(55.5% 0.093 200);
+  --accent-700: oklch(47% 0.078 202);
+  --accent-800: oklch(40.5% 0.068 204);
+
+  --neutral-50: oklch(98.4% 0.004 205);
+  --neutral-100: oklch(96.4% 0.007 205);
+  --neutral-200: oklch(92.2% 0.01 205);
+  --neutral-400: oklch(70.8% 0.015 205);
+  --neutral-500: oklch(55% 0.016 207);
+  --neutral-800: oklch(28.5% 0.015 210);
+  --neutral-900: oklch(21.2% 0.014 212);
+  --neutral-950: oklch(14.8% 0.013 215);
+}
+
+/* Cobalt — saturated blue on blue-shadowed gray. */
+[data-palette="cobalt"] {
+  --accent-50: oklch(97.2% 0.013 265);
+  --accent-300: oklch(78% 0.109 265);
+  --accent-400: oklch(69% 0.159 264);
+  --accent-500: oklch(60.5% 0.205 263);
+  --accent-600: oklch(52.5% 0.215 264);
+  --accent-700: oklch(45% 0.19 265);
+  --accent-800: oklch(39% 0.155 266);
+
+  --neutral-50: oklch(98.4% 0.004 260);
+  --neutral-100: oklch(96.4% 0.007 260);
+  --neutral-200: oklch(92.2% 0.011 258);
+  --neutral-400: oklch(70.8% 0.017 256);
+  --neutral-500: oklch(55.1% 0.019 256);
+  --neutral-800: oklch(28.5% 0.018 260);
+  --neutral-900: oklch(21.2% 0.017 262);
+  --neutral-950: oklch(14.8% 0.016 264);
+}
+
+/* Orchid — magenta-leaning purple on mauve. */
+[data-palette="orchid"] {
+  --accent-50: oklch(97.2% 0.019 325);
+  --accent-300: oklch(79% 0.135 324);
+  --accent-400: oklch(70.5% 0.18 325);
+  --accent-500: oklch(62.5% 0.215 326);
+  --accent-600: oklch(54.5% 0.22 327);
+  --accent-700: oklch(46.5% 0.19 328);
+  --accent-800: oklch(39.5% 0.15 330);
+
+  --neutral-50: oklch(98.4% 0.005 320);
+  --neutral-100: oklch(96.4% 0.008 320);
+  --neutral-200: oklch(92.2% 0.011 318);
+  --neutral-400: oklch(70.8% 0.017 315);
+  --neutral-500: oklch(55.3% 0.018 315);
+  --neutral-800: oklch(28.5% 0.017 318);
+  --neutral-900: oklch(21.2% 0.016 320);
+  --neutral-950: oklch(14.8% 0.015 322);
+}
+
+/* Crimson — deep red on warm gray. */
+[data-palette="crimson"] {
+  --accent-50: oklch(97.2% 0.013 20);
+  --accent-300: oklch(79% 0.119 20);
+  --accent-400: oklch(70.5% 0.175 22);
+  --accent-500: oklch(62.5% 0.208 24);
+  --accent-600: oklch(54.5% 0.212 25);
+  --accent-700: oklch(46.5% 0.18 26);
+  --accent-800: oklch(40% 0.145 27);
+
+  --neutral-50: oklch(98.4% 0.005 35);
+  --neutral-100: oklch(96.4% 0.008 35);
+  --neutral-200: oklch(92.2% 0.01 32);
+  --neutral-400: oklch(70.8% 0.015 30);
+  --neutral-500: oklch(55.3% 0.016 28);
+  --neutral-800: oklch(28.5% 0.014 28);
+  --neutral-900: oklch(21.2% 0.013 26);
+  --neutral-950: oklch(14.8% 0.012 25);
+}

@@ -1,0 +1,52 @@
+name: juanplaza
+
+# Production. ONE service: the frontend is not a separate container here.
+# Today that service is nginx serving frontend/dist; once backend/ exists,
+# Gradle bakes the same dist/ into the JAR's src/main/resources/static and this
+# service's build context simply repoints to ./backend. Service name, container
+# name, port, network and healthcheck path all stay put, so the Caddyfile entry
+# in the separate ../caddy project never changes:
+#
+#   juanplaza.jplab.casa {
+#       reverse_proxy juanplaza:8080
+#   }
+#
+# Usage: docker compose -f compose.prod.yaml up --build -d
+
+services:
+  app:
+    container_name: juanplaza
+    build:
+      context: ./frontend
+      target: prod
+      # Vite inlines VITE_* into the bundle at build time, and the build runs
+      # inside the image — where the root .env is not, being outside ./frontend.
+      # So these cross as build args. A changed value is a changed bundle, which
+      # is why they are args and not runtime environment.
+      args:
+        VITE_WEATHER_LATITUDE: "${VITE_WEATHER_LATITUDE:-}"
+        VITE_WEATHER_LONGITUDE: "${VITE_WEATHER_LONGITUDE:-}"
+        VITE_WEATHER_TIMEZONE: "${VITE_WEATHER_TIMEZONE:-}"
+        VITE_WEATHER_API_URL: "${VITE_WEATHER_API_URL:-}"
+    # No `ports:` on purpose — Caddy reaches this over the shared proxy network
+    # by container name, so 8080 is never bound on the host and cannot collide.
+    expose:
+      - "8080"
+    networks:
+      - proxy
+    restart: unless-stopped
+    healthcheck:
+      # 127.0.0.1, not localhost: localhost resolves to ::1 first and nginx
+      # binds IPv4-only, so the check would hit a closed IPv6 socket and the
+      # container would sit permanently unhealthy.
+      # nginx:alpine ships wget, not curl. Becomes /actuator/health once Spring
+      # Boot owns this container.
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  proxy:
+    external: true
