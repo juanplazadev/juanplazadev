@@ -1,3 +1,4 @@
+import ArrowIcon from "@/components/ui/arrow-icon";
 import Badge from "@/components/ui/badge";
 import Card from "@/components/ui/card";
 import Section from "@/components/ui/section";
@@ -23,9 +24,7 @@ export default function OpenSource() {
               className="text-muted-foreground group-hover:text-primary absolute top-5 right-5 transition group-hover:rotate-45"
               aria-hidden="true"
             >
-              <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="10" height="10">
-                <path d="M1.018 10 0 8.983l7.572-7.575H1.723L1.736 0H10v8.266H8.577l.013-5.841L1.018 10Z" />
-              </svg>
+              <ArrowIcon />
             </div>
             <div className="mb-2 space-y-2">
               <div className="flex flex-wrap items-center gap-2">

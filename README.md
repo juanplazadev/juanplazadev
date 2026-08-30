@@ -146,6 +146,41 @@ shows the three most recent.
 
 When the API lands, `posts.ts` is the only module that has to change.
 
+## Architecture pages
+
+Write-ups of how a project is put together, at `/architecture` and
+`/architecture/:slug`. Same registry pattern as the blog, so adding one is the
+same two steps.
+
+```
+frontend/src/
+├── content/architectures.ts          the registry: metadata + a lazy import
+├── content/architectures/*.tsx       one component per write-up
+└── components/ui/diagram/            the SVG diagram primitives
+```
+
+Diagrams are hand-authored inline SVG rather than a library: every colour is a
+`var(--…)` token, so all six palettes and both themes work with no extra code.
+Note that inside an `<svg>`, `text-muted-foreground` sets `color`, not `fill` —
+a `<text>` carrying only that class renders black. Point at the tokens directly.
+
+Icons are [Iconify](https://icon-sets.iconify.design) paths vendored into
+`components/ui/icons.ts` — monochrome `simple-icons` and `mdi`, rendered with
+`currentColor` so they track the palette too. Not a package: `@iconify/react`
+fetches from its API at runtime, and `unplugin-icons` emits whole `<svg>`
+elements, which cannot nest inside a diagram's own `<svg>`. Use `<Icon />` in the
+DOM and `DiagramNode`'s `icon` prop inside a diagram. The set costs about 11 kB
+gzipped in the main bundle: it is indexed by name, so none of it tree-shakes, and
+the index page's badges reach most of it anyway.
+
+Author diagrams around **560 units wide**. The sheet gives the svg roughly
+694px, so text sized in viewBox units lands near its rendered pixel size. Below
+`minWidth` the panel scrolls rather than scaling labels down, the same way
+`.prose pre` scrolls long lines.
+
+These pages describe live infrastructure and are public. Real hostnames, host
+paths and the private-network details stay out of them.
+
 ## Backend (planned)
 
 Spring Boot, serving a JSON API under `/api` **and** the built SPA from
