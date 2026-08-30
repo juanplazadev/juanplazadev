@@ -102,12 +102,7 @@ export default function Skills() {
     },
     {
       label: "Domain & Practice",
-      items: [
-        "HIPAA compliance",
-        "EMR / e-prescription integration",
-        "PCI-aware payment flows",
-        "Agile / Scrum",
-      ],
+      items: ["HIPAA compliance", "EMR / e-prescription integration", "PCI-aware payment flows", "Agile / Scrum"],
     },
   ];
 

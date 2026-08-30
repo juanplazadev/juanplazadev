@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router";
 import PageLayout from "@/layouts/PageLayout";
 import RootLayout from "@/layouts/RootLayout";
 import Blog from "@/pages/Blog";
-import BlogPost from "@/pages/BlogPost"
+import BlogPost from "@/pages/BlogPost";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/NotFound";
 import Post from "@/pages/Post";
