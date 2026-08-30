@@ -75,29 +75,3 @@
   --font-inter-tight: Inter Tight, sans-serif;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: 200% center;
-  }
-
-  50% {
-    background-position: -100% center;
-  }
-
-  100% {
-    background-position: 200% center;
-  }
-}
-
-@keyframes nameGlow {
-  0%,
-  100% {
-    opacity: 0.15;
-    transform: scale(0.98);
-  }
-
-  50% {
-    opacity: 0.5;
-    transform: scale(1.04);
-  }
-}

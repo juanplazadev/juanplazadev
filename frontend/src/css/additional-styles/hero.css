@@ -54,3 +54,39 @@
   animation: hero-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--hero-delay, 0ms);
 }
+
+/* Name treatment --------------------------------------------------------- */
+
+/*
+  These two live here rather than in style.css, which is the token file. The
+  sweep was called `shimmer`, which is also the name motion.css gives the
+  button's hover sweep — same-named @keyframes do not coexist, the later one
+  simply wins, so one of the two effects was always running the other's frames.
+  Renaming it settles that; the button keeps `shimmer`.
+*/
+@keyframes name-shimmer {
+  0% {
+    background-position: 200% center;
+  }
+
+  50% {
+    background-position: -100% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes nameGlow {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.98);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.04);
+  }
+}

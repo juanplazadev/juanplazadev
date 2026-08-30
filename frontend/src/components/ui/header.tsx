@@ -117,19 +117,27 @@ export default function Header() {
           </Badge>
         </div>
 
-        <h1
-          className="font-inter-tight hero-in from-foreground via-primary to-foreground relative mb-3 inline-block animate-[shimmer_3s_ease-in-out_infinite] bg-linear-to-r bg-[length:200%_100%] bg-clip-text text-4xl font-bold tracking-tighter text-transparent sm:text-5xl"
-          style={delay(170)}
-        >
-          <span className="relative">
+        {/*
+          The glow and the entrance live on this wrapper, not on the h1. WebKit
+          will not paint a background-clip:text background onto a *positioned*
+          descendant, so the moment the name sat inside a `relative` span — which
+          is what the glow needed to anchor to — the text rendered at its own
+          transparent colour and vanished on iOS while Chrome drew it fine. The
+          h1 now contains nothing but the text.
+
+          `isolate` makes this wrapper the stacking context the -z-10 glow
+          resolves against. Without it the glow escapes to the root context and
+          paints behind the card's opaque background, which is where it was.
+        */}
+        <div className="hero-in relative isolate mb-3 inline-block" style={delay(170)}>
+          <span
+            aria-hidden="true"
+            className="bg-primary/30 pointer-events-none absolute inset-0 -z-10 animate-[nameGlow_8s_ease-in-out_infinite] blur-xl"
+          />
+          <h1 className="font-inter-tight from-foreground via-primary to-foreground animate-[name-shimmer_6s_ease-in-out_infinite] bg-linear-to-r bg-[length:200%_100%] bg-clip-text text-4xl font-bold tracking-tighter text-transparent sm:text-5xl">
             Juan Plaza
-            {/* subtle ambient glow */}
-            <span
-              aria-hidden="true"
-              className="bg-primary/30 pointer-events-none absolute inset-0 -z-10 animate-[nameGlow_4s_ease-in-out_infinite] blur-xl"
-            />
-          </span>
-        </h1>
+          </h1>
+        </div>
 
         <p className="text-muted-foreground hero-in mx-auto mb-7 max-w-md text-[15px] text-balance" style={delay(230)}>
           Full-stack engineer building production web apps with{" "}
