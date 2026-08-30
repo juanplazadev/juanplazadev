@@ -61,10 +61,10 @@ volumes:
         <strong>
           <code>caddy_data</code> is not optional.
         </strong>{" "}
-        Certificates and the ACME account key live there. Leave it out and every{" "}
-        <code>docker compose up --build</code> throws away the account and asks Let's Encrypt for a fresh certificate.
-        Do that often enough and you hit the rate limit — five duplicate certificates per week — and then the site is
-        simply on HTTP until the window rolls over. A named volume costs nothing and removes the entire failure mode.
+        Certificates and the ACME account key live there. Leave it out and every <code>docker compose up --build</code>{" "}
+        throws away the account and asks Let's Encrypt for a fresh certificate. Do that often enough and you hit the
+        rate limit — five duplicate certificates per week — and then the site is simply on HTTP until the window rolls
+        over. A named volume costs nothing and removes the entire failure mode.
       </p>
 
       <h2>The two things that go wrong</h2>
@@ -72,8 +72,8 @@ volumes:
       <ol>
         <li>
           <strong>The external network does not exist yet.</strong> <code>external: true</code> means Docker will not
-          create it for you; compose fails on the first <code>up</code>. Run{" "}
-          <code>docker network create proxy</code> once per machine.
+          create it for you; compose fails on the first <code>up</code>. Run <code>docker network create proxy</code>{" "}
+          once per machine.
         </li>
         <li>
           <strong>The DNS record is not live.</strong> The HTTP-01 challenge needs Let's Encrypt to reach port 80 at
@@ -85,9 +85,9 @@ volumes:
       </ol>
 
       <p>
-        For local names that will never be publicly resolvable, skip ACME entirely with{" "}
-        <code>tls internal</code>. Caddy issues from its own CA, and you trust that CA once on your machine instead of
-        fighting a challenge that can never succeed.
+        For local names that will never be publicly resolvable, skip ACME entirely with <code>tls internal</code>. Caddy
+        issues from its own CA, and you trust that CA once on your machine instead of fighting a challenge that can
+        never succeed.
       </p>
     </>
   );

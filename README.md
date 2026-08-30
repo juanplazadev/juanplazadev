@@ -86,13 +86,11 @@ npm run build        # -> frontend/dist
 npm run preview      # http://localhost:8080
 ```
 
-Other scripts: `npm run lint` (eslint --fix), `npm run format` (prettier).
+Other scripts: `npm run lint` (eslint --fix), `npm run format` (prettier). Each
+has a non-mutating twin — `lint:check`, `format:check` — which is what CI runs;
+the `--fix`/`--write` versions would let a dirty tree pass by rewriting it.
 
 ## Production
-
-```bash
-docker compose -f compose.prod.yaml up --build -d
-```
 
 One container, `juanplaza`, listening on 8080 and joined to the external `proxy`
 network that the `caddy` container fronts. It publishes no host ports — Caddy
@@ -103,6 +101,32 @@ project:
 juanplaza.jplab.casa {
     reverse_proxy juanplaza:8080
 }
+```
+
+### Deploying
+
+Push to `prod`. `.github/workflows/deploy.yml` runs on the VPS's self-hosted
+runner: it copies `/opt/da-server/juanplazadev/.env` into the workspace, builds
+the image, pushes it to `ghcr.io/jplaza88/juanplazadev` tagged with the commit
+SHA and `latest`, brings the stack up, and waits for the healthcheck to pass.
+
+`.github/workflows/ci.yml` gates `main` and `prod` on lint, formatting and
+`npm run build` (which is `tsc -b` first).
+
+Because Vite inlines `VITE_*` at build time, **changing a weather value in the
+VPS `.env` needs a new deploy**, not a restart — re-run the workflow from the
+Actions tab.
+
+To roll back, re-point at an older image instead of rebuilding:
+
+```bash
+IMAGE_TAG=<commit sha> docker compose -f compose.prod.yaml up -d
+```
+
+By hand, when the runner is down:
+
+```bash
+docker compose -f compose.prod.yaml up --build -d
 ```
 
 ## Writing
