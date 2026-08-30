@@ -5,7 +5,7 @@ export default function App() {
   const [value, setValue] = React.useState("**Hello world!!!**");
   return (
     <div className="container">
-      <MDEditor value={value} onChange={setValue} />
+      <MDEditor value={value} onChange={(next) => setValue(next ?? "")} />
       <MDEditor.Markdown source={value} style={{ whiteSpace: "pre-wrap" }} />
     </div>
   );
