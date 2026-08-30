@@ -1,0 +1,85 @@
+name: deploy-prod
+
+on:
+  push:
+    branches: [prod]
+  workflow_dispatch:
+
+# Deploys are not interchangeable: cancelling one mid-`up` would leave the
+# stack half-recreated. Queue them instead.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # Lighter than check-in-v2's equivalent: this build is a node image and a
+      # dist/, not PHP extensions and Chrome. Dangling layers only, with the
+      # builder cache capped rather than dropped, so the shared runner's disk
+      # does not creep while npm's layer cache survives between deploys.
+      - name: Reclaim Docker disk space
+        run: |
+          docker container prune -f || true
+          docker image prune -f || true
+          # --keep-storage was renamed --max-used-space in newer buildx; pick
+          # whichever this runner's docker actually understands.
+          if docker builder prune --help 2>&1 | grep -q -- --max-used-space; then
+            docker builder prune -f --max-used-space=10GB || true
+          else
+            docker builder prune -f --keep-storage=10GB || true
+          fi
+          df -h / || true
+
+      # compose.prod.yaml reads VITE_WEATHER_* from here and passes them as
+      # build args. Vite inlines them, so this file's contents decide the
+      # bundle — it has to be in place before the build, not before `up`.
+      - name: Load prod env
+        run: cp /opt/da-server/juanplazadev/.env .env
+
+      # Tags the result as compose.prod.yaml's `image:`, i.e. :$IMAGE_TAG.
+      - name: Build image
+        run: docker compose -f compose.prod.yaml build
+
+      - name: Push image
+        run: |
+          docker tag ghcr.io/${{ github.repository }}:$IMAGE_TAG ghcr.io/${{ github.repository }}:latest
+          docker push ghcr.io/${{ github.repository }}:$IMAGE_TAG
+          docker push ghcr.io/${{ github.repository }}:latest
+
+      # No `pull` first: the runner and the deploy target are the same box, so
+      # the image is already local. GHCR is for history and rollback, not for
+      # the deploy path.
+      - name: Deploy
+        run: docker compose -f compose.prod.yaml up -d --remove-orphans
+
+      # `up -d` returns as soon as the container is created, which would make a
+      # container that crashes on boot look like a green deploy. Lean on the
+      # healthcheck compose.prod.yaml already defines.
+      - name: Wait for healthy
+        run: |
+          for _ in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' juanplaza 2>/dev/null || echo missing)
+            if [ "$status" = healthy ]; then
+              echo "juanplaza is healthy"
+              exit 0
+            fi
+            echo "status=$status, waiting..."
+            sleep 5
+          done
+          echo "juanplaza never became healthy"
+          docker logs --tail 50 juanplaza || true
+          exit 1

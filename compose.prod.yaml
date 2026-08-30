@@ -12,9 +12,20 @@ name: juanplaza
 #   }
 #
 # Usage: docker compose -f compose.prod.yaml up --build -d
+#
+# In CI this is driven by .github/workflows/deploy.yml on every push to prod.
+# To roll back by hand, re-point at an older image instead of rebuilding:
+#
+#   IMAGE_TAG=<commit sha> docker compose -f compose.prod.yaml up -d
 
 services:
   app:
+    # `image:` and `build:` together, on purpose. `docker compose build` tags
+    # what it builds as this name, so the deploy workflow gets a SHA-tagged
+    # image to push to GHCR without repeating the build args below as
+    # --build-arg flags — the root .env stays the one place they are written.
+    # The default keeps a bare `up --build -d` working exactly as before.
+    image: ghcr.io/jplaza88/juanplazadev:${IMAGE_TAG:-latest}
     container_name: juanplaza
     build:
       context: ./frontend

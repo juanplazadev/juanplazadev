@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+    branches: [main, prod]
+  pull_request:
+    branches: [main, prod]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    # Everything below lives in frontend/; the repo root holds only compose
+    # files and the shared .env.
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          # Matches the Dockerfile's NODE_VERSION=26 and the host toolchain.
+          node-version: '26'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # vite.config.ts points envDir at the repo root, so the build reads the
+      # root .env. Without one the VITE_WEATHER_* vars are undefined and the
+      # weather pill silently disables itself — the build still succeeds, but
+      # this way CI exercises the same path production does.
+      - name: Provide the shared .env
+        working-directory: .
+        run: cp .env.example .env
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The :check variants, not `lint`/`format` — those carry --fix and
+      # --write, which would let a dirty tree pass by quietly rewriting it.
+      - name: Lint
+        run: npm run lint:check
+
+      - name: Check formatting
+        run: npm run format:check
+
+      # Also the typecheck: the build script is `tsc -b && vite build`.
+      - name: Build
+        run: npm run build
