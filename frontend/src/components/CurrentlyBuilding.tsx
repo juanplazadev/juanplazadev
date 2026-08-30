@@ -1,7 +1,22 @@
+import type { ReactNode } from "react";
+import { Link } from "react-router";
+
+import ArrowIcon from "@/components/ui/arrow-icon";
 import Badge from "@/components/ui/badge";
 import Card from "@/components/ui/card";
 import Section from "@/components/ui/section";
 import StatusDot from "@/components/ui/status-dot";
+
+type Item = {
+  title: string;
+  icon: ReactNode;
+  status: string;
+  active: boolean;
+  description: string;
+  /** Set when there is an architecture write-up to link to. Makes the whole
+   *  card the hit area, the same way OpenSource's cards work. */
+  href?: string;
+};
 
 const CalendarIcon = () => (
   <svg
@@ -37,7 +52,7 @@ const DumbbellIcon = () => (
 );
 
 export default function CurrentlyBuilding() {
-  const items = [
+  const items: Item[] = [
     {
       title: "Check-in",
       icon: <CalendarIcon />,
@@ -45,6 +60,7 @@ export default function CurrentlyBuilding() {
       active: true,
       description:
         "An appointment scheduling and check-in platform for operations that run on arrivals. Laravel with an Inertia + React front end and Redis-backed queues.",
+      href: "/architecture/check-in",
     },
     {
       title: "Gym management system",
@@ -60,7 +76,7 @@ export default function CurrentlyBuilding() {
     <Section title="Currently Building">
       <div className="grid gap-4 min-[580px]:grid-cols-2">
         {items.map((item, index) => (
-          <Card key={index}>
+          <Card key={index} interactive={Boolean(item.href)} className={item.href ? "group" : undefined}>
             <div className="mb-4 flex items-start justify-between gap-3">
               <div className="border-border bg-muted flex h-11 w-11 items-center justify-center rounded-full border">
                 {item.icon}
@@ -71,11 +87,38 @@ export default function CurrentlyBuilding() {
               </Badge>
             </div>
             <div className="space-y-1">
-              <h3 className="text-foreground font-semibold">{item.title}</h3>
+              <h3 className="text-foreground font-semibold">
+                {item.href ? (
+                  <Link
+                    className="group-hover:text-primary focus-visible:ring-ring focus-visible:ring-offset-background inline-flex items-center gap-1.5 rounded-lg transition-colors outline-none before:absolute before:inset-0 focus-visible:ring-2 focus-visible:ring-offset-2"
+                    to={item.href}
+                  >
+                    {item.title}
+                    <span
+                      className="text-muted-foreground group-hover:text-primary transition group-hover:rotate-45"
+                      aria-hidden="true"
+                    >
+                      <ArrowIcon />
+                    </span>
+                  </Link>
+                ) : (
+                  item.title
+                )}
+              </h3>
               <p className="text-muted-foreground text-sm">{item.description}</p>
             </div>
           </Card>
         ))}
+      </div>
+
+      <div className="mt-4">
+        <Link
+          className="text-primary focus-visible:ring-ring focus-visible:ring-offset-background inline-flex items-center gap-1.5 rounded-sm text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
+          to="/architecture"
+        >
+          How these are built
+          <span aria-hidden="true">&rarr;</span>
+        </Link>
       </div>
     </Section>
   );

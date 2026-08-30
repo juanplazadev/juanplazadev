@@ -3,13 +3,8 @@ import { Link } from "react-router";
 import type { Post } from "@/content/posts";
 import { formatDate } from "@/content/posts";
 
+import ArrowIcon from "./arrow-icon";
 import Card from "./card";
-
-const ArrowIcon = () => (
-  <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="10" height="10" aria-hidden="true">
-    <path d="M1.018 10 0 8.983l7.572-7.575H1.723L1.736 0H10v8.266H8.577l.013-5.841L1.018 10Z" />
-  </svg>
-);
 
 // One post, as it appears on the blog index and in the home page teaser. The
 // whole card is the hit area: the <a> is positioned over it by the before:
