@@ -43,7 +43,7 @@ volumes:
       <p>Adding a site to it is one block in the Caddyfile:</p>
 
       <pre>
-        <code>{`juanplaza.jplab.casa {
+        <code>{`juanplaza.dev {
     reverse_proxy juanplaza:8080
 }`}</code>
       </pre>

@@ -13,9 +13,16 @@ type Item = {
   status: string;
   active: boolean;
   description: string;
+  /** Named separately from the description so the prose can describe the problem
+   *  and the badges answer "what is it written in" without repeating it. */
+  stack: string;
   /** Set when there is an architecture write-up to link to. Makes the whole
    *  card the hit area, the same way OpenSource's cards work. */
   href?: string;
+  /** Off-site proof — the running app and the source. These sit above the card's
+   *  full-bleed ::before hit area, so they need their own stacking context or the
+   *  overlay swallows the clicks. */
+  links?: { label: string; href: string }[];
 };
 
 const CalendarIcon = () => (
@@ -59,8 +66,13 @@ export default function CurrentlyBuilding() {
       status: "In progress",
       active: true,
       description:
-        "An appointment scheduling and check-in platform for operations that run on arrivals. Laravel with an Inertia + React front end and Redis-backed queues.",
+        "An appointment scheduling and check-in platform for operations that run on arrivals — drivers book a slot, arrive, and check in against it across sites. 66 tests run on every push.",
+      stack: "Laravel · Inertia + React · PostgreSQL · Redis",
       href: "/architecture/check-in",
+      links: [
+        { label: "Live demo", href: "https://ci.thatdevjp.com" },
+        { label: "Source", href: "https://github.com/juanplazadev/check-in-v2" },
+      ],
     },
     {
       title: "Gym management system",
@@ -69,6 +81,7 @@ export default function CurrentlyBuilding() {
       active: false,
       description:
         "Member registration, payments, and building access in one system, with an app that shows members their own attendance history.",
+      stack: "Spring Boot · React · TypeScript",
     },
   ];
 
@@ -106,6 +119,26 @@ export default function CurrentlyBuilding() {
                 )}
               </h3>
               <p className="text-muted-foreground text-sm">{item.description}</p>
+              <p className="text-muted-foreground/70 pt-1 text-[12px]">{item.stack}</p>
+              {item.links && (
+                // relative + z-10 to clear the title link's ::before overlay,
+                // which covers the whole card and would otherwise take the click.
+                <ul className="relative z-10 flex flex-wrap gap-x-4 gap-y-1 pt-2">
+                  {item.links.map((link) => (
+                    <li key={link.href}>
+                      <a
+                        className="text-primary focus-visible:ring-ring focus-visible:ring-offset-background inline-flex items-center gap-1 rounded-sm text-[13px] font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {link.label}
+                        <span aria-hidden="true">&#8599;</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </Card>
         ))}

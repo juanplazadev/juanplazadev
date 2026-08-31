@@ -2,7 +2,7 @@
 //
 // The single seam for this feature, the way content/posts.ts is for the blog:
 // the hook and the component below it know nothing about Open-Meteo's field
-// names or query string. When the Spring Boot API lands and proxies this, the
+// names or query string. When the Laravel API lands and proxies this, the
 // URL built in currentWeatherUrl() is the only thing that changes.
 //
 // No API key — Open-Meteo is open and sends Access-Control-Allow-Origin: *, so

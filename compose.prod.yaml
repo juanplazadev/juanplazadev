@@ -7,7 +7,7 @@ name: juanplaza
 # name, port, network and healthcheck path all stay put, so the Caddyfile entry
 # in the separate ../caddy project never changes:
 #
-#   juanplaza.jplab.casa {
+#   juanplaza.dev {
 #       reverse_proxy juanplaza:8080
 #   }
 #
@@ -25,7 +25,7 @@ services:
     # image to push to GHCR without repeating the build args below as
     # --build-arg flags — the root .env stays the one place they are written.
     # The default keeps a bare `up --build -d` working exactly as before.
-    image: ghcr.io/jplaza88/juanplazadev:${IMAGE_TAG:-latest}
+    image: ghcr.io/juanplazadev/juanplazadev:${IMAGE_TAG:-latest}
     container_name: juanplaza
     build:
       context: ./frontend

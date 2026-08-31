@@ -15,13 +15,17 @@ export type Architecture = {
   active: boolean;
   /** The badge row. Keep to the things a reader would scan for. */
   stack: { label: string; icon?: IconName }[];
+  /** Off-site proof: the running app, the source. Optional because not every
+   *  write-up has either — this site's own repo is private, so it has none. A
+   *  write-up that can be clicked into is worth more than one that cannot. */
+  links?: { label: string; href: string }[];
   /** The write-up, split out so its diagrams stay out of the main bundle. */
   body: LazyExoticComponent<ComponentType>;
 };
 
 /*
   The same shape as content/posts.ts, and for the same reason: one module is the
-  single source of truth, so when the Spring Boot API lands this is the only file
+  single source of truth, so when the Laravel API lands this is the only file
   that changes.
 
   No date field. These are living documents rather than dated posts — there is
@@ -57,9 +61,14 @@ const architectures: Architecture[] = [
       { label: "Laravel 13", icon: "laravel" },
       { label: "PHP 8.5", icon: "php" },
       { label: "Inertia + React", icon: "inertia" },
+      { label: "Vite", icon: "vite" },
       { label: "PostgreSQL", icon: "postgresql" },
       { label: "Redis", icon: "redis" },
-      { label: "Horizon", icon: "queue" },
+      { label: "Horizon", icon: "laravelHorizon" },
+    ],
+    links: [
+      { label: "Live demo", href: "https://ci.thatdevjp.com" },
+      { label: "Source", href: "https://github.com/juanplazadev/check-in-v2" },
     ],
     body: lazy(() => import("./architectures/check-in")),
   },

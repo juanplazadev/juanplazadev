@@ -17,7 +17,7 @@ export type Post = {
 };
 
 // The single source of truth for the blog. Adding a post is: drop a component
-// in ./posts/, add an entry here. When the Spring Boot API lands this module is
+// in ./posts/, add an entry here. When the Laravel API lands this module is
 // the one thing that changes — everything else consumes getPosts()/getPost().
 const posts: Post[] = [
   {

@@ -53,10 +53,13 @@ const delay = (ms: number) => ({ "--hero-delay": `${ms}ms` }) as CSSProperties;
 // Seniority, scale, stakes — one cell each, and nothing that measures the resume
 // rather than the work. Every figure is a claim the About and Experience sections
 // substantiate below, said once at a glance rather than read out of a paragraph.
+// That constraint is the whole point of the row, so a figure that no bullet below
+// backs does not belong here however good it looks: the nine sites are the ones
+// the check-in platform runs, named in the 2018-2021 entry.
 // label is the noun, detail the qualifier, so all three cells share a shape.
 const stats = [
   { value: "8+", label: "Years", detail: "In production" },
-  { value: "27", label: "Divisions", detail: "4 countries" },
+  { value: "9", label: "Sites", detail: "Four US time zones" },
   { value: "100%", label: "Regulated", detail: "HIPAA · SOX · Defense" },
 ];
 
@@ -111,7 +114,7 @@ export default function Header() {
         <div className="hero-in mb-5 flex flex-wrap items-center justify-center gap-2" style={delay(120)}>
           <Badge variant="accent">
             <StatusDot />
-            Open to conversations
+            Open to remote roles
           </Badge>
           <Badge variant="outline">
             <PinIcon />
@@ -143,21 +146,21 @@ export default function Header() {
         </div>
 
         <p className="text-muted-foreground hero-in mx-auto mb-7 max-w-md text-[15px] text-balance" style={delay(230)}>
-          Software engineer building production web apps with{" "}
+          Full-stack engineer who owns production systems end to end — data model to deploy. Built with{" "}
           <span className="text-foreground font-medium">Laravel</span>,{" "}
           <span className="text-foreground font-medium">Spring Boot</span>, and{" "}
           <span className="text-foreground font-medium">React + TypeScript</span>.
         </p>
 
         <div className="hero-in mb-10 flex flex-wrap items-center justify-center gap-3" style={delay(290)}>
-          <Button variant="shimmer" href="mailto:admin@juanplaza.dev">
+          <Button variant="shimmer" href="mailto:juan@juanplaza.dev">
             Get In Touch
           </Button>
           <Button variant="outline" href="#">
             <DownloadIcon />
             Résumé
           </Button>
-          <Button variant="outline" href="https://github.com/jplaza88" target="_blank" rel="noreferrer">
+          <Button variant="outline" href="https://github.com/juanplazadev" target="_blank" rel="noreferrer">
             <GitHubIcon />
             GitHub
           </Button>

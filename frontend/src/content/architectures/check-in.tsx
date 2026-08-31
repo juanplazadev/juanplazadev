@@ -22,8 +22,8 @@ export default function CheckIn() {
     <>
       <p>
         A scheduling and check-in platform for operations that run on arrivals — drivers book a slot, arrive, and check
-        in against it across a number of sites. It is still in development; what follows is the staging architecture,
-        not a production one.
+        in against it across a number of sites. It is still in development, and what follows is the staging architecture
+        rather than a production one — but staging is deployed and reachable, and the demo link above goes to it.
       </p>
 
       <p>
@@ -38,8 +38,10 @@ export default function CheckIn() {
           { label: "Backend", value: "Laravel 13 · PHP 8.5", icon: "laravel" },
           { label: "App server", value: "Octane on FrankenPHP", icon: "php" },
           { label: "Frontend", value: "Inertia · React 19 · TypeScript", icon: "inertia" },
+          { label: "Build", value: "Vite 8 · Tailwind v4", icon: "vite" },
           { label: "Database", value: "PostgreSQL 18", icon: "postgresql" },
           { label: "Cache / queue", value: "Redis, workers via Horizon", icon: "redis" },
+          { label: "Monitoring", value: "Sentry", icon: "sentry" },
           { label: "Auth", value: "Fortify, headless · Spatie Permission", icon: "auth" },
           { label: "CI/CD", value: "GitHub Actions, self-hosted runner", icon: "githubActions" },
         ]}
@@ -58,7 +60,7 @@ export default function CheckIn() {
         <DiagramNode box={browser} icon="browser" label="Browser" sublabel="drivers and staff" />
         <DiagramNode box={caddy} icon="caddy" label="Caddy" sublabel="TLS · ACME over DNS" />
         <DiagramNode box={checkin} icon="laravel" variant="accent" label="checkin" sublabel="Octane · FrankenPHP" />
-        <DiagramNode box={horizon} icon="queue" label="horizon" sublabel="queue workers" />
+        <DiagramNode box={horizon} icon="laravelHorizon" label="horizon" sublabel="queue workers" />
         <DiagramNode box={scheduler} icon="clock" label="scheduler" sublabel="schedule:work" />
         <DiagramNode box={pgsql} icon="postgresql" label="pgsql" sublabel="PostgreSQL 18" />
         <DiagramNode box={redis} icon="redis" label="redis" sublabel="cache · queue · sessions" />
@@ -99,6 +101,14 @@ export default function CheckIn() {
         the app both need to be told to pick up the new code. The deploy ends with a reload for exactly that reason.
       </p>
 
+      <p>
+        On the way out, Inertia means there is no separate API for the front end to consume: a controller returns a page
+        component and its props, and Vite builds the React that receives them. That removes the client/server contract
+        entirely, and with it the class of bug where the two drift apart. Wayfinder closes the last gap by generating
+        typed helpers from the Laravel routes, so a route renamed in PHP breaks the TypeScript build rather than a page
+        in production.
+      </p>
+
       <h2>Auth and per-site scoping</h2>
 
       <p>
@@ -127,6 +137,18 @@ export default function CheckIn() {
         to the internet is none.
       </p>
 
+      <p>
+        That is a claim worth holding to, so it is a test rather than a note in a runbook. A feature test asserts the
+        dashboard is unreachable the public way, which means a future routing change that quietly exposes it fails CI
+        instead of shipping.
+      </p>
+
+      <p>
+        What the queue cannot tell you is whether the job was <em>right</em>. Sentry catches the exceptions from both
+        sides — the request path and the workers — so a job that fails at 3am surfaces with its stack trace instead of
+        as a Horizon counter nobody was watching. Structured logs handle the rest.
+      </p>
+
       <h2>The parts that are easy to underestimate</h2>
 
       <ul>
@@ -145,6 +167,35 @@ export default function CheckIn() {
           regex. Anything that will later be dialled or texted has to survive being typed in a dozen different formats.
         </li>
       </ul>
+
+      <h2>What is tested, and what that costs</h2>
+
+      <p>
+        Sixty-six test files — 41 feature, 20 unit, 5 browser — run on every push and every pull request. The suite is
+        Pest, with Playwright driving Chromium for the browser layer, and it gates the same branches the deploy runs
+        from. Nothing merges past a red build.
+      </p>
+
+      <p>
+        The unit tests cover the parts of this domain that are quietly hard and cheap to get wrong: resolving which
+        appointment slots a location actually has free, parsing a site&rsquo;s schedule, the distance calculation behind
+        geofenced arrival, phone-number formatting, and locale switching. Those are pure functions with nasty edges, so
+        they are tested where the edges are, not through the UI. The feature tests cover the flows on top — booking,
+        check-in, the confirmation mail and SMS, the PDF, the encrypted licence field, and history queries.
+      </p>
+
+      <p>
+        Two decisions in the pipeline that were not free. The PHP matrix is a{" "}
+        <strong>single leg on 8.5, deliberately</strong> — the app uses 8.5-only syntax, so an 8.3 or 8.4 leg could not
+        parse the source, let alone fail meaningfully. And the CI job runs Pest with <strong>Xdebug off</strong>:
+        loading it slowed every test down for a number the job does not use. Coverage thresholds are enforced
+        separately, by a composer script that turns Xdebug on for exactly that run.
+      </p>
+
+      <p>
+        Alongside the tests, the same pipeline runs Larastan for static analysis, Pint for style, and Rector for
+        automated upgrades — the same three tools that made the Laravel 5 to 11 jump on the earlier platform survivable.
+      </p>
 
       <h2>Deploying</h2>
 

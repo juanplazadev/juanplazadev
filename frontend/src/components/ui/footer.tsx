@@ -4,7 +4,7 @@ export default function Footer() {
   const socials = [
     {
       label: "GitHub",
-      href: "https://github.com/jplaza88",
+      href: "https://github.com/juanplazadev",
       external: true,
       icon: <GitHubIcon />,
     },
@@ -20,7 +20,7 @@ export default function Footer() {
     },
     {
       label: "Email",
-      href: "mailto:admin@juanplaza.dev",
+      href: "mailto:juan@juanplaza.dev",
       external: false,
       icon: (
         <svg

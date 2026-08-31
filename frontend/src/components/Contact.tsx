@@ -33,20 +33,20 @@ const GitHubIcon = () => (
 export default function Contact() {
   const links = [
     {
-      label: "admin@juanplaza.dev",
-      href: "mailto:admin@juanplaza.dev",
+      label: "juan@juanplaza.dev",
+      href: "mailto:juan@juanplaza.dev",
       icon: <MailIcon />,
       external: false,
     },
     {
-      label: "linkedin.com/in/juan-plaza-59a6a9296",
+      label: "LinkedIn",
       href: "https://www.linkedin.com/in/juan-plaza-59a6a9296",
       icon: <LinkedInIcon />,
       external: true,
     },
     {
-      label: "github.com/jplaza88",
-      href: "https://github.com/jplaza88",
+      label: "GitHub",
+      href: "https://github.com/juanplazadev",
       icon: <GitHubIcon />,
       external: true,
     },
@@ -56,7 +56,7 @@ export default function Contact() {
     <Section title="Let's Connect">
       <Card>
         <p className="text-muted-foreground mb-5 text-sm">
-          Open to conversations about interesting problems — reach me anywhere below.
+          Open to remote roles and conversations about interesting problems — reach me anywhere below.
         </p>
         <ul className="mb-6 space-y-3">
           {links.map((link, index) => (
@@ -74,7 +74,7 @@ export default function Contact() {
             </li>
           ))}
         </ul>
-        <Button variant="shimmer" size="sm" href="mailto:admin@juanplaza.dev">
+        <Button variant="shimmer" size="sm" href="mailto:juan@juanplaza.dev">
           Send an Email
         </Button>
       </Card>
