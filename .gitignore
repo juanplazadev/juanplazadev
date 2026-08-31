@@ -24,7 +24,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env — .env.example is committed, .env is not
+# local env - .env.example is committed, .env is not
 .env
 .env*.local
 

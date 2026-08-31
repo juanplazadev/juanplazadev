@@ -6,14 +6,14 @@ type DiagramEdgeProps = {
   /** Right-angle route. "h" runs horizontally first, "v" vertically first. */
   bend?: "h" | "v";
   label?: string;
-  /** "dashed" for a connection that is not a request — a planned swap, or a
+  /** "dashed" for a connection that is not a request - a planned swap, or a
    *  call that leaves the stack entirely. */
   variant?: "default" | "dashed";
 };
 
 /*
   The arrowhead is a drawn <path>, not a <marker>. Markers would need an id, and
-  ids are document-global — two diagrams on one page would collide. They also
+  ids are document-global - two diagrams on one page would collide. They also
   resolve `currentColor` against their own position in the tree rather than the
   element referencing them, which browsers disagree about. A rotated triangle has
   neither problem.

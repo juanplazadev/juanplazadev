@@ -9,12 +9,12 @@ export default function About() {
           manufacturing, regulated healthcare, and high-volume logistics.
         </p>
         <p>
-          Six years fully remote. I own systems end to end — data model, REST APIs, queues, integrations, and deployment
-          — with a track record of turning brittle legacy code into maintainable, well-tested platforms.
+          Six years fully remote. I own systems end to end - data model, REST APIs, queues, integrations, and deployment
+          - with a track record of turning brittle legacy code into maintainable, well-tested platforms.
         </p>
         <p>
-          Every environment I've worked in has been one where getting security wrong is expensive — HIPAA-regulated
-          healthcare, then defense and government contracts inside a SOX-audited public company — and it shaped how I
+          Every environment I've worked in has been one where getting security wrong is expensive - HIPAA-regulated
+          healthcare, then defense and government contracts inside a SOX-audited public company - and it shaped how I
           build: least privilege, auditable by default, hardened before it ships.
         </p>
       </div>

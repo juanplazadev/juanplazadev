@@ -50,7 +50,7 @@ const DownloadIcon = () => (
 // delay.
 const delay = (ms: number) => ({ "--hero-delay": `${ms}ms` }) as CSSProperties;
 
-// Seniority, scale, stakes — one cell each, and nothing that measures the resume
+// Seniority, scale, stakes - one cell each, and nothing that measures the resume
 // rather than the work. Every figure is a claim the About and Experience sections
 // substantiate below, said once at a glance rather than read out of a paragraph.
 // That constraint is the whole point of the row, so a figure that no bullet below
@@ -126,8 +126,8 @@ export default function Header() {
         {/*
           The glow and the entrance live on this wrapper, not on the h1. WebKit
           will not paint a background-clip:text background onto a *positioned*
-          descendant, so the moment the name sat inside a `relative` span — which
-          is what the glow needed to anchor to — the text rendered at its own
+          descendant, so the moment the name sat inside a `relative` span - which
+          is what the glow needed to anchor to - the text rendered at its own
           transparent colour and vanished on iOS while Chrome drew it fine. The
           h1 now contains nothing but the text.
 
@@ -146,7 +146,7 @@ export default function Header() {
         </div>
 
         <p className="text-muted-foreground hero-in mx-auto mb-7 max-w-md text-[15px] text-balance" style={delay(230)}>
-          Full-stack engineer who owns production systems end to end — data model to deploy. Built with{" "}
+          Software engineer who owns production systems end to end - data model to deploy. Built with{" "}
           <span className="text-foreground font-medium">Laravel</span>,{" "}
           <span className="text-foreground font-medium">Spring Boot</span>, and{" "}
           <span className="text-foreground font-medium">React + TypeScript</span>.

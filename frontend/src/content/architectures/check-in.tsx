@@ -21,14 +21,14 @@ export default function CheckIn() {
   return (
     <>
       <p>
-        A scheduling and check-in platform for operations that run on arrivals — drivers book a slot, arrive, and check
+        A scheduling and check-in platform for operations that run on arrivals - drivers book a slot, arrive, and check
         in against it across a number of sites. It is still in development, and what follows is the staging architecture
-        rather than a production one — but staging is deployed and reachable, and the demo link above goes to it.
+        rather than a production one - but staging is deployed and reachable, and the demo link above goes to it.
       </p>
 
       <p>
         The shape of the problem is what drives the shape of the stack. A check-in is a short, latency-sensitive
-        request. Everything <em>around</em> it — the confirmation SMS, the PDF, the reminder — is neither, and none of
+        request. Everything <em>around</em> it - the confirmation SMS, the PDF, the reminder - is neither, and none of
         it should be able to make an arriving driver wait. So the request path is kept narrow and everything else is
         pushed onto a queue.
       </p>
@@ -97,7 +97,7 @@ export default function CheckIn() {
       </p>
 
       <p>
-        Because Octane holds the app in memory, a deploy is not finished when the new container starts — the workers and
+        Because Octane holds the app in memory, a deploy is not finished when the new container starts - the workers and
         the app both need to be told to pick up the new code. The deploy ends with a reload for exactly that reason.
       </p>
 
@@ -112,7 +112,7 @@ export default function CheckIn() {
       <h2>Auth and per-site scoping</h2>
 
       <p>
-        Fortify handles authentication headlessly — login, registration, email verification, password reset — with the
+        Fortify handles authentication headlessly - login, registration, email verification, password reset - with the
         UI built as ordinary Inertia and React pages rather than published Blade templates. The benefit is that the auth
         screens are the same React components, with the same design system, as the rest of the app.
       </p>
@@ -132,7 +132,7 @@ export default function CheckIn() {
 
       <p>
         That dashboard is <strong>not reachable over the public hostname</strong>. The proxy returns a 404 for it rather
-        than a 403 — a 403 confirms the thing exists — and the dashboard is instead reachable only over a private
+        than a 403 - a 403 confirms the thing exists - and the dashboard is instead reachable only over a private
         network the operators are on. It is a real admin surface over the job queue, so the safest amount of it exposed
         to the internet is none.
       </p>
@@ -145,7 +145,7 @@ export default function CheckIn() {
 
       <p>
         What the queue cannot tell you is whether the job was <em>right</em>. Sentry catches the exceptions from both
-        sides — the request path and the workers — so a job that fails at 3am surfaces with its stack trace instead of
+        sides - the request path and the workers - so a job that fails at 3am surfaces with its stack trace instead of
         as a Horizon counter nobody was watching. Structured logs handle the rest.
       </p>
 
@@ -171,7 +171,7 @@ export default function CheckIn() {
       <h2>What is tested, and what that costs</h2>
 
       <p>
-        Sixty-six test files — 41 feature, 20 unit, 5 browser — run on every push and every pull request. The suite is
+        Sixty-six test files - 41 feature, 20 unit, 5 browser - run on every push and every pull request. The suite is
         Pest, with Playwright driving Chromium for the browser layer, and it gates the same branches the deploy runs
         from. Nothing merges past a red build.
       </p>
@@ -180,13 +180,13 @@ export default function CheckIn() {
         The unit tests cover the parts of this domain that are quietly hard and cheap to get wrong: resolving which
         appointment slots a location actually has free, parsing a site&rsquo;s schedule, the distance calculation behind
         geofenced arrival, phone-number formatting, and locale switching. Those are pure functions with nasty edges, so
-        they are tested where the edges are, not through the UI. The feature tests cover the flows on top — booking,
+        they are tested where the edges are, not through the UI. The feature tests cover the flows on top - booking,
         check-in, the confirmation mail and SMS, the PDF, the encrypted licence field, and history queries.
       </p>
 
       <p>
         Two decisions in the pipeline that were not free. The PHP matrix is a{" "}
-        <strong>single leg on 8.5, deliberately</strong> — the app uses 8.5-only syntax, so an 8.3 or 8.4 leg could not
+        <strong>single leg on 8.5, deliberately</strong> - the app uses 8.5-only syntax, so an 8.3 or 8.4 leg could not
         parse the source, let alone fail meaningfully. And the CI job runs Pest with <strong>Xdebug off</strong>:
         loading it slowed every test down for a number the job does not use. Coverage thresholds are enforced
         separately, by a composer script that turns Xdebug on for exactly that run.
@@ -194,13 +194,13 @@ export default function CheckIn() {
 
       <p>
         Alongside the tests, the same pipeline runs Larastan for static analysis, Pint for style, and Rector for
-        automated upgrades — the same three tools that made the Laravel 5 to 11 jump on the earlier platform survivable.
+        automated upgrades - the same three tools that made the Laravel 5 to 11 jump on the earlier platform survivable.
       </p>
 
       <h2>Deploying</h2>
 
       <p>
-        A push to the staging branch runs on a self-hosted runner on the target box — the same runner this site uses. It
+        A push to the staging branch runs on a self-hosted runner on the target box - the same runner this site uses. It
         builds the image, pushes it to GHCR tagged by commit, brings the stack up, migrates, caches the framework
         config, and reloads the app server so Octane and the workers pick up the new code.
       </p>

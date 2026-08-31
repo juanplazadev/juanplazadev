@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 
 import type { WeatherIconKey } from "@/lib/weather";
 
-// The project ships no icon library — every icon is a hand-written SVG next to
+// The project ships no icon library - every icon is a hand-written SVG next to
 // the thing that uses it. Eight of them would bury the header markup, so the
 // weather set lives here instead, drawn on the same 16-box grid at the same
 // 1.5 stroke as PinIcon and DownloadIcon.

@@ -32,8 +32,8 @@ export default tseslint.config(
       "simple-import-sort/exports": "error",
 
       // Carried over from the pre-Vite config. The Cruip carousel in
-      // Recommendations.tsx leans on intentional imperative patterns — reading
-      // refs during render, short-circuit statements, hoisted handlers — that
+      // Recommendations.tsx leans on intentional imperative patterns - reading
+      // refs during render, short-circuit statements, hoisted handlers - that
       // these rules flag. Surfaced as warnings so they stay visible without
       // failing the lint run over template code.
       "react-hooks/immutability": "warn",

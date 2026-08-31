@@ -19,7 +19,7 @@ type Item = {
   /** Set when there is an architecture write-up to link to. Makes the whole
    *  card the hit area, the same way OpenSource's cards work. */
   href?: string;
-  /** Off-site proof — the running app and the source. These sit above the card's
+  /** Off-site proof - the running app and the source. These sit above the card's
    *  full-bleed ::before hit area, so they need their own stacking context or the
    *  overlay swallows the clicks. */
   links?: { label: string; href: string }[];
@@ -66,7 +66,7 @@ export default function CurrentlyBuilding() {
       status: "In progress",
       active: true,
       description:
-        "An appointment scheduling and check-in platform for operations that run on arrivals — drivers book a slot, arrive, and check in against it across sites. 66 tests run on every push.",
+        "An appointment scheduling and check-in platform for operations that run on arrivals - drivers book a slot, arrive, and check in against it across sites. 66 tests run on every push.",
       stack: "Laravel · Inertia + React · PostgreSQL · Redis",
       href: "/architecture/check-in",
       links: [

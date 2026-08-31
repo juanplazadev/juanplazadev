@@ -4,7 +4,7 @@
   Copied in rather than pulled from a package, for two reasons. @iconify/react
   fetches from the Iconify API at runtime, and the single live request this app
   makes is a deliberate, documented choice. unplugin-icons is build-time but
-  emits whole <svg> elements, which cannot nest inside the diagrams' own <svg> —
+  emits whole <svg> elements, which cannot nest inside the diagrams' own <svg> -
   what those need is the raw path, which is all this is.
 
   Monochrome (simple-icons) rather than the full-colour `logos` set: these render
@@ -19,7 +19,7 @@
   does not belong here without widening <Icon /> and DiagramNode to match.
 
   simple-icons is CC0-1.0, Material Design Icons is Apache-2.0. The brand marks
-  are used nominatively — to name the technology each one belongs to.
+  are used nominatively - to name the technology each one belongs to.
 */
 
 /** The viewBox every icon below shares. */

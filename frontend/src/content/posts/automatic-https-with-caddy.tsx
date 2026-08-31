@@ -1,4 +1,4 @@
-// Starter post — real, but written to be replaced. It documents the Caddy
+// Starter post - real, but written to be replaced. It documents the Caddy
 // container that already fronts this site (see the repo README) so the blog
 // ships with something true rather than lorem ipsum.
 export default function Post() {
@@ -63,7 +63,7 @@ volumes:
         </strong>{" "}
         Certificates and the ACME account key live there. Leave it out and every <code>docker compose up --build</code>{" "}
         throws away the account and asks Let's Encrypt for a fresh certificate. Do that often enough and you hit the
-        rate limit — five duplicate certificates per week — and then the site is simply on HTTP until the window rolls
+        rate limit - five duplicate certificates per week - and then the site is simply on HTTP until the window rolls
         over. A named volume costs nothing and removes the entire failure mode.
       </p>
 
@@ -79,7 +79,7 @@ volumes:
           <strong>The DNS record is not live.</strong> The HTTP-01 challenge needs Let's Encrypt to reach port 80 at
           that exact name from the public internet. If the record is missing, still propagating, or pointed at a proxy
           that is not passing <code>/.well-known/acme-challenge/</code> through, issuance fails and Caddy quietly falls
-          back to its internal self-signed CA — which is why the browser warning says the certificate is untrusted
+          back to its internal self-signed CA - which is why the browser warning says the certificate is untrusted
           rather than expired.
         </li>
       </ol>

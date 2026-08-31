@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
 // The .env lives at the repo root, not in frontend/, so that compose.yaml and
-// Vite read the same file — one source of truth for ports and URLs, the way
+// Vite read the same file - one source of truth for ports and URLs, the way
 // Laravel shares a single root .env between artisan, sail and vite.
 const envDir = fileURLToPath(new URL("..", import.meta.url));
 

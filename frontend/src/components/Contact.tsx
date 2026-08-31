@@ -56,7 +56,7 @@ export default function Contact() {
     <Section title="Let's Connect">
       <Card>
         <p className="text-muted-foreground mb-5 text-sm">
-          Open to remote roles and conversations about interesting problems — reach me anywhere below.
+          Open to remote roles and conversations about interesting problems - reach me anywhere below.
         </p>
         <ul className="mb-6 space-y-3">
           {links.map((link, index) => (

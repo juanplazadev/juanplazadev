@@ -17,7 +17,7 @@ type DiagramNodeProps = {
   variant?: keyof typeof variants;
   icon?: IconName;
   /** "left" puts the icon beside left-aligned text and needs roughly 60 units of
-   *  width for itself. "top" centres it above the label — for narrow boxes. */
+   *  width for itself. "top" centres it above the label - for narrow boxes. */
   iconPlacement?: "left" | "top";
 };
 

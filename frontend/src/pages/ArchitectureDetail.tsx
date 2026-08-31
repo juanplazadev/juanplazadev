@@ -15,7 +15,7 @@ export default function ArchitectureDetail() {
 
   // Same shape as Post.tsx: hooks cannot sit behind the early return, so the
   // title is computed for the missing case too and simply never used.
-  useDocumentTitle(item ? `${item.title} — Architecture — Juan Plaza` : "Page not found — Juan Plaza");
+  useDocumentTitle(item ? `${item.title} - Architecture - Juan Plaza` : "Page not found - Juan Plaza");
 
   // A bad slug is a 404, not a blank article shell.
   if (!item) return <NotFound />;
@@ -71,7 +71,7 @@ export default function ArchitectureDetail() {
       </header>
 
       {/* Lazy, so the diagrams and prose stay out of the main bundle. Blank
-          fallback rather than a spinner — on a local chunk it would only flash. */}
+          fallback rather than a spinner - on a local chunk it would only flash. */}
       <div className="prose">
         <Suspense fallback={null}>
           <Body />

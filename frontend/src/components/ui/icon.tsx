@@ -10,7 +10,7 @@ type IconProps = {
 };
 
 // A vendored Iconify path, as a DOM element. `fill-current` rather than a fixed
-// colour, so the icon takes whatever text colour its container carries — which
+// colour, so the icon takes whatever text colour its container carries - which
 // is what keeps it tracking the palette.
 //
 // For an icon inside a diagram, use DiagramNode's `icon` prop instead: an <svg>

@@ -60,7 +60,7 @@
 /*
   These two live here rather than in style.css, which is the token file. The
   sweep was called `shimmer`, which is also the name motion.css gives the
-  button's hover sweep — same-named @keyframes do not coexist, the later one
+  button's hover sweep - same-named @keyframes do not coexist, the later one
   simply wins, so one of the two effects was always running the other's frames.
   Renaming it settles that; the button keeps `shimmer`.
 */
