@@ -13,7 +13,7 @@ export default function Post() {
 
   // Hooks cannot sit behind the early return below, so the title is computed
   // for the missing case too and simply never used.
-  useDocumentTitle(post ? `${post.title} — Juan Plaza` : "Page not found — Juan Plaza");
+  useDocumentTitle(post ? `${post.title} - Juan Plaza` : "Page not found - Juan Plaza");
 
   // A bad slug is a 404, not a blank article shell.
   if (!post) return <NotFound />;
@@ -43,7 +43,7 @@ export default function Post() {
       </header>
 
       {/* The body is a lazy chunk, so the shell above paints while it loads.
-          The fallback is blank rather than a spinner — on a local chunk it is
+          The fallback is blank rather than a spinner - on a local chunk it is
           on screen for a frame or two and a spinner would only flash. */}
       <div className="prose">
         <Suspense fallback={null}>

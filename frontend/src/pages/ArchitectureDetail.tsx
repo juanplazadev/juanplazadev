@@ -15,7 +15,7 @@ export default function ArchitectureDetail() {
 
   // Same shape as Post.tsx: hooks cannot sit behind the early return, so the
   // title is computed for the missing case too and simply never used.
-  useDocumentTitle(item ? `${item.title} — Architecture — Juan Plaza` : "Page not found — Juan Plaza");
+  useDocumentTitle(item ? `${item.title} - Architecture - Juan Plaza` : "Page not found - Juan Plaza");
 
   // A bad slug is a 404, not a blank article shell.
   if (!item) return <NotFound />;
@@ -48,10 +48,30 @@ export default function ArchitectureDetail() {
             </li>
           ))}
         </ul>
+
+        {/* Above the prose on purpose. A reader who only wants to see the thing
+            run should not have to scroll a write-up to find out they can. */}
+        {item.links && (
+          <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5">
+            {item.links.map((link) => (
+              <li key={link.href}>
+                <a
+                  className="text-primary focus-visible:ring-ring focus-visible:ring-offset-background inline-flex items-center gap-1 rounded-sm text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
+                  href={link.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {link.label}
+                  <span aria-hidden="true">&#8599;</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </header>
 
       {/* Lazy, so the diagrams and prose stay out of the main bundle. Blank
-          fallback rather than a spinner — on a local chunk it would only flash. */}
+          fallback rather than a spinner - on a local chunk it would only flash. */}
       <div className="prose">
         <Suspense fallback={null}>
           <Body />

@@ -2,17 +2,17 @@
 //
 // The single seam for this feature, the way content/posts.ts is for the blog:
 // the hook and the component below it know nothing about Open-Meteo's field
-// names or query string. When the Spring Boot API lands and proxies this, the
+// names or query string. When the Laravel API lands and proxies this, the
 // URL built in currentWeatherUrl() is the only thing that changes.
 //
-// No API key — Open-Meteo is open and sends Access-Control-Allow-Origin: *, so
+// No API key - Open-Meteo is open and sends Access-Control-Allow-Origin: *, so
 // the browser calls it directly and the inert /api proxy stays out of it.
 
 import { getJson } from "./http";
 
 /** What the rest of the app sees. Open-Meteo's shape stops at this module. */
 export type CurrentWeather = {
-  /** Fahrenheit — the unit is requested, not converted here. */
+  /** Fahrenheit - the unit is requested, not converted here. */
   temperature: number;
   feelsLike: number;
   /** Percent. */
@@ -74,7 +74,7 @@ function readConfig(): WeatherConfig | null {
 function warnAndDisable(): null {
   if (import.meta.env.DEV) {
     console.warn(
-      "[weather] VITE_WEATHER_LATITUDE / VITE_WEATHER_LONGITUDE are missing or not numbers — " +
+      "[weather] VITE_WEATHER_LATITUDE / VITE_WEATHER_LONGITUDE are missing or not numbers - " +
         "the hero pill will render without weather. See .env.example.",
     );
   }
@@ -122,7 +122,7 @@ export async function fetchCurrentWeather(signal?: AbortSignal): Promise<Current
 
 // WMO codes ---------------------------------------------------------------
 
-// https://open-meteo.com/en/docs — the codes are sparse, so a lookup object
+// https://open-meteo.com/en/docs - the codes are sparse, so a lookup object
 // beats a range ladder: every case is visible and an unknown code is a miss
 // rather than whichever branch happened to catch it.
 const WMO: Record<number, { condition: string; icon: WeatherIconKey }> = {

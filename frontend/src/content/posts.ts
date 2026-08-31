@@ -2,7 +2,7 @@ import type { ComponentType, LazyExoticComponent } from "react";
 import { lazy } from "react";
 
 export type Post = {
-  /** URL segment. Must be unique — it is the route param. */
+  /** URL segment. Must be unique - it is the route param. */
   slug: string;
   title: string;
   /** ISO 8601. Sorted on and formatted for display; never shown raw. */
@@ -17,8 +17,8 @@ export type Post = {
 };
 
 // The single source of truth for the blog. Adding a post is: drop a component
-// in ./posts/, add an entry here. When the Spring Boot API lands this module is
-// the one thing that changes — everything else consumes getPosts()/getPost().
+// in ./posts/, add an entry here. When the Laravel API lands this module is
+// the one thing that changes - everything else consumes getPosts()/getPost().
 const posts: Post[] = [
   {
     slug: "automatic-https-with-caddy",

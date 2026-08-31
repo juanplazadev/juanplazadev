@@ -40,7 +40,7 @@ export default function JuanplazaDev() {
 
       <Diagram
         title="Request path for juanplaza.dev"
-        description="A browser requests the site over HTTPS. Caddy terminates TLS and reverse-proxies to the juanplaza container on port 8080 over a shared Docker network. That container is nginx serving the built Vite bundle. Separately, the browser calls the Open-Meteo forecast API directly, without passing through the server. A planned Spring Boot container will replace the nginx one, serving both the API and the app from a single JAR."
+        description="A browser requests the site over HTTPS. Caddy terminates TLS and reverse-proxies to the juanplaza container on port 8080 over a shared Docker network. That container is nginx serving the built Vite bundle. Separately, the browser calls the Open-Meteo forecast API directly, without passing through the server. A planned Laravel container will replace the nginx one, serving both the API and the app from a single image."
         width={560}
         height={340}
         caption="One container, reached by name. The only other network call leaves the browser and never touches the box."
@@ -51,13 +51,7 @@ export default function JuanplazaDev() {
         <DiagramNode box={meteo} icon="weather" label="Open-Meteo" sublabel="forecast API" />
         <DiagramNode box={caddy} icon="caddy" label="Caddy" sublabel="TLS · ACME over DNS" />
         <DiagramNode box={app} icon="nginx" variant="accent" label="app container" sublabel="nginx → dist/ · :8080" />
-        <DiagramNode
-          box={planned}
-          icon="springBoot"
-          variant="planned"
-          label="Spring Boot"
-          sublabel="one JAR · /api + SPA"
-        />
+        <DiagramNode box={planned} icon="laravel" variant="planned" label="Laravel" sublabel="one image · /api + SPA" />
 
         <DiagramEdge from={browser.right} to={meteo.left} variant="dashed" label="keyless · CORS-open" />
         <DiagramEdge from={browser.bottom} to={caddy.top} label="HTTPS" />
@@ -91,14 +85,14 @@ export default function JuanplazaDev() {
       <h2>No database</h2>
 
       <p>
-        There is no API and no CMS. Blog posts are TypeScript modules — a registry of metadata plus a lazy import per
-        post — so each body is code-split and prose never lands in the main bundle. Publishing is a commit, and the
+        There is no API and no CMS. Blog posts are TypeScript modules - a registry of metadata plus a lazy import per
+        post - so each body is code-split and prose never lands in the main bundle. Publishing is a commit, and the
         content is typechecked along with everything else.
       </p>
 
       <p>
         The single live request the app makes is to Open-Meteo for the conditions in the hero&rsquo;s location pill.
-        That API is keyless and CORS-open, so it goes straight from the browser rather than through a proxy — which is
+        That API is keyless and CORS-open, so it goes straight from the browser rather than through a proxy - which is
         why it sits outside the box in the diagram above. If the coordinates are blank or the request fails, the pill
         falls back to a plain location label. It never renders an error.
       </p>
@@ -124,7 +118,7 @@ export default function JuanplazaDev() {
       </Diagram>
 
       <p>
-        A separate workflow gates both <code>main</code> and the production branch on lint, formatting and the build —
+        A separate workflow gates both <code>main</code> and the production branch on lint, formatting and the build -
         and the build script is <code>tsc -b &amp;&amp; vite build</code>, so a type error fails CI too. CI runs the
         non-mutating twins of the lint and format scripts on purpose: the <code>--fix</code> and <code>--write</code>{" "}
         versions would let a dirty tree pass by quietly rewriting it.
@@ -136,7 +130,7 @@ export default function JuanplazaDev() {
         <li>
           <strong>Config crosses as build args, not environment.</strong> Vite inlines <code>VITE_*</code> into the
           bundle at build time, so a changed value is a changed bundle. Passing them as runtime environment would look
-          like it worked and silently do nothing — the deployed JavaScript already has the old value baked in. Changing
+          like it worked and silently do nothing - the deployed JavaScript already has the old value baked in. Changing
           one means a rebuild, not a restart.
         </li>
         <li>
@@ -149,7 +143,7 @@ export default function JuanplazaDev() {
         </li>
         <li>
           <strong>Rollback re-points, it does not rebuild.</strong> Every image is tagged with its commit SHA, so going
-          back is starting an image that already exists and has already been tested — not rebuilding an old commit on a
+          back is starting an image that already exists and has already been tested - not rebuilding an old commit on a
           toolchain that has moved since.
         </li>
       </ul>
@@ -157,17 +151,17 @@ export default function JuanplazaDev() {
       <h2>What changes next</h2>
 
       <p>
-        The planned Spring Boot backend serves the JSON API <em>and</em> the built SPA from the same JAR, so there is
-        one container, one origin and no CORS. Gradle runs the frontend build and copies the output into the JAR&rsquo;s
-        static resources.
+        The planned Laravel backend serves the JSON API <em>and</em> the built SPA from the same image, so there is one
+        container, one origin and no CORS. The Vite build runs in the image build and writes into <code>public/</code>,
+        which is the document root either way.
       </p>
 
       <p>
         The production compose file then repoints a single build context and nothing else moves: same service name, same
-        container name, same port, same network, same healthcheck path — so the Caddy config never changes. The one
-        thing that does need writing is a handler forwarding non-API misses to <code>index.html</code>, which is what
-        nginx&rsquo;s <code>try_files</code> is standing in for today. Without it every route but <code>/</code> would
-        404 on a hard refresh.
+        container name, same port, same network, same healthcheck path - so the Caddy config never changes. The one
+        thing that does need writing is a catch-all route returning <code>index.html</code> for anything that is not
+        under <code>/api</code>, which is what nginx&rsquo;s <code>try_files</code> is standing in for today. Without it
+        every route but <code>/</code> would 404 on a hard refresh.
       </p>
     </>
   );

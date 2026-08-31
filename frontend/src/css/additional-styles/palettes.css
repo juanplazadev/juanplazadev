@@ -1,5 +1,5 @@
 /*
-  Palette layer. Each block below binds two scales — an accent and a neutral —
+  Palette layer. Each block below binds two scales - an accent and a neutral -
   to the same set of intermediate variables. style.css maps those onto the
   semantic tokens (--background, --primary, …) exactly once, for light and for
   dark, so a palette is only ever a list of scale aliases: no palette needs to
@@ -7,7 +7,7 @@
 
   These are authored in oklch rather than pulled from Tailwind's built-in
   scales. Two reasons. The accents sit at hues and chroma the stock scales do
-  not offer, and — the part that actually matters — every neutral carries a
+  not offer, and - the part that actually matters - every neutral carries a
   little chroma pulled toward its accent's hue. Ember's grays are warm taupe,
   Cobalt's are blue-shadowed, Moss's are sage. That shared tint is what makes a
   palette read as designed instead of "an accent dropped onto gray"; an
@@ -45,7 +45,7 @@
   --swatch-crimson: oklch(62.5% 0.208 24);
 }
 
-/* Ember — burnt orange on warm taupe. The closest to the original amber, and
+/* Ember - burnt orange on warm taupe. The closest to the original amber, and
    the default. */
 :root,
 [data-palette="ember"] {
@@ -67,7 +67,7 @@
   --neutral-950: oklch(14.8% 0.012 55);
 }
 
-/* Moss — deep olive green on sage. */
+/* Moss - deep olive green on sage. */
 [data-palette="moss"] {
   --accent-50: oklch(97.3% 0.018 150);
   --accent-300: oklch(80% 0.115 152);
@@ -87,7 +87,7 @@
   --neutral-950: oklch(14.8% 0.012 155);
 }
 
-/* Lagoon — muted teal on cool blue-gray. The quietest of the six: teal has the
+/* Lagoon - muted teal on cool blue-gray. The quietest of the six: teal has the
    least chroma headroom at these lightnesses, so it reads as restraint rather
    than as a washed-out version of something louder. */
 [data-palette="lagoon"] {
@@ -109,7 +109,7 @@
   --neutral-950: oklch(14.8% 0.013 215);
 }
 
-/* Cobalt — saturated blue on blue-shadowed gray. */
+/* Cobalt - saturated blue on blue-shadowed gray. */
 [data-palette="cobalt"] {
   --accent-50: oklch(97.2% 0.013 265);
   --accent-300: oklch(78% 0.109 265);
@@ -129,7 +129,7 @@
   --neutral-950: oklch(14.8% 0.016 264);
 }
 
-/* Orchid — magenta-leaning purple on mauve. */
+/* Orchid - magenta-leaning purple on mauve. */
 [data-palette="orchid"] {
   --accent-50: oklch(97.2% 0.019 325);
   --accent-300: oklch(79% 0.135 324);
@@ -149,7 +149,7 @@
   --neutral-950: oklch(14.8% 0.015 322);
 }
 
-/* Crimson — deep red on warm gray. */
+/* Crimson - deep red on warm gray. */
 [data-palette="crimson"] {
   --accent-50: oklch(97.2% 0.013 20);
   --accent-300: oklch(79% 0.119 20);

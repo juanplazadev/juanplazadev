@@ -7,7 +7,7 @@ name: juanplaza
 # name, port, network and healthcheck path all stay put, so the Caddyfile entry
 # in the separate ../caddy project never changes:
 #
-#   juanplaza.jplab.casa {
+#   juanplaza.dev {
 #       reverse_proxy juanplaza:8080
 #   }
 #
@@ -23,15 +23,15 @@ services:
     # `image:` and `build:` together, on purpose. `docker compose build` tags
     # what it builds as this name, so the deploy workflow gets a SHA-tagged
     # image to push to GHCR without repeating the build args below as
-    # --build-arg flags — the root .env stays the one place they are written.
+    # --build-arg flags - the root .env stays the one place they are written.
     # The default keeps a bare `up --build -d` working exactly as before.
-    image: ghcr.io/jplaza88/juanplazadev:${IMAGE_TAG:-latest}
+    image: ghcr.io/juanplazadev/juanplazadev:${IMAGE_TAG:-latest}
     container_name: juanplaza
     build:
       context: ./frontend
       target: prod
       # Vite inlines VITE_* into the bundle at build time, and the build runs
-      # inside the image — where the root .env is not, being outside ./frontend.
+      # inside the image - where the root .env is not, being outside ./frontend.
       # So these cross as build args. A changed value is a changed bundle, which
       # is why they are args and not runtime environment.
       args:
@@ -39,7 +39,7 @@ services:
         VITE_WEATHER_LONGITUDE: "${VITE_WEATHER_LONGITUDE:-}"
         VITE_WEATHER_TIMEZONE: "${VITE_WEATHER_TIMEZONE:-}"
         VITE_WEATHER_API_URL: "${VITE_WEATHER_API_URL:-}"
-    # No `ports:` on purpose — Caddy reaches this over the shared proxy network
+    # No `ports:` on purpose - Caddy reaches this over the shared proxy network
     # by container name, so 8080 is never bound on the host and cannot collide.
     expose:
       - "8080"

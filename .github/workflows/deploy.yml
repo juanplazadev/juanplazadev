@@ -46,7 +46,7 @@ jobs:
 
       # compose.prod.yaml reads VITE_WEATHER_* from here and passes them as
       # build args. Vite inlines them, so this file's contents decide the
-      # bundle — it has to be in place before the build, not before `up`.
+      # bundle - it has to be in place before the build, not before `up`.
       - name: Load prod env
         run: cp /opt/da-server/juanplazadev/.env .env
 

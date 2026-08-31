@@ -6,7 +6,7 @@ import { PALETTES, usePalette } from "@/palette-context";
   A radio group rather than a row of independent buttons: picking a palette is
   one choice out of five, and the group takes a single tab stop with arrow keys
   moving between the dots, instead of putting five stops ahead of the page
-  content. That means managing focus by hand — the roving tabindex below is what
+  content. That means managing focus by hand - the roving tabindex below is what
   the pattern requires.
 */
 export default function PalettePicker() {

@@ -27,7 +27,7 @@ jobs:
 
       # vite.config.ts points envDir at the repo root, so the build reads the
       # root .env. Without one the VITE_WEATHER_* vars are undefined and the
-      # weather pill silently disables itself — the build still succeeds, but
+      # weather pill silently disables itself - the build still succeeds, but
       # this way CI exercises the same path production does.
       - name: Provide the shared .env
         working-directory: .
@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # The :check variants, not `lint`/`format` — those carry --fix and
+      # The :check variants, not `lint`/`format` - those carry --fix and
       # --write, which would let a dirty tree pass by quietly rewriting it.
       - name: Lint
         run: npm run lint:check

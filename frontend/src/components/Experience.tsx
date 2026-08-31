@@ -6,7 +6,7 @@ import LogoSknv from "@/images/logo-sknv.png";
 
 /*
   How a logo should sit in its circle. The three files are not the same kind of
-  artwork — Martori is square art that already fills its own frame, RBC and SKNV
+  artwork - Martori is square art that already fills its own frame, RBC and SKNV
   are wide wordmarks (2.7:1 and 3.7:1) trimmed tight to the ink. One uniform
   square inset cannot serve both: it rendered the wordmarks about nine pixels
   tall in the middle of an otherwise empty disc.
@@ -14,10 +14,19 @@ import LogoSknv from "@/images/logo-sknv.png";
 type Fit = "bleed" | "wordmark";
 
 /*
-  blurb is the employer — what the business does, so a reader knows what the
+  blurb is the employer - what the business does, so a reader knows what the
   systems below were for. highlights are mine: what I built and owned there.
-  Two or three per role — four for the current one, which has the most to say —
-  ordered by what a recruiter scans for first.
+  Three to six per role, ordered by what a recruiter scans for first.
+
+  Two rules these bullets are held to, both learned the hard way from reading
+  the page next to the resume:
+
+  1. A number needs its mechanism. "Cut spoilage 50%" reads as a claim; "cut
+     spoilage 50% because loaded trucks stopped idling on a dock in Arizona
+     heat" reads as something that happened. The clause is also just the answer
+     to the first follow-up question in an interview, so it costs nothing.
+  2. The site and the resume describe the same four jobs, and a reader has both.
+     Where they disagreed, this file is the canonical version.
 */
 const items: {
   title: string;
@@ -37,9 +46,10 @@ const items: {
     location: "Oxford, CT",
     blurb: "Precision bearings and engineered components for defense, aerospace, and industrial markets.",
     highlights: [
-      "Modernizing the internal application landscape — replacing aging legacy tooling with current, maintainable web applications, without disrupting the plants that run on them daily.",
+      "Modernizing the internal application landscape - replacing aging legacy tooling with React + TypeScript front ends over Java / Spring Boot and Laravel REST services, without disrupting the plants that run on them daily.",
+      "Introduced version control and automated delivery to a team that had neither: Git branching and review workflows, and GitHub Actions pipelines that run static analysis at PHPStan level 8, the test suite, and the deploy on every push. Manual releases became a repeatable, auditable process.",
       "Building against contract-driven security requirements for defense, aerospace, and government programs: least-privilege access, hardened authentication, and auditability designed in rather than retrofitted.",
-      "Delivering changes under SOX IT general controls at a publicly traded company — documented change management, segregation of duties, and access reviews that stand up to external audit.",
+      "Delivering changes under SOX IT general controls at a publicly traded company - documented change management, segregation of duties, and access reviews that stand up to external audit.",
       "Integrating new applications with IBM Db2 for i as the system of record, so modern interfaces ship without a risky data migration underneath them.",
     ],
     current: true,
@@ -49,12 +59,13 @@ const items: {
     logo: LogoMartori,
     fit: "bleed",
     date: "Mar 2024 - Dec 2024",
-    location: "Pompano Beach, FL · Remote",
-    blurb: "Produce distribution — melon sourcing, inbound receiving, and nationwide fulfillment.",
+    location: "Pompano Beach, FL · Remote · Contract",
+    blurb: "Produce distribution - melon sourcing, inbound receiving, and nationwide fulfillment.",
     highlights: [
-      "Led major PHP and Laravel version upgrades across the production platform, clearing years of deferred maintenance and returning the codebase to a supported, patchable baseline.",
-      "Ran a security hardening pass over the stack — dependency remediation, authentication and session handling, and validation at the request boundary.",
-      "Extended the check-in platform I originally built as the operation's scheduling and arrival workflows outgrew it.",
+      "Brought back to scale the check-in platform I had built here in 2018. Three years in production and the operation had outgrown it; smoothing truck arrivals at peak harvest cut produce spoilage 50%, because loaded melons stopped idling on a dock waiting for a free bay.",
+      "Led the upgrade of the core distribution platform from Laravel 5 to 11 and PHP 7.4 to 8.3, driving the refactor across six major versions with Rector. Response times improved 27% and every high and critical severity advisory cleared.",
+      "Moved queue processing onto Redis with Horizon and handled booking contention with row-level locking, then deployed on Octane + FrankenPHP behind Caddy for persistent-worker performance under concurrent load.",
+      "Ran a security hardening pass over the stack - dependency remediation, authentication and session handling, and validation at the request boundary.",
     ],
     current: false,
   },
@@ -66,9 +77,12 @@ const items: {
     location: "Pompano Beach, FL · Remote",
     blurb: "HIPAA-regulated compounding pharmacy producing customized dermatology and skincare prescriptions.",
     highlights: [
-      "Owned the prescription lifecycle end to end — intake, verification, compounding, fulfillment, and shipment — in a HIPAA-regulated pharmacy where every state transition has to be auditable.",
-      "Rewrote the barcode system that tracks prescriptions through the lab, replacing an error-prone manual process with reliable scanning at every station.",
-      "Built the sales consultant portal and the physician prescribing portal — two audiences with separate access boundaries over the same PHI, feeding one prescription pipeline.",
+      "Owned the prescription lifecycle end to end - intake, verification, compounding, fulfillment, and shipment - in a HIPAA-regulated pharmacy where every state transition has to be auditable.",
+      "Migrated the legacy Phalcon applications to Laravel with React + TypeScript front ends on AWS, holding HIPAA compliance through the cutover and coordinating product, pharmacy, sales, and support through each release.",
+      "Rebuilt encrypted EMR / e-prescription ingestion with schema validation, error queues, and replay handling. A prescription that failed to parse could be corrected and replayed instead of disappearing, which took lost records to zero.",
+      "Corrected total quantity and day-supply calculations across the prescription engine. The old arithmetic ended a course early, so patients hit a refill wall while still in treatment; fixing it raised refills 74%.",
+      'Built a RESTful webhook API for SMS delivery receipts and patient messaging. Paying from the text they already had improved collection 50%, and syncing fulfillment and shipment status on a schedule cut inbound support calls 67% - most of those calls were "where is my order".',
+      "Built the sales consultant portal and the physician prescribing portal - two audiences with separate access boundaries over the same PHI, feeding one prescription pipeline.",
     ],
     current: false,
   },
@@ -78,10 +92,11 @@ const items: {
     fit: "bleed",
     date: "Mar 2018 - Mar 2021",
     location: "Pompano Beach, FL · Remote",
-    blurb: "Produce distribution — melon sourcing, inbound receiving, and nationwide fulfillment.",
+    blurb: "Produce distribution - melon sourcing, inbound receiving, and nationwide fulfillment.",
     highlights: [
-      "Built the driver check-in platform in Laravel — geofenced arrival detection, automated SMS dispatch, and live arrival status for dispatchers coordinating inbound loads. It runs nine distribution centers across all four continental U.S. time zones, so every slot, reminder, and daylight-saving shift resolves in the site's local time rather than the server's.",
-      "Converted RTSP camera feeds to WebRTC so operations could watch the yard live in the browser — no plugin, no client install.",
+      "Led a team of five building the company's internal web applications in PHP / Laravel, and ran weekly design-thinking workshops with executives to decide what got built next.",
+      "Built the driver check-in platform in Laravel - geofenced arrival detection, automated SMS dispatch, and live arrival status for dispatchers coordinating inbound loads. It runs nine distribution centers across all four continental U.S. time zones, so every slot, reminder, and daylight-saving shift resolves in the site's local time rather than the server's.",
+      "Converted RTSP camera feeds to WebRTC so operations could watch the yard live in the browser - no plugin, no client install.",
       "Built a printer management web app that polls device state, toner levels, and error conditions across the fleet, so a jammed or empty printer surfaces on a dashboard instead of at the machine.",
     ],
     current: false,
@@ -114,7 +129,7 @@ function CompanyMark({ logo, fit, current }: { logo: string; fit: Fit; current: 
       ) : (
         /*
           A wide, short mark sits on the circle's widest chord, so it can run far
-          closer to the edge than a square inset allows — 78% of the diameter
+          closer to the edge than a square inset allows - 78% of the diameter
           still clears the curve at this height. max-h is a guard for a future
           near-square wordmark; object-contain letterboxes rather than squashing
           if it ever bites.

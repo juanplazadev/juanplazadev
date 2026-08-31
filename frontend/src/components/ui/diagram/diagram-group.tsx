@@ -7,7 +7,7 @@ type DiagramGroupProps = {
   h: number;
   label: string;
   /** Which top corner the label sits in. Move it when a spine or an edge label
-   *  runs through the default one — they end up on the same baseline and read
+   *  runs through the default one - they end up on the same baseline and read
    *  as a single run of text. */
   labelAnchor?: "start" | "end";
   children?: ReactNode;

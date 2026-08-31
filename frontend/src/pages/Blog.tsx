@@ -5,15 +5,14 @@ import { getPosts } from "@/content/posts";
 export default function Blog() {
   const posts = getPosts();
 
-  useDocumentTitle("Writing — Juan Plaza");
+  useDocumentTitle("Writing - Juan Plaza");
 
   return (
     <section>
       <div className="mb-8">
         <h1 className="font-inter-tight text-foreground mb-2 text-2xl font-bold tracking-tight">Writing</h1>
         <p className="text-muted-foreground text-[15px] text-balance">
-          Notes on the things I build and the ones that break — Laravel, Spring Boot, and the infrastructure underneath
-          them.
+          Notes on the things I build and the ones that break - Laravel, PHP, and the infrastructure underneath them.
         </p>
       </div>
 

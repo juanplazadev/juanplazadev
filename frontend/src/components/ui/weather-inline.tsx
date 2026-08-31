@@ -2,7 +2,7 @@ import { useWeather } from "./use-weather";
 import WeatherIcon from "./weather-icon";
 
 // The tail of the location pill: a separator, the sky, the temperature. It does
-// no fetching of its own — the hook owns that — so the pill stays a pill and the
+// no fetching of its own - the hook owns that - so the pill stays a pill and the
 // request stays testable on its own.
 export default function WeatherInline() {
   const state = useWeather();

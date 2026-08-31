@@ -8,7 +8,7 @@
 /*
   A conic gradient rotated behind a masked 1px ring, so only the border lights
   up while the card's own background stays untouched. @property is what makes
-  the angle animatable — a plain custom property is a string to the interpolator
+  the angle animatable - a plain custom property is a string to the interpolator
   and would jump rather than sweep.
 
   Chosen over the `offset-path: rect()` version of this effect, which has

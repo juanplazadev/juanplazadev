@@ -22,7 +22,7 @@ type DiagramProps = {
 // its own panel rather than pushing the page into a horizontal scroll.
 //
 // <title> and <desc> are wired up through aria-labelledby rather than left to be
-// picked up implicitly — Safari and older screen readers do not reliably read a
+// picked up implicitly - Safari and older screen readers do not reliably read a
 // bare <title> on an SVG, and these diagrams carry information the prose around
 // them does not repeat in full.
 export default function Diagram({

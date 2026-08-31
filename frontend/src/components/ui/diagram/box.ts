@@ -1,5 +1,5 @@
 /*
-  Geometry for the architecture diagrams. Nodes are placed by hand — there are
+  Geometry for the architecture diagrams. Nodes are placed by hand - there are
   three diagrams, and a layout engine general enough to draw all three would be
   more code than the coordinates it replaces.
 

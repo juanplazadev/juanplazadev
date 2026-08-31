@@ -7,8 +7,8 @@ export default function OpenSource() {
   const items = [
     {
       title: "IBM DB2 for i adapter for Phinx",
-      link: "https://github.com/jplaza88/phinx/tree/feature/db2-adapter",
-      source: "github.com/jplaza88/phinx",
+      link: "https://github.com/juanplazadev/phinx/tree/feature/db2-adapter",
+      source: "github.com/juanplazadev/phinx",
       status: "In production testing",
       description:
         "A DB2 for i (AS400/iSeries) migration adapter for cakephp/phinx, connecting through pdo_odbc. Running against a live Db2 workload before I propose it upstream.",
@@ -55,7 +55,7 @@ export default function OpenSource() {
       <div className="mt-4">
         <a
           className="text-primary focus-visible:ring-ring focus-visible:ring-offset-background inline-flex items-center gap-1.5 rounded-sm text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
-          href="https://github.com/jplaza88"
+          href="https://github.com/juanplazadev"
           target="_blank"
           rel="noreferrer"
         >

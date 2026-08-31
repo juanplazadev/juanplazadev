@@ -5,7 +5,6 @@ import RootLayout from "@/layouts/RootLayout";
 import Architecture from "@/pages/Architecture";
 import ArchitectureDetail from "@/pages/ArchitectureDetail";
 import Blog from "@/pages/Blog";
-import BlogPost from "@/pages/BlogPost";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/NotFound";
 import Post from "@/pages/Post";
@@ -16,10 +15,6 @@ export default function App() {
       {/* The hero layout. Only the landing page earns it. */}
       <Route element={<RootLayout />}>
         <Route index element={<Home />} />
-      </Route>
-
-      <Route element={<PageLayout />}>
-        <Route path="create-blog" element={<BlogPost />} />
       </Route>
 
       {/* Everything else: compact header, same shell. */}

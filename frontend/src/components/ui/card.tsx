@@ -4,7 +4,7 @@ import { cn } from "./cn";
 
 type CardProps = {
   children: ReactNode;
-  /** "beam" adds the travelling border light — reserve it for one card. */
+  /** "beam" adds the travelling border light - reserve it for one card. */
   variant?: "default" | "beam";
   /** Lifts on hover. For cards that are themselves a link. */
   interactive?: boolean;

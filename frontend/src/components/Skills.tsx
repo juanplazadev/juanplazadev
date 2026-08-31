@@ -7,10 +7,17 @@ export default function Skills() {
     about. Domain leads because it is the hardest line to fake and the easiest to
     match against a requisition; the stack follows; supporting disciplines after.
 
-    The bar for inclusion is "would I defend this in a deep-dive interview" — so
+    The bar for inclusion is "would I defend this in a deep-dive interview" - so
     no IDEs, no package managers, no HTML/CSS/Bash, and nothing kept only because
     it was once on a resume. Build tooling that follows from a listed choice
     (Vite from React) is left out; the architecture write-ups cover the specifics.
+
+    A corollary the Auth group failed for a while: the bar is not "have I read
+    about it", so a badge with no bullet under Experience and no code in a linked
+    repo has to go. JWT, MFA / TOTP and Passkeys (WebAuthn) came out on those
+    grounds - check-in authenticates with Fortify sessions and authorizes with
+    Spatie Permission, and nothing shipped uses the other three. What replaced
+    them is what the Experience bullets actually describe.
   */
   const groups = [
     {
@@ -32,11 +39,16 @@ export default function Skills() {
     },
     {
       label: "Platform & Delivery",
-      items: ["Docker", "Linux", "AWS", "nginx / Caddy", "GitHub Actions", "Datadog"],
+      items: ["Docker", "Linux", "AWS", "nginx / Caddy", "GitHub Actions", "Sentry", "Datadog"],
     },
     {
       label: "Auth & Security",
-      items: ["JWT", "MFA / TOTP", "Passkeys (WebAuthn)", "Role-based access control"],
+      items: [
+        "Role-based access control",
+        "Per-site authorization scoping",
+        "Least-privilege access design",
+        "Encrypted PHI handling",
+      ],
     },
     {
       label: "Testing & Quality",
