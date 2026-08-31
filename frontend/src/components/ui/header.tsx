@@ -50,12 +50,14 @@ const DownloadIcon = () => (
 // delay.
 const delay = (ms: number) => ({ "--hero-delay": `${ms}ms` }) as CSSProperties;
 
-// The numbers are the same claims the About and Experience sections make, said
-// once at a glance rather than read out of a paragraph.
+// Seniority, scale, stakes — one cell each, and nothing that measures the resume
+// rather than the work. Every figure is a claim the About and Experience sections
+// substantiate below, said once at a glance rather than read out of a paragraph.
+// label is the noun, detail the qualifier, so all three cells share a shape.
 const stats = [
-  { value: "8+", label: "Years building" },
-  { value: "6", label: "Years remote" },
-  { value: "3", label: "Industries" },
+  { value: "8+", label: "Years", detail: "In production" },
+  { value: "27", label: "Divisions", detail: "4 countries" },
+  { value: "100%", label: "Regulated", detail: "HIPAA · SOX · Defense" },
 ];
 
 export default function Header() {
@@ -141,7 +143,7 @@ export default function Header() {
         </div>
 
         <p className="text-muted-foreground hero-in mx-auto mb-7 max-w-md text-[15px] text-balance" style={delay(230)}>
-          Full-stack engineer building production web apps with{" "}
+          Software engineer building production web apps with{" "}
           <span className="text-foreground font-medium">Laravel</span>,{" "}
           <span className="text-foreground font-medium">Spring Boot</span>, and{" "}
           <span className="text-foreground font-medium">React + TypeScript</span>.
@@ -151,7 +153,7 @@ export default function Header() {
           <Button variant="shimmer" href="mailto:admin@juanplaza.dev">
             Get In Touch
           </Button>
-          <Button variant="outline" href="/juan-plaza-resume.pdf" target="_blank" rel="noreferrer">
+          <Button variant="outline" href="#">
             <DownloadIcon />
             Résumé
           </Button>
@@ -171,6 +173,12 @@ export default function Header() {
               <dt className="text-muted-foreground order-2 text-[12px] tracking-wide uppercase">{stat.label}</dt>
               <dd className="font-inter-tight text-foreground order-1 mb-0.5 text-2xl font-bold tabular-nums">
                 {stat.value}
+              </dd>
+              {/* The qualifier carries what will not fit in the label without
+                  turning it into a long uppercase run. Sentence case, so it
+                  reads as a caption rather than a second label. */}
+              <dd className="text-muted-foreground/70 order-3 mt-0.5 text-[11px] leading-tight text-balance">
+                {stat.detail}
               </dd>
             </div>
           ))}
