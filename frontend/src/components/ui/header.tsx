@@ -4,6 +4,7 @@ import UserImg from "@/images/user-image.jpg";
 
 import Badge from "./badge";
 import Button from "./button";
+import GitHubIcon from "./github-icon";
 import PalettePicker from "./palette-picker";
 import StatusDot from "./status-dot";
 import ThemeToggle from "./theme-toggle";
@@ -153,6 +154,10 @@ export default function Header() {
           <Button variant="outline" href="/juan-plaza-resume.pdf" target="_blank" rel="noreferrer">
             <DownloadIcon />
             Résumé
+          </Button>
+          <Button variant="outline" href="https://github.com/jplaza88" target="_blank" rel="noreferrer">
+            <GitHubIcon />
+            GitHub
           </Button>
         </div>
 

@@ -2,107 +2,45 @@ import Badge from "@/components/ui/badge";
 import Section from "@/components/ui/section";
 
 export default function Skills() {
+  /*
+    Ordered by what a recruiter is scanning for, not by what is most fun to talk
+    about. Domain leads because it is the hardest line to fake and the easiest to
+    match against a requisition; the stack follows; supporting disciplines after.
+
+    The bar for inclusion is "would I defend this in a deep-dive interview" — so
+    no IDEs, no package managers, no HTML/CSS/Bash, and nothing kept only because
+    it was once on a resume. Build tooling that follows from a listed choice
+    (Vite from React) is left out; the architecture write-ups cover the specifics.
+  */
   const groups = [
     {
-      label: "Languages",
-      items: ["Java", "PHP 7.x / 8.x", "JavaScript (ES6+)", "TypeScript", "SQL", "HTML5", "CSS", "Bash"],
+      label: "Domain Expertise",
+      items: ["HIPAA compliance", "EMR / e-prescription integration", "PCI-aware payment flows", "IBM Db2 for i"],
     },
     {
-      label: "Frameworks & Front End",
+      label: "Stack",
       items: [
-        "Laravel",
-        "Spring Boot",
-        "Symfony",
-        "Phalcon",
-        "React",
+        "PHP / Laravel",
+        "Java / Spring Boot",
+        "TypeScript / React",
         "Inertia",
         "TailwindCSS",
-        "Vite",
-        "jQuery",
-        "Bootstrap",
-        "REST API design",
+        "PostgreSQL",
+        "MySQL",
+        "Redis",
       ],
     },
     {
-      label: "Data",
-      items: [
-        "MySQL",
-        "PostgreSQL",
-        "IBM Db2",
-        "SQLite",
-        "Redis",
-        "Schema design",
-        "Query optimization",
-        "Indexing",
-        "Migrations",
-        "Job queues",
-      ],
+      label: "Platform & Delivery",
+      items: ["Docker", "Linux", "AWS", "nginx / Caddy", "GitHub Actions", "Datadog"],
     },
     {
       label: "Auth & Security",
-      items: [
-        "JWT",
-        "MFA",
-        "OTP / TOTP",
-        "Passkeys (WebAuthn)",
-        "Laravel Fortify",
-        "Session & token auth",
-        "Role-based access control",
-      ],
+      items: ["JWT", "MFA / TOTP", "Passkeys (WebAuthn)", "Role-based access control"],
     },
     {
-      label: "Cloud & DevOps",
-      items: [
-        "AWS",
-        "Cloudflare",
-        "Docker",
-        "Laravel Sail",
-        "Linux",
-        "nginx",
-        "Apache",
-        "Caddy",
-        "Let's Encrypt / ACME",
-        "Automated TLS renewal",
-        "GitHub Actions",
-        "CI/CD",
-        "Git",
-        "Bitbucket",
-        "Datadog",
-        "LogDNA",
-      ],
-    },
-    {
-      label: "Testing & Code Quality",
-      items: [
-        "Pest",
-        "PHPUnit",
-        "JUnit",
-        "Playwright",
-        "Cypress",
-        "Selenium",
-        "Laravel Pint / PHP-CS-Fixer",
-        "Larastan / PHPStan",
-        "Rector",
-      ],
-    },
-    {
-      label: "Tools",
-      items: [
-        "PHPStorm",
-        "IntelliJ IDEA",
-        "DataGrip",
-        "Sublime Text",
-        "Ghostty",
-        "Claude Code",
-        "Composer",
-        "npm",
-        "Maven",
-        "Jira",
-      ],
-    },
-    {
-      label: "Domain & Practice",
-      items: ["HIPAA compliance", "EMR / e-prescription integration", "PCI-aware payment flows", "Agile / Scrum"],
+      label: "Testing & Quality",
+      items: ["Pest / PHPUnit", "JUnit", "Playwright", "Larastan / PHPStan", "Rector"],
     },
   ];
 
