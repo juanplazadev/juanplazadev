@@ -49,6 +49,20 @@ export default function OpenSource() {
           </Card>
         ))}
       </div>
+
+      {/* An exit to the rest of the public work, the same way Currently Building
+          links out to the architecture write-ups. */}
+      <div className="mt-4">
+        <a
+          className="text-primary focus-visible:ring-ring focus-visible:ring-offset-background inline-flex items-center gap-1.5 rounded-sm text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
+          href="https://github.com/jplaza88"
+          target="_blank"
+          rel="noreferrer"
+        >
+          All repositories on GitHub
+          <span aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
     </Section>
   );
 }

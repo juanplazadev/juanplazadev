@@ -13,6 +13,12 @@ import LogoSknv from "@/images/logo-sknv.png";
 */
 type Fit = "bleed" | "wordmark";
 
+/*
+  blurb is the employer — what the business does, so a reader knows what the
+  systems below were for. highlights are mine: what I built and owned there.
+  Two or three per role — four for the current one, which has the most to say —
+  ordered by what a recruiter scans for first.
+*/
 const items: {
   title: string;
   logo: string;
@@ -20,6 +26,7 @@ const items: {
   date: string;
   location: string;
   blurb: string;
+  highlights: string[];
   current: boolean;
 }[] = [
   {
@@ -29,6 +36,12 @@ const items: {
     date: "Mar 2025 - Present",
     location: "Oxford, CT",
     blurb: "Precision bearings and engineered components for defense, aerospace, and industrial markets.",
+    highlights: [
+      "Modernizing the internal application landscape — replacing aging legacy tooling with current, maintainable web applications, without disrupting the plants that run on them daily.",
+      "Building against contract-driven security requirements for defense, aerospace, and government programs: least-privilege access, hardened authentication, and auditability designed in rather than retrofitted.",
+      "Delivering changes under SOX IT general controls at a publicly traded company — documented change management, segregation of duties, and access reviews that stand up to external audit.",
+      "Integrating new applications with IBM Db2 for i as the system of record, so modern interfaces ship without a risky data migration underneath them.",
+    ],
     current: true,
   },
   {
@@ -38,6 +51,11 @@ const items: {
     date: "Mar 2024 - Dec 2024",
     location: "Pompano Beach, FL · Remote",
     blurb: "Produce distribution — melon sourcing, inbound receiving, and nationwide fulfillment.",
+    highlights: [
+      "Led major PHP and Laravel version upgrades across the production platform, clearing years of deferred maintenance and returning the codebase to a supported, patchable baseline.",
+      "Ran a security hardening pass over the stack — dependency remediation, authentication and session handling, and validation at the request boundary.",
+      "Extended the check-in platform I originally built as the operation's scheduling and arrival workflows outgrew it.",
+    ],
     current: false,
   },
   {
@@ -47,6 +65,11 @@ const items: {
     date: "Mar 2021 - Mar 2024",
     location: "Pompano Beach, FL · Remote",
     blurb: "HIPAA-regulated compounding pharmacy producing customized dermatology and skincare prescriptions.",
+    highlights: [
+      "Owned the prescription lifecycle end to end — intake, verification, compounding, fulfillment, and shipment — in a HIPAA-regulated pharmacy where every state transition has to be auditable.",
+      "Rewrote the barcode system that tracks prescriptions through the lab, replacing an error-prone manual process with reliable scanning at every station.",
+      "Built the sales consultant portal and the physician prescribing portal — two audiences with separate access boundaries over the same PHI, feeding one prescription pipeline.",
+    ],
     current: false,
   },
   {
@@ -55,7 +78,12 @@ const items: {
     fit: "bleed",
     date: "Mar 2018 - Mar 2021",
     location: "Pompano Beach, FL · Remote",
-    blurb: "Produce distribution and nationwide fulfillment.",
+    blurb: "Produce distribution — melon sourcing, inbound receiving, and nationwide fulfillment.",
+    highlights: [
+      "Built the driver check-in platform in Laravel — geofenced arrival detection, automated SMS dispatch, and live arrival status for dispatchers coordinating inbound loads. It runs nine distribution centers across all four continental U.S. time zones, so every slot, reminder, and daylight-saving shift resolves in the site's local time rather than the server's.",
+      "Converted RTSP camera feeds to WebRTC so operations could watch the yard live in the browser — no plugin, no client install.",
+      "Built a printer management web app that polls device state, toner levels, and error conditions across the fleet, so a jammed or empty printer surfaces on a dashboard instead of at the machine.",
+    ],
     current: false,
   },
 ];
@@ -104,7 +132,7 @@ export default function Experience() {
           separate cards read as one chronology. The rail fades out at the bottom
           rather than stopping dead under the last entry. Its offset is half the
           mark's width, so it runs through the centre of every circle. */}
-      <ol className="before:from-border before:via-border relative space-y-8 before:absolute before:top-2 before:bottom-2 before:left-[27.5px] before:w-px before:bg-linear-to-b before:to-transparent">
+      <ol className="before:from-border before:via-border relative space-y-10 before:absolute before:top-2 before:bottom-2 before:left-[27.5px] before:w-px before:bg-linear-to-b before:to-transparent">
         {items.map((item, index) => (
           <li key={index} className="group relative flex gap-5">
             <CompanyMark logo={item.logo} fit={item.fit} current={item.current} />
@@ -119,7 +147,16 @@ export default function Experience() {
               </div>
               <h3 className="text-foreground font-semibold">{item.title}</h3>
               <div className="text-muted-foreground text-[13px]">{item.location}</div>
-              <p className="text-muted-foreground text-sm">{item.blurb}</p>
+              {/* The employer, held back a step so it reads as context for the
+                  highlights rather than competing with them. */}
+              <p className="text-muted-foreground/80 text-[13px]">{item.blurb}</p>
+              {/* list-outside so a wrapped second line stays indented past its
+                  marker instead of sliding back under the disc. */}
+              <ul className="text-muted-foreground marker:text-primary/40 list-outside list-disc space-y-1.5 ps-4 pt-1 text-sm leading-relaxed">
+                {item.highlights.map((highlight) => (
+                  <li key={highlight}>{highlight}</li>
+                ))}
+              </ul>
             </div>
           </li>
         ))}
