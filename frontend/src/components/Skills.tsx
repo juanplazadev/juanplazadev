@@ -39,7 +39,7 @@ export default function Skills() {
     },
     {
       label: "Platform & Delivery",
-      items: ["Docker", "Linux", "AWS", "nginx / Caddy", "GitHub Actions", "Sentry", "Datadog"],
+      items: ["Docker", "Linux", "AWS", "nginx / Caddy", "GitHub Actions", "Sentry"],
     },
     {
       label: "Auth & Security",
