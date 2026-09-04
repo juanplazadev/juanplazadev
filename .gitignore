@@ -1,35 +1,38 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-node_modules/
-.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# build output (unanchored so they match under frontend/ and backend/)
-dist/
-.vite/
-build/
-.gradle/
-
-# misc
+/.phpunit.cache
+/bootstrap/ssr
+/config/composer/
+/config/psysh/*
+/data
+/node_modules
+/public/build
+/public/fonts-manifest.dev.json
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/resources/js/actions
+/resources/js/routes
+/resources/js/wayfinder
+/vendor
 .DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# local env - .env.example is committed, .env is not
 .env
-.env*.local
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/auth.json
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+/.ai
+/.claude
 
-# typescript
-*.tsbuildinfo
-
-# resume PDF (not committed)
-juan-plaza-resume.pdf
+**/caddy
+frankenphp
+frankenphp-worker.php

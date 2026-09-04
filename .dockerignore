@@ -1,0 +1,29 @@
+/vendor
+/node_modules
+
+# Generated inside the image by the frontend stage; host copies must not win.
+/public/build
+/bootstrap/ssr
+
+# Generated on the host with dev dependencies present, so baking it in makes
+# the image boot providers that `composer --no-dev` never installed
+# (laravel/boost, pail, pao). The vendor stage recreates it.
+/bootstrap/cache
+
+# 166MB dev binary; the base image ships its own FrankenPHP.
+/frankenphp
+/frankenphp-worker.php
+
+# Dev-only XDG_CONFIG_HOME / XDG_DATA_HOME scratch, see compose.yaml.
+/data
+
+.git
+/tests
+.env*
+/storage/*.key
+/storage/logs
+/storage/pail
+/.idea
+/.ai
+/.claude
+/.github

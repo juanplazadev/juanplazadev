@@ -1,0 +1,263 @@
+{
+    "stack": {
+        "type": "specs",
+        "items": [
+            {
+                "label": "Backend",
+                "value": "Laravel 13 · PHP 8.5",
+                "icon": "laravel"
+            },
+            {
+                "label": "App server",
+                "value": "Octane on FrankenPHP",
+                "icon": "php"
+            },
+            {
+                "label": "Frontend",
+                "value": "Inertia · React 19 · TypeScript",
+                "icon": "inertia"
+            },
+            {
+                "label": "Build",
+                "value": "Vite 8 · Tailwind v4",
+                "icon": "vite"
+            },
+            {
+                "label": "Database",
+                "value": "PostgreSQL 18",
+                "icon": "postgresql"
+            },
+            {
+                "label": "Edge",
+                "value": "Caddy, automatic TLS",
+                "icon": "caddy"
+            },
+            {
+                "label": "Registry",
+                "value": "GHCR, tagged by commit",
+                "icon": "github"
+            },
+            {
+                "label": "CI/CD",
+                "value": "GitHub Actions, self-hosted runner",
+                "icon": "githubActions"
+            }
+        ]
+    },
+    "request-path": {
+        "type": "diagram",
+        "title": "Request path for juanplaza.dev",
+        "description": "A browser requests the site over HTTPS. Caddy terminates TLS and reverse-proxies to the juanplaza container on port 8080 over a shared Docker network. That container runs Laravel on Octane and FrankenPHP, with the Inertia SSR process alongside it on loopback port 13714. Postgres sits on a second Docker network that Caddy has no route to. Separately, the browser calls the Open-Meteo forecast API directly, without passing through the server.",
+        "width": 560,
+        "height": 400,
+        "caption": "One container, reached by name, with the database on a network the proxy cannot see. The only other network call leaves the browser and never touches the box.",
+        "groups": [
+            {
+                "x": 14,
+                "y": 96,
+                "w": 532,
+                "h": 298,
+                "label": "VPS · docker",
+                "labelAnchor": "end"
+            },
+            {
+                "x": 20,
+                "y": 204,
+                "w": 382,
+                "h": 90,
+                "label": "app container",
+                "labelAnchor": "end"
+            }
+        ],
+        "nodes": [
+            {
+                "key": "browser",
+                "x": 30,
+                "y": 8,
+                "w": 180,
+                "h": 50,
+                "icon": "browser",
+                "label": "Browser",
+                "sublabel": "juanplaza.dev"
+            },
+            {
+                "key": "meteo",
+                "x": 350,
+                "y": 8,
+                "w": 180,
+                "h": 50,
+                "icon": "weather",
+                "label": "Open-Meteo",
+                "sublabel": "forecast API"
+            },
+            {
+                "key": "caddy",
+                "x": 30,
+                "y": 110,
+                "w": 180,
+                "h": 54,
+                "icon": "caddy",
+                "label": "Caddy",
+                "sublabel": "TLS · reverse proxy"
+            },
+            {
+                "key": "octane",
+                "x": 32,
+                "y": 220,
+                "w": 176,
+                "h": 60,
+                "icon": "laravel",
+                "variant": "accent",
+                "label": "juanplaza",
+                "sublabel": "Octane · FrankenPHP"
+            },
+            {
+                "key": "ssr",
+                "x": 240,
+                "y": 220,
+                "w": 150,
+                "h": 60,
+                "icon": "react",
+                "label": "Inertia SSR",
+                "sublabel": "127.0.0.1:13714"
+            },
+            {
+                "key": "pgsql",
+                "x": 30,
+                "y": 330,
+                "w": 180,
+                "h": 50,
+                "icon": "postgresql",
+                "label": "pgsql",
+                "sublabel": "PostgreSQL 18"
+            }
+        ],
+        "edges": [
+            {
+                "from": "browser.right",
+                "to": "meteo.left",
+                "variant": "dashed",
+                "label": "keyless · CORS-open"
+            },
+            {
+                "from": "browser.bottom",
+                "to": "caddy.top",
+                "label": "HTTPS"
+            },
+            {
+                "from": "caddy.bottom",
+                "to": "octane.top",
+                "label": "proxy network · :8080"
+            },
+            {
+                "from": "octane.right",
+                "to": "ssr.left"
+            },
+            {
+                "from": "octane.bottom",
+                "to": "pgsql.top",
+                "label": "backend network"
+            }
+        ]
+    },
+    "deploy-pipeline": {
+        "type": "diagram",
+        "title": "Deploy pipeline",
+        "description": "A push to the production branch runs the ci workflow on GitHub's runners. Only a green run triggers the deploy, which executes on a self-hosted runner on the VPS itself. That runner builds the image, pushes it to GHCR tagged with both the commit SHA and latest, brings the stack up, runs migrations, then caches the framework config and reloads Octane so the workers pick it up.",
+        "width": 560,
+        "height": 250,
+        "minWidth": 520,
+        "caption": "The runner is the box it deploys to, so nothing crosses the network at deploy time. GHCR is for history and rollback, not for the deploy path.",
+        "nodes": [
+            {
+                "key": "push",
+                "x": 22,
+                "y": 20,
+                "w": 148,
+                "h": 78,
+                "icon": "git",
+                "iconPlacement": "top",
+                "label": "push",
+                "sublabel": "→ production"
+            },
+            {
+                "key": "ci",
+                "x": 206,
+                "y": 20,
+                "w": 148,
+                "h": 78,
+                "icon": "githubActions",
+                "iconPlacement": "top",
+                "label": "ci",
+                "sublabel": "must be green"
+            },
+            {
+                "key": "build",
+                "x": 390,
+                "y": 20,
+                "w": 148,
+                "h": 78,
+                "icon": "github",
+                "iconPlacement": "top",
+                "label": "build + push",
+                "sublabel": "GHCR · sha + latest"
+            },
+            {
+                "key": "up",
+                "x": 390,
+                "y": 150,
+                "w": 148,
+                "h": 78,
+                "icon": "docker",
+                "iconPlacement": "top",
+                "label": "up -d",
+                "sublabel": "no pull, same box"
+            },
+            {
+                "key": "migrate",
+                "x": 206,
+                "y": 150,
+                "w": 148,
+                "h": 78,
+                "icon": "postgresql",
+                "iconPlacement": "top",
+                "label": "migrate",
+                "sublabel": "--force, never seed"
+            },
+            {
+                "key": "reload",
+                "x": 22,
+                "y": 150,
+                "w": 148,
+                "h": 78,
+                "icon": "deploy",
+                "iconPlacement": "top",
+                "variant": "accent",
+                "label": "optimize + reload",
+                "sublabel": "then wait for healthy"
+            }
+        ],
+        "edges": [
+            {
+                "from": "push.right",
+                "to": "ci.left"
+            },
+            {
+                "from": "ci.right",
+                "to": "build.left"
+            },
+            {
+                "from": "build.bottom",
+                "to": "up.top"
+            },
+            {
+                "from": "up.left",
+                "to": "migrate.right"
+            },
+            {
+                "from": "migrate.left",
+                "to": "reload.right"
+            }
+        ]
+    }
+}

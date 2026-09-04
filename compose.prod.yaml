@@ -1,11 +1,12 @@
 name: juanplaza
 
-# Production. ONE service: the frontend is not a separate container here.
-# Today that service is nginx serving frontend/dist; once backend/ exists,
-# Gradle bakes the same dist/ into the JAR's src/main/resources/static and this
-# service's build context simply repoints to ./backend. Service name, container
-# name, port, network and healthcheck path all stay put, so the Caddyfile entry
-# in the separate ../caddy project never changes:
+# Production. Laravel 13 on Octane/FrankenPHP, with the Inertia SSR process
+# running inside the same container (config/inertia.php points SSR at
+# 127.0.0.1:13714 - see docker-entrypoint.sh).
+#
+# Service name, container name, port and network are all load-bearing: the
+# Caddyfile in the separate ../caddy project reverse-proxies to this container
+# by name, and nothing here should change without changing that too:
 #
 #   juanplaza.dev {
 #       reverse_proxy juanplaza:8080
@@ -13,51 +14,86 @@ name: juanplaza
 #
 # Usage: docker compose -f compose.prod.yaml up --build -d
 #
-# In CI this is driven by .github/workflows/deploy.yml on every push to prod.
-# To roll back by hand, re-point at an older image instead of rebuilding:
+# In CI this is driven by .github/workflows/deploy.yml on every green build of
+# the production branch. To roll back by hand, re-point at an older image
+# instead of rebuilding:
 #
 #   IMAGE_TAG=<commit sha> docker compose -f compose.prod.yaml up -d
 
 services:
-  app:
-    # `image:` and `build:` together, on purpose. `docker compose build` tags
-    # what it builds as this name, so the deploy workflow gets a SHA-tagged
-    # image to push to GHCR without repeating the build args below as
-    # --build-arg flags - the root .env stays the one place they are written.
-    # The default keeps a bare `up --build -d` working exactly as before.
-    image: ghcr.io/juanplazadev/juanplazadev:${IMAGE_TAG:-latest}
-    container_name: juanplaza
-    build:
-      context: ./frontend
-      target: prod
-      # Vite inlines VITE_* into the bundle at build time, and the build runs
-      # inside the image - where the root .env is not, being outside ./frontend.
-      # So these cross as build args. A changed value is a changed bundle, which
-      # is why they are args and not runtime environment.
-      args:
-        VITE_WEATHER_LATITUDE: "${VITE_WEATHER_LATITUDE:-}"
-        VITE_WEATHER_LONGITUDE: "${VITE_WEATHER_LONGITUDE:-}"
-        VITE_WEATHER_TIMEZONE: "${VITE_WEATHER_TIMEZONE:-}"
-        VITE_WEATHER_API_URL: "${VITE_WEATHER_API_URL:-}"
-    # No `ports:` on purpose - Caddy reaches this over the shared proxy network
-    # by container name, so 8080 is never bound on the host and cannot collide.
-    expose:
-      - "8080"
-    networks:
-      - proxy
-    restart: unless-stopped
-    healthcheck:
-      # 127.0.0.1, not localhost: localhost resolves to ::1 first and nginx
-      # binds IPv4-only, so the check would hit a closed IPv6 socket and the
-      # container would sit permanently unhealthy.
-      # nginx:alpine ships wget, not curl. Becomes /actuator/health once Spring
-      # Boot owns this container.
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+    app:
+        # `image:` and `build:` together, on purpose. `docker compose build` tags
+        # what it builds as this name, so the deploy workflow gets a SHA-tagged
+        # image to push to GHCR without repeating the build args below as
+        # --build-arg flags - the root .env stays the one place they are written.
+        # This string must equal ghcr.io/${{ github.repository }}.
+        image: ghcr.io/juanplazadev/juanplazadev:${IMAGE_TAG:-latest}
+        container_name: juanplaza
+        build:
+            context: .
+            target: prod
+            # Vite inlines VITE_* into the bundle at build time, inside the
+            # image, where the runtime .env is not. So these cross as build
+            # args: a changed value is a changed bundle, which is why they are
+            # args and not runtime environment.
+            args:
+                VITE_APP_NAME: '${APP_NAME:-Juan Plaza}'
+                VITE_WEATHER_LATITUDE: '${VITE_WEATHER_LATITUDE:-}'
+                VITE_WEATHER_LONGITUDE: '${VITE_WEATHER_LONGITUDE:-}'
+                VITE_WEATHER_TIMEZONE: '${VITE_WEATHER_TIMEZONE:-}'
+                VITE_WEATHER_API_URL: '${VITE_WEATHER_API_URL:-}'
+                GIT_COMMIT: '${IMAGE_TAG:-unknown}'
+        env_file: [.env]
+        # No `ports:` on purpose - Caddy reaches this over the shared proxy
+        # network by container name, so 8080 is never bound on the host and
+        # cannot collide with check-in's stack on the same box.
+        expose:
+            - '8080'
+        networks:
+            - proxy
+            - backend
+        restart: unless-stopped
+        depends_on:
+            pgsql:
+                condition: service_healthy
+        # Healthcheck lives in the Dockerfile: it covers Octane on 8080 and the
+        # SSR process on 13714 together.
+
+    pgsql:
+        image: postgres:18-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_DATABASE}
+            POSTGRES_USER: ${DB_USERNAME}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            TZ: ${APP_TIMEZONE:-UTC}
+            PGTZ: ${APP_TIMEZONE:-UTC}
+        volumes:
+            - pgdata:/var/lib/postgresql
+        # backend only, never proxy: nothing outside this stack should be able
+        # to reach the database.
+        networks:
+            - backend
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'pg_isready',
+                    '-q',
+                    '-d',
+                    '${DB_DATABASE}',
+                    '-U',
+                    '${DB_USERNAME}',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
 networks:
-  proxy:
-    external: true
+    proxy:
+        external: true
+    backend:
+        driver: bridge
+
+volumes:
+    pgdata:

@@ -1,58 +1,71 @@
-name: juanplaza
-
-# Development. Two services once the backend exists, because HMR needs a live
-# Vite dev server that cannot be the same process as the API - which is the
-# whole reason /api is proxied. Production collapses to one container; see
-# compose.prod.yaml.
-#
-# Ports come from .env (cp .env.example .env) so this file and
-# frontend/vite.config.ts never disagree about them.
-
 services:
-  web:
-    container_name: juanplaza
-    build:
-      context: ./frontend
-      target: dev
-    # 1:1 mapping so Vite's HMR websocket needs no hmr.clientPort override.
-    ports:
-      - "${VITE_PORT:-5180}:${VITE_PORT:-5180}"
-    environment:
-      VITE_PORT: "${VITE_PORT:-5180}"
-      APP_PORT: "${APP_PORT:-8080}"
-      # Overrides the .env value: from inside the container, the backend on the
-      # host is host.docker.internal, not localhost. Switch to http://api:8080
-      # when the api service below is uncommented.
-      VITE_API_PROXY_TARGET: "http://host.docker.internal:${APP_PORT:-8080}"
-      # The bind mount is ./frontend:/app, so vite.config.ts's envDir ("..")
-      # lands on / inside the container, where there is no .env. Anything the
-      # client code reads through import.meta.env has to be handed over as a
-      # real environment variable instead - Vite picks up VITE_-prefixed ones
-      # from process.env the same way it picks them up from a file.
-      VITE_WEATHER_LATITUDE: "${VITE_WEATHER_LATITUDE:-}"
-      VITE_WEATHER_LONGITUDE: "${VITE_WEATHER_LONGITUDE:-}"
-      VITE_WEATHER_TIMEZONE: "${VITE_WEATHER_TIMEZONE:-}"
-      VITE_WEATHER_API_URL: "${VITE_WEATHER_API_URL:-}"
-    volumes:
-      # Bind-mount the source for hot reload, but shadow node_modules with an
-      # anonymous volume so the image's linux binaries (esbuild, rollup) are not
-      # masked by the host's darwin-arm64 ones.
-      - ./frontend:/app
-      - /app/node_modules
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    restart: unless-stopped
-
-  # Spring Boot, not yet created. Uncommenting this means also setting
-  # VITE_API_PROXY_TARGET above to http://api:8080 so the proxy resolves the
-  # service by name rather than reaching back out to the host.
-  #
-  # api:
-  #   container_name: juanplaza-api
-  #   build:
-  #     context: ./backend
-  #   ports:
-  #     - "${APP_PORT:-8080}:8080"
-  #   environment:
-  #     SPRING_PROFILES_ACTIVE: dev
-  #   restart: unless-stopped
+    juanplazadev:
+        build:
+            context: './vendor/laravel/sail/runtimes/8.5'
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: 'sail-8.5/app'
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        ports:
+            - '${APP_PORT:-8080}:${APP_PORT:-8080}'
+            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
+            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
+            IGNITION_LOCAL_SITES_PATH: '${PWD}'
+            SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=frankenphp --watch --host=0.0.0.0 --admin-port=2019 --port='${APP_PORT:-8080}'"
+            # In development the @inertiajs/vite plugin serves SSR from the Vite
+            # dev server, so no separate process is needed here. Production runs
+            # `php artisan inertia:start-ssr` alongside Octane - see
+            # compose.prod.yaml.
+            XDG_CONFIG_HOME: /var/www/html/config
+            XDG_DATA_HOME: /var/www/html/data
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            - pgsql
+            - mailpit
+    pgsql:
+        image: 'postgres:18-alpine'
+        ports:
+            - '${FORWARD_DB_PORT:-5432}:5432'
+        environment:
+            PGPASSWORD: '${DB_PASSWORD:-secret}'
+            POSTGRES_DB: '${DB_DATABASE}'
+            POSTGRES_USER: '${DB_USERNAME}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+        volumes:
+            - 'sail-pgsql:/var/lib/postgresql'
+            - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
+        networks:
+            - sail
+        healthcheck:
+            test:
+                - CMD
+                - pg_isready
+                - '-q'
+                - '-d'
+                - '${DB_DATABASE}'
+                - '-U'
+                - '${DB_USERNAME}'
+            retries: 3
+            timeout: 5s
+    mailpit:
+        image: 'axllent/mailpit:latest'
+        ports:
+            - '${FORWARD_MAILPIT_PORT:-1025}:1025'
+            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
+        networks:
+            - sail
+networks:
+    sail:
+        driver: bridge
+volumes:
+    sail-pgsql:
+        driver: local

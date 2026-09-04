@@ -1,0 +1,145 @@
+{
+    "stack": {
+        "type": "specs",
+        "items": [
+            {
+                "label": "Backend",
+                "value": "Laravel 13 · PHP 8.5",
+                "icon": "laravel"
+            },
+            {
+                "label": "App server",
+                "value": "Octane on FrankenPHP",
+                "icon": "php"
+            },
+            {
+                "label": "Frontend",
+                "value": "Inertia · React 19 · TypeScript",
+                "icon": "inertia"
+            },
+            {
+                "label": "Build",
+                "value": "Vite 8 · Tailwind v4",
+                "icon": "vite"
+            },
+            {
+                "label": "Database",
+                "value": "PostgreSQL 18",
+                "icon": "postgresql"
+            },
+            {
+                "label": "Cache / queue",
+                "value": "Redis, workers via Horizon",
+                "icon": "redis"
+            },
+            { "label": "Monitoring", "value": "Sentry", "icon": "sentry" },
+            {
+                "label": "Auth",
+                "value": "Fortify, headless · Spatie Permission",
+                "icon": "auth"
+            },
+            {
+                "label": "CI/CD",
+                "value": "GitHub Actions, self-hosted runner",
+                "icon": "githubActions"
+            }
+        ]
+    },
+    "staging-stack": {
+        "type": "diagram",
+        "title": "Check-in staging stack",
+        "description": "A browser reaches Caddy over HTTPS. Caddy proxies only to the checkin container, which runs Laravel on Octane and FrankenPHP. Two sibling containers built from the same image run alongside it: Horizon, which works the queue, and a scheduler running schedule:work. PostgreSQL and Redis sit on a second Docker network alongside them. The checkin container talks to both; Horizon and the scheduler talk to Redis. Only the checkin container joins the network Caddy is on.",
+        "width": 560,
+        "height": 400,
+        "caption": "Only the checkin container joins the proxy network. Everything else sits on the backend network, where Caddy has no route to it.",
+        "groups": [
+            { "x": 10, "y": 94, "w": 540, "h": 298, "label": "VPS · docker" },
+            { "x": 24, "y": 300, "w": 512, "h": 84, "label": "backend network" }
+        ],
+        "nodes": [
+            {
+                "key": "browser",
+                "x": 190,
+                "y": 10,
+                "w": 180,
+                "h": 50,
+                "icon": "browser",
+                "label": "Browser",
+                "sublabel": "drivers and staff"
+            },
+            {
+                "key": "caddy",
+                "x": 190,
+                "y": 128,
+                "w": 180,
+                "h": 54,
+                "icon": "caddy",
+                "label": "Caddy",
+                "sublabel": "TLS · ACME over DNS"
+            },
+            {
+                "key": "checkin",
+                "x": 20,
+                "y": 212,
+                "w": 176,
+                "h": 62,
+                "icon": "laravel",
+                "variant": "accent",
+                "label": "checkin",
+                "sublabel": "Octane · FrankenPHP"
+            },
+            {
+                "key": "horizon",
+                "x": 202,
+                "y": 212,
+                "w": 152,
+                "h": 62,
+                "icon": "laravelHorizon",
+                "label": "horizon",
+                "sublabel": "queue workers"
+            },
+            {
+                "key": "scheduler",
+                "x": 364,
+                "y": 212,
+                "w": 176,
+                "h": 62,
+                "icon": "clock",
+                "label": "scheduler",
+                "sublabel": "schedule:work"
+            },
+            {
+                "key": "pgsql",
+                "x": 40,
+                "y": 316,
+                "w": 190,
+                "h": 52,
+                "icon": "postgresql",
+                "label": "pgsql",
+                "sublabel": "PostgreSQL 18"
+            },
+            {
+                "key": "redis",
+                "x": 310,
+                "y": 316,
+                "w": 190,
+                "h": 52,
+                "icon": "redis",
+                "label": "redis",
+                "sublabel": "cache · queue · sessions"
+            }
+        ],
+        "edges": [
+            { "from": "browser.bottom", "to": "caddy.top", "label": "HTTPS" },
+            {
+                "from": "caddy.bottom",
+                "to": "checkin.top",
+                "label": "proxy network"
+            },
+            { "from": "checkin.bottom", "to": "pgsql.top" },
+            { "from": "checkin.bottom", "to": [360, 316] },
+            { "from": "horizon.bottom", "to": [405, 316] },
+            { "from": "scheduler.bottom", "to": [450, 316] }
+        ]
+    }
+}

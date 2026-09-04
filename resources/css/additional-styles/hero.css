@@ -1,0 +1,100 @@
+/*
+  Hero layer. The ambient backdrop and the entrance stagger, kept out of the
+  component so the markup stays readable and the reduced-motion block in
+  motion.css can collapse the animation the same way it collapses the rest.
+*/
+
+/* Ambient backdrop ------------------------------------------------------- */
+
+/*
+  A ruled grid faded out with a mask instead of an opacity ramp, so the lines
+  disappear into the page background rather than sitting on a visible panel.
+  --border already flips under .dark, so one rule covers both themes.
+*/
+.hero-grid {
+    background-image:
+        linear-gradient(to right, var(--border) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 42px 42px;
+    -webkit-mask-image: radial-gradient(
+        ellipse 62% 58% at 50% 0%,
+        #000 15%,
+        transparent 72%
+    );
+    mask-image: radial-gradient(
+        ellipse 62% 58% at 50% 0%,
+        #000 15%,
+        transparent 72%
+    );
+}
+
+/* The warm bloom behind the avatar, tinted from the same --primary as the
+   buttons so the accent reads as one colour across the page. */
+.hero-glow {
+    background: radial-gradient(
+        ellipse 55% 45% at 50% 0%,
+        color-mix(in oklch, var(--primary) 16%, transparent),
+        transparent 70%
+    );
+}
+
+/* Entrance --------------------------------------------------------------- */
+
+/*
+  Runs once on load. `both` holds the from-state during the delay, which is what
+  makes the stagger a stagger instead of everything flashing in at 0ms and then
+  animating. Elements set their own --hero-delay.
+*/
+@keyframes hero-in {
+    from {
+        opacity: 0;
+        translate: 0 10px;
+        scale: 0.98;
+    }
+    to {
+        opacity: 1;
+        translate: 0 0;
+        scale: 1;
+    }
+}
+
+.hero-in {
+    animation: hero-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--hero-delay, 0ms);
+}
+
+/* Name treatment --------------------------------------------------------- */
+
+/*
+  These two live here rather than in app.css, which is the token file. The
+  sweep was called `shimmer`, which is also the name motion.css gives the
+  button's hover sweep - same-named @keyframes do not coexist, the later one
+  simply wins, so one of the two effects was always running the other's frames.
+  Renaming it settles that; the button keeps `shimmer`.
+*/
+@keyframes name-shimmer {
+    0% {
+        background-position: 200% center;
+    }
+
+    50% {
+        background-position: -100% center;
+    }
+
+    100% {
+        background-position: 200% center;
+    }
+}
+
+@keyframes nameGlow {
+    0%,
+    100% {
+        opacity: 0.15;
+        transform: scale(0.98);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.04);
+    }
+}

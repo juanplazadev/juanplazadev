@@ -1,210 +1,188 @@
 # juanplaza.dev
 
-Personal portfolio. React + TypeScript + Tailwind, built with Vite, with a Laravel backend to come.
+Personal site and portfolio: writing, architecture write-ups, and a résumé,
+with a first-party content editor behind it.
 
-## Layout
+> ⚠️ **The production path is currently broken.** `compose.prod.yaml` and
+> `.github/workflows/deploy.yml` still build `context: ./frontend`, the
+> standalone React SPA this application replaced. Both need to be repointed at
+> the Laravel image before the next deploy. Everything below is local
+> development, via Laravel Sail.
 
+## Stack
+
+| Layer              | Technology                                              |
+| ------------------ | ------------------------------------------------------- |
+| Backend            | Laravel 13                                              |
+| Language           | PHP 8.5                                                 |
+| Application server | Octane on FrankenPHP                                    |
+| Testing            | Pest 5 (87 tests)                                       |
+| Database           | PostgreSQL 18 · SQLite in-memory for the test suite     |
+| Frontend           | React 19 · TypeScript · Inertia.js v3 · Tailwind CSS v4 |
+| Build              | Vite 8 (via `vite-plus`)                                |
+| Mail               | Mailpit (local)                                         |
+
+## Laravel Packages & Tooling
+
+| Tool      | Purpose                                                                                        |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| Sail      | Docker-based local development environment                                                     |
+| Octane    | High-performance application server (FrankenPHP), running in watch mode                        |
+| Inertia   | Server-driven SPA - React pages rendered from Laravel controllers, with SSR                    |
+| Fortify   | Headless authentication backend - login, password reset and passkeys (custom Inertia/React UI) |
+| Wayfinder | Generates TypeScript functions for Laravel routes and controller actions                       |
+| Pint      | PHP code style fixer (wrapper around PHP-CS-Fixer), with a custom ruleset                      |
+| Larastan  | Static analysis (PHPStan for Laravel) at level 8                                               |
+| Pest      | Test runner (wrapper around PHPUnit)                                                           |
+| Pail      | Tails the application log from the command line                                                |
+| Pao       | Agent-optimized output for PHP testing tools                                                   |
+| Boost     | MCP server exposing schema, logs and documentation search to AI agents                         |
+
+Registration is deliberately not enabled: this is a single-author site, so the
+only account is the one the seeder creates.
+
+## Requirements
+
+- [Composer](https://getcomposer.org/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+```bash
+# Install Composer (macOS)
+brew install composer
 ```
-.
-├── frontend/          React SPA (Vite)
-├── backend/           Laravel - not yet created
-├── compose.yaml       development
-├── compose.prod.yaml  production
-└── .env.example       ports and URLs, shared by compose and vite.config.ts
+
+## Installation
+
+```bash
+# 1. Clone the repository
+git clone git@github.com:juanplazadev/juanplazadev.git && cd juanplazadev
+
+# 2. Install PHP dependencies (Sail itself lives here, so this comes first)
+composer install
+
+# 3. Copy environment file
+cp .env.example .env
+
+# 4. Start Docker containers
+./vendor/bin/sail up -d
+
+# 5. Generate application key
+./vendor/bin/sail artisan key:generate
+
+# 6. Install frontend dependencies
+./vendor/bin/sail npm install
+
+# 7. Run migrations and seed the content
+./vendor/bin/sail artisan migrate --seed
+
+# 8. Start the Vite dev server
+./vendor/bin/sail npm run dev
 ```
 
-## Ports
+Seeding creates `test@example.com` / `password` and loads the posts and
+architecture entries from `database/seeders/content/`.
 
-| what | port | why |
-| --- | --- | --- |
-| Vite dev server | `5180` | 5173 is taken by `ibiri-laravel.test-1` |
-| the app | `8080` | `npm run preview`, the prod container, and later Laravel |
+## Accessing the Application
 
-Both are defined once in `.env` and read by `compose.yaml` and `frontend/vite.config.ts`, so they cannot drift apart.
+| Service         | URL                   |
+| --------------- | --------------------- |
+| Web application | http://localhost:8080 |
+| Vite dev server | http://localhost:5180 |
+| Mailpit inbox   | http://localhost:8025 |
 
-## Weather
+Both ports are set once in `.env` (`APP_PORT`, `VITE_PORT`) and read from there
+by `compose.yaml`, so they cannot drift. 5180 rather than Vite's default 5173,
+which another local site already holds.
 
-The hero's location pill shows current conditions from [Open-Meteo](https://open-meteo.com),
-which is keyless and CORS-open - so this is a plain browser request, not a
-proxied one. It is the only live request the app makes.
+## Development
 
-| var | |
-| --- | --- |
-| `VITE_WEATHER_LATITUDE` | Shelton, CT 06484 |
-| `VITE_WEATHER_LONGITUDE` | |
-| `VITE_WEATHER_TIMEZONE` | `America/New_York` |
-| `VITE_WEATHER_API_URL` | the forecast endpoint |
+> 💡 Octane runs with `--watch`, so backend changes are picked up with no server
+> restart. See `SUPERVISOR_PHP_COMMAND` in `compose.yaml`.
+
+### Frontend
+
+```bash
+./vendor/bin/sail npm run dev        # dev server, with SSR
+./vendor/bin/sail npm run build      # client bundle
+./vendor/bin/sail npm run build:ssr  # client + SSR bundle, what CI builds
+```
+
+SSR is enabled (`config/inertia.php`) and served by the `@inertiajs/vite` plugin
+in development - no separate `inertia:start-ssr` process is needed locally.
+
+The build is also what generates the Wayfinder output under
+`resources/js/{actions,routes,wayfinder}`. Those directories are gitignored, so
+a fresh clone must build once before type checking will pass.
+
+### Content
+
+`Post` and `Architecture` store a markdown `body` plus named JSON `blocks`
+(diagrams, spec lists). `App\Support\Content\BodyRenderer` splits the body on
+`::block{key="..."}` directives and compiles the result into the `rendered`
+column on save, so the public read path never parses markdown and there is no
+cache to invalidate. A row with a null or future `published_at` is a draft:
+guests get a 404, an authenticated user sees it at its real URL.
+
+Both are edited in the dashboard, at `/dashboard/posts` and
+`/dashboard/architectures`.
+
+### Environment
+
+The hero's location pill shows current conditions from
+[Open-Meteo](https://open-meteo.com), which is keyless and CORS-open, so the
+browser calls it directly.
+
+| Variable                 |                       |
+| ------------------------ | --------------------- |
+| `VITE_WEATHER_LATITUDE`  | Shelton, CT 06484     |
+| `VITE_WEATHER_LONGITUDE` |                       |
+| `VITE_WEATHER_TIMEZONE`  | `America/New_York`    |
+| `VITE_WEATHER_API_URL`   | the forecast endpoint |
 
 Blank or non-numeric coordinates disable the weather and the pill falls back to
 plain `Shelton, CT`; a failed request does the same. It never renders an error.
+Vite inlines `VITE_*` at build time, so a changed value means a rebuild, not a
+restart.
 
-Unlike the ports above, these are read by the *client*, through
-`import.meta.env` - and the root `.env` is not visible from inside a container
-(the dev bind mount is `./frontend`, and the prod build context is narrower
-still). So they are passed explicitly: `environment:` in `compose.yaml`, and
-build `args:` in `compose.prod.yaml`, since Vite inlines `VITE_*` into the
-bundle at build time. **Changing one means rebuilding the prod image**, not
-restarting it.
+### Code Style (Pint)
 
-```
-frontend/src/
-├── lib/http.ts                       getJson: timeouts, abort, error shape
-├── lib/weather.ts                    config, the Open-Meteo call, WMO codes
-└── components/ui/use-weather.ts      fetch on mount, refresh every 15 min
-```
-
-`lib/http.ts` is the seam the `/api` calls will reuse. When the backend proxies
-this, the URL in `lib/weather.ts` is the only thing that changes.
-
-## Getting started
+Uses extensive custom rules defined in `pint.json` - including
+`declare_strict_types`, `final_class`, `strict_comparison`,
+`ordered_class_elements`, and more. See `pint.json` for the full ruleset.
 
 ```bash
-cp .env.example .env
+./vendor/bin/pint            # fix all files
+./vendor/bin/pint --dirty    # fix only uncommitted files
+./vendor/bin/pint --test     # dry-run (report without fixing)
 ```
 
-### On the host
+### Static Analysis (Larastan)
+
+Runs at **level 8** (out of 10). Configuration in `phpstan.neon`.
 
 ```bash
-cd frontend
-npm install
-npm run dev          # http://localhost:5180
+./vendor/bin/phpstan analyse --memory-limit=2G
 ```
 
-### In Docker
+### Frontend Checks
 
 ```bash
-docker compose up --build     # http://localhost:5180, container: juanplaza
+./vendor/bin/sail npm run check        # lint (type-aware, warnings are errors)
+./vendor/bin/sail npm run check:fix    # lint and format in place
+./vendor/bin/sail npm run types:check  # tsc --noEmit
 ```
 
-The source is bind-mounted, so edits hot-reload.
+### Tests
 
-## Building
+The suite runs against SQLite in memory (`phpunit.xml`), so it does not touch
+the Postgres container.
 
 ```bash
-cd frontend
-npm run build        # -> frontend/dist
-npm run preview      # http://localhost:8080
+./vendor/bin/sail artisan test                                     # all tests
+./vendor/bin/sail artisan test --compact                           # compact output
+./vendor/bin/sail artisan test --parallel                          # run in parallel
+./vendor/bin/sail artisan test --filter="raw html never survives"  # a single test
+./vendor/bin/sail pest tests/Unit/BodyRendererTest.php             # a single file
 ```
 
-Other scripts: `npm run lint` (eslint --fix), `npm run format` (prettier). Each
-has a non-mutating twin - `lint:check`, `format:check` - which is what CI runs;
-the `--fix`/`--write` versions would let a dirty tree pass by rewriting it.
-
-## Production
-
-One container, `juanplaza`, listening on 8080 and joined to the external `proxy`
-network that the `caddy` container fronts. It publishes no host ports - Caddy
-reaches it by name. The matching Caddyfile entry lives in the separate `caddy`
-project:
-
-```
-juanplaza.dev {
-    reverse_proxy juanplaza:8080
-}
-```
-
-### Deploying
-
-Push to `prod`. `.github/workflows/deploy.yml` runs on the VPS's self-hosted
-runner: it copies `/opt/da-server/juanplazadev/.env` into the workspace, builds
-the image, pushes it to `ghcr.io/juanplazadev/juanplazadev` tagged with the commit
-SHA and `latest`, brings the stack up, and waits for the healthcheck to pass.
-
-`.github/workflows/ci.yml` gates `main` and `prod` on lint, formatting and
-`npm run build` (which is `tsc -b` first).
-
-Because Vite inlines `VITE_*` at build time, **changing a weather value in the
-VPS `.env` needs a new deploy**, not a restart - re-run the workflow from the
-Actions tab.
-
-To roll back, re-point at an older image instead of rebuilding:
-
-```bash
-IMAGE_TAG=<commit sha> docker compose -f compose.prod.yaml up -d
-```
-
-By hand, when the runner is down:
-
-```bash
-docker compose -f compose.prod.yaml up --build -d
-```
-
-## Writing
-
-Posts live in the frontend, not a CMS - there is no backend yet.
-
-```
-frontend/src/content/
-├── posts.ts           the registry: metadata + a lazy import per post
-└── posts/*.tsx        one component per post body, styled by .prose
-```
-
-Adding a post is two steps: drop a component in `posts/`, add an entry to the
-array in `posts.ts`. Each body is code-split, so prose never lands in the main
-bundle. `/blog` lists everything, `/blog/:slug` renders one, and the home page
-shows the three most recent.
-
-When the API lands, `posts.ts` is the only module that has to change.
-
-## Architecture pages
-
-Write-ups of how a project is put together, at `/architecture` and
-`/architecture/:slug`. Same registry pattern as the blog, so adding one is the
-same two steps.
-
-```
-frontend/src/
-├── content/architectures.ts          the registry: metadata + a lazy import
-├── content/architectures/*.tsx       one component per write-up
-└── components/ui/diagram/            the SVG diagram primitives
-```
-
-Diagrams are hand-authored inline SVG rather than a library: every colour is a
-`var(--…)` token, so all six palettes and both themes work with no extra code.
-Note that inside an `<svg>`, `text-muted-foreground` sets `color`, not `fill` -
-a `<text>` carrying only that class renders black. Point at the tokens directly.
-
-Icons are [Iconify](https://icon-sets.iconify.design) paths vendored into
-`components/ui/icons.ts` - monochrome `simple-icons` and `mdi`, rendered with
-`currentColor` so they track the palette too. Not a package: `@iconify/react`
-fetches from its API at runtime, and `unplugin-icons` emits whole `<svg>`
-elements, which cannot nest inside a diagram's own `<svg>`. Use `<Icon />` in the
-DOM and `DiagramNode`'s `icon` prop inside a diagram. The set costs about 11 kB
-gzipped in the main bundle: it is indexed by name, so none of it tree-shakes, and
-the index page's badges reach most of it anyway.
-
-Author diagrams around **560 units wide**. The sheet gives the svg roughly
-694px, so text sized in viewBox units lands near its rendered pixel size. Below
-`minWidth` the panel scrolls rather than scaling labels down, the same way
-`.prose pre` scrolls long lines.
-
-These pages describe live infrastructure and are public. Real hostnames, host
-paths and the private-network details stay out of them.
-
-## Backend (planned)
-
-Laravel, serving a JSON API under `/api` **and** the built SPA out of `public/`
-- one image, one container, no CORS. The Vite build runs inside the image build
-and writes `frontend/dist` into `public/`, so the document root serves both.
-
-Laravel rather than Spring Boot, which this file used to say: the roles this
-site is aimed at are Laravel roles, and the backend a PHP candidate chose for
-their own site is read as a preference whether or not it was meant as one. The
-Spring Boot work goes on the gym app instead, where it is the point rather than
-a mixed signal.
-
-When it lands:
-
-- `compose.prod.yaml`'s single service repoints its build context from
-  `./frontend` to `./backend`. Nothing else changes.
-- In `compose.yaml`, uncomment the `api` service and set
-  `VITE_API_PROXY_TARGET` to `http://api:8080`. Dev stays two containers -
-  that is the cost of HMR, and why `/api` is proxied at all.
-- Laravel needs a catch-all route returning `index.html` for anything not under
-  `/api`, or every route but `/` will 404. `frontend/nginx.conf`'s `try_files`
-  is the stand-in until then.
-
-## Credits
-
-Based on the [Devfolio](https://cruip.com) template by Cruip, converted from
-Next.js to a plain React SPA.
+`./vendor/bin/pest` runs the same suite directly, with the same arguments.
