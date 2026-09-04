@@ -1,0 +1,124 @@
+/*
+  Motion layer. Everything here is decorative and every rule is collapsed by the
+  reduced-motion block at the bottom of this file.
+*/
+
+/* Border beam ------------------------------------------------------------ */
+
+/*
+  A conic gradient rotated behind a masked 1px ring, so only the border lights
+  up while the card's own background stays untouched. @property is what makes
+  the angle animatable - a plain custom property is a string to the interpolator
+  and would jump rather than sweep.
+
+  Chosen over the `offset-path: rect()` version of this effect, which has
+  noticeably thinner browser support for the same result.
+*/
+@property --beam-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@keyframes border-beam {
+    to {
+        --beam-angle: 360deg;
+    }
+}
+
+.border-beam::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    background: conic-gradient(
+        from var(--beam-angle),
+        transparent 0%,
+        transparent 65%,
+        color-mix(in oklch, var(--primary) 35%, transparent) 80%,
+        var(--primary) 92%,
+        transparent 100%
+    );
+    /* Punch out the middle so the gradient only shows in the 1px padding ring. */
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    animation: border-beam 6s linear infinite;
+}
+
+/* Shimmer ---------------------------------------------------------------- */
+
+/* The diagonal sweep that was inlined twice as a ~700 character class. */
+@keyframes shimmer {
+    100% {
+        background-position: -100% 0;
+    }
+}
+
+.shimmer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+        45deg,
+        transparent 25%,
+        color-mix(in oklch, var(--primary-foreground) 70%, transparent) 50%,
+        transparent 75%
+    );
+    background-size: 250% 250%;
+    background-position: 200% 0;
+    background-repeat: no-repeat;
+    opacity: 0.35;
+}
+
+.shimmer:hover::before {
+    animation: shimmer 1.2s ease forwards;
+}
+
+/* Reveal on scroll ------------------------------------------------------- */
+
+[data-reveal] {
+    opacity: 0;
+    translate: 0 12px;
+    transition:
+        opacity 0.5s ease-out,
+        translate 0.5s ease-out;
+}
+
+[data-reveal][data-revealed] {
+    opacity: 1;
+    translate: 0 0;
+}
+
+/* Reduced motion --------------------------------------------------------- */
+
+/*
+  The beam and the status ping loop forever, so honouring this is not optional.
+  [data-reveal] is reset explicitly rather than left to the duration collapse:
+  use-reveal already skips observing under reduced motion, and this guarantees
+  content is visible even if the observer never runs at all.
+*/
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    [data-reveal] {
+        opacity: 1;
+        translate: none;
+    }
+}

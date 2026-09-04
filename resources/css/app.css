@@ -1,0 +1,173 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+/* The portfolio's own layers. palettes.css must come first: it binds the
+   --accent-* / --neutral-* scales that every token below resolves through. */
+@import './additional-styles/palettes.css';
+@import './additional-styles/hero.css';
+@import './additional-styles/motion.css';
+@import './additional-styles/prose.css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans:
+        'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* The portfolio sets display type in Inter Tight and body copy in Inter. */
+    --font-inter: 'Inter', sans-serif;
+    --font-inter-tight: 'Inter Tight', sans-serif;
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-xl: calc(var(--radius) + 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+    /*
+      Semantic tokens. Nothing here names a colour: every value points at an
+      --accent-* or --neutral-* step, and those are bound to a real scale by the
+      active block in additional-styles/palettes.css. So this mapping is written
+      once and holds for all six palettes - changing palette never touches this
+      file.
+
+      The first group is the portfolio's. The second exists for the shadcn
+      components the starter kit's auth and settings pages still use; they are
+      mapped onto the same scales so those pages stay coherent under every
+      palette instead of staying stock-neutral gray.
+    */
+    --radius: 0.75rem;
+
+    --background: var(--neutral-50);
+    --foreground: var(--neutral-900);
+    --card: #fff;
+    --card-foreground: var(--neutral-900);
+    --muted: var(--neutral-100);
+    --muted-foreground: var(--neutral-500);
+    --border: var(--neutral-200);
+    --primary: var(--accent-700);
+    --primary-foreground: var(--neutral-50);
+    --accent: var(--accent-50);
+    --accent-foreground: var(--accent-800);
+    --ring: var(--accent-600);
+
+    /* shadcn-only tokens, mapped onto the same scales. */
+    --popover: #fff;
+    --popover-foreground: var(--neutral-900);
+    --secondary: var(--neutral-100);
+    --secondary-foreground: var(--neutral-900);
+    --input: var(--neutral-200);
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.577 0.245 27.325);
+    --chart-1: var(--accent-700);
+    --chart-2: var(--accent-600);
+    --chart-3: var(--accent-500);
+    --chart-4: var(--accent-400);
+    --chart-5: var(--accent-300);
+    --sidebar: var(--neutral-100);
+    --sidebar-foreground: var(--neutral-900);
+    --sidebar-primary: var(--accent-700);
+    --sidebar-primary-foreground: var(--neutral-50);
+    --sidebar-accent: var(--accent-50);
+    --sidebar-accent-foreground: var(--accent-800);
+    --sidebar-border: var(--neutral-200);
+    --sidebar-ring: var(--accent-600);
+}
+
+.dark {
+    --background: var(--neutral-950);
+    --foreground: var(--neutral-50);
+    --card: var(--neutral-900);
+    --card-foreground: var(--neutral-50);
+    --muted: var(--neutral-800);
+    --muted-foreground: var(--neutral-400);
+    --border: oklch(1 0 0 / 10%);
+    --primary: var(--accent-400);
+    --primary-foreground: var(--neutral-950);
+    /* Mixed from the scale rather than a literal, so it tracks the active
+       palette instead of staying amber. */
+    --accent: color-mix(in oklch, var(--accent-400) 12%, transparent);
+    --accent-foreground: var(--accent-300);
+    --ring: var(--accent-500);
+
+    /* shadcn-only tokens. */
+    --popover: var(--neutral-900);
+    --popover-foreground: var(--neutral-50);
+    --secondary: var(--neutral-800);
+    --secondary-foreground: var(--neutral-50);
+    --input: oklch(1 0 0 / 10%);
+    --destructive: oklch(0.396 0.141 25.723);
+    --destructive-foreground: oklch(0.637 0.237 25.331);
+    --chart-1: var(--accent-300);
+    --chart-2: var(--accent-400);
+    --chart-3: var(--accent-500);
+    --chart-4: var(--accent-600);
+    --chart-5: var(--accent-700);
+    --sidebar: var(--neutral-900);
+    --sidebar-foreground: var(--neutral-50);
+    --sidebar-primary: var(--accent-400);
+    --sidebar-primary-foreground: var(--neutral-950);
+    --sidebar-accent: color-mix(in oklch, var(--accent-400) 12%, transparent);
+    --sidebar-accent-foreground: var(--accent-300);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: var(--accent-500);
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}

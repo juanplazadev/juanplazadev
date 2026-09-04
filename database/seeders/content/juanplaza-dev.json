@@ -1,0 +1,190 @@
+{
+    "stack": {
+        "type": "specs",
+        "items": [
+            {
+                "label": "Frontend",
+                "value": "React 19 · TypeScript · React Router",
+                "icon": "react"
+            },
+            {
+                "label": "Build",
+                "value": "Vite · Tailwind v4 (CSS-first)",
+                "icon": "vite"
+            },
+            {
+                "label": "Served by",
+                "value": "nginx, one container",
+                "icon": "nginx"
+            },
+            {
+                "label": "Edge",
+                "value": "Caddy, automatic TLS",
+                "icon": "caddy"
+            },
+            {
+                "label": "Registry",
+                "value": "GHCR, tagged by commit",
+                "icon": "github"
+            },
+            {
+                "label": "CI/CD",
+                "value": "GitHub Actions, self-hosted runner",
+                "icon": "githubActions"
+            }
+        ]
+    },
+    "request-path": {
+        "type": "diagram",
+        "title": "Request path for juanplaza.dev",
+        "description": "A browser requests the site over HTTPS. Caddy terminates TLS and reverse-proxies to the juanplaza container on port 8080 over a shared Docker network. That container is nginx serving the built Vite bundle. Separately, the browser calls the Open-Meteo forecast API directly, without passing through the server. A planned Laravel container will replace the nginx one, serving both the API and the app from a single image.",
+        "width": 560,
+        "height": 340,
+        "caption": "One container, reached by name. The only other network call leaves the browser and never touches the box.",
+        "groups": [
+            {
+                "x": 14,
+                "y": 100,
+                "w": 532,
+                "h": 228,
+                "label": "VPS · docker",
+                "labelAnchor": "end"
+            }
+        ],
+        "nodes": [
+            {
+                "key": "browser",
+                "x": 30,
+                "y": 12,
+                "w": 180,
+                "h": 52,
+                "icon": "browser",
+                "label": "Browser",
+                "sublabel": "juanplaza.dev"
+            },
+            {
+                "key": "meteo",
+                "x": 350,
+                "y": 12,
+                "w": 180,
+                "h": 52,
+                "icon": "weather",
+                "label": "Open-Meteo",
+                "sublabel": "forecast API"
+            },
+            {
+                "key": "caddy",
+                "x": 30,
+                "y": 136,
+                "w": 180,
+                "h": 60,
+                "icon": "caddy",
+                "label": "Caddy",
+                "sublabel": "TLS · ACME over DNS"
+            },
+            {
+                "key": "app",
+                "x": 30,
+                "y": 240,
+                "w": 180,
+                "h": 70,
+                "icon": "nginx",
+                "variant": "accent",
+                "label": "app container",
+                "sublabel": "nginx → dist/ · :8080"
+            },
+            {
+                "key": "planned",
+                "x": 350,
+                "y": 240,
+                "w": 180,
+                "h": 70,
+                "icon": "laravel",
+                "variant": "planned",
+                "label": "Laravel",
+                "sublabel": "one image · /api + SPA"
+            }
+        ],
+        "edges": [
+            {
+                "from": "browser.right",
+                "to": "meteo.left",
+                "variant": "dashed",
+                "label": "keyless · CORS-open"
+            },
+            { "from": "browser.bottom", "to": "caddy.top", "label": "HTTPS" },
+            {
+                "from": "caddy.bottom",
+                "to": "app.top",
+                "label": "proxy network · :8080"
+            },
+            {
+                "from": "app.right",
+                "to": "planned.left",
+                "variant": "dashed",
+                "label": "becomes"
+            }
+        ]
+    },
+    "deploy-pipeline": {
+        "type": "diagram",
+        "title": "Deploy pipeline",
+        "description": "A push to the production branch triggers a workflow on a self-hosted runner on the VPS. It builds the image, pushes it to GHCR tagged with both the commit SHA and latest, then brings the stack up and polls the container healthcheck.",
+        "width": 560,
+        "height": 120,
+        "minWidth": 480,
+        "caption": "The runner is on the same machine it deploys to, so nothing is copied over the network at deploy time.",
+        "nodes": [
+            {
+                "key": "push",
+                "x": 7,
+                "y": 16,
+                "w": 108,
+                "h": 78,
+                "icon": "git",
+                "iconPlacement": "top",
+                "label": "push",
+                "sublabel": "→ production"
+            },
+            {
+                "key": "runner",
+                "x": 153,
+                "y": 16,
+                "w": 108,
+                "h": 78,
+                "icon": "githubActions",
+                "iconPlacement": "top",
+                "label": "runner",
+                "sublabel": "on the VPS"
+            },
+            {
+                "key": "registry",
+                "x": 299,
+                "y": 16,
+                "w": 108,
+                "h": 78,
+                "icon": "github",
+                "iconPlacement": "top",
+                "label": "GHCR",
+                "sublabel": "sha + latest"
+            },
+            {
+                "key": "up",
+                "x": 445,
+                "y": 16,
+                "w": 108,
+                "h": 78,
+                "icon": "docker",
+                "iconPlacement": "top",
+                "variant": "accent",
+                "label": "up -d",
+                "sublabel": "healthcheck"
+            }
+        ],
+        "edges": [
+            { "from": "push.right", "to": "runner.left" },
+            { "from": "runner.right", "to": "registry.left" },
+            { "from": "registry.right", "to": "up.left" }
+        ]
+    }
+}

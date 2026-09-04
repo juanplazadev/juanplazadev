@@ -1,85 +1,126 @@
 name: deploy-prod
 
+# Gated on ci: a push to production runs ci.yml, and only a green run reaches
+# here. workflow_dispatch stays as the manual escape hatch (redeploy the current
+# production HEAD without pushing a commit).
 on:
-  push:
-    branches: [production]
-  workflow_dispatch:
+    workflow_run:
+        workflows: [ci]
+        branches: [production]
+        types: [completed]
+    workflow_dispatch:
 
 # Deploys are not interchangeable: cancelling one mid-`up` would leave the
 # stack half-recreated. Queue them instead.
 concurrency:
-  group: deploy-prod
-  cancel-in-progress: false
+    group: deploy-prod
+    cancel-in-progress: false
 
 permissions:
-  contents: read
-  packages: write
+    contents: read
+    packages: write
 
 jobs:
-  deploy:
-    runs-on: [self-hosted, Linux, X64]
-    env:
-      IMAGE_TAG: ${{ github.sha }}
+    deploy:
+        if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+        runs-on: [self-hosted, Linux, X64]
+        env:
+            # workflow_run fires against the default branch, so github.sha is not
+            # the commit ci actually tested. head_sha is. Everything downstream -
+            # the checkout, the image tag, GIT_COMMIT - keys off this one value so
+            # what ships is exactly what went green.
+            IMAGE_TAG: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-    steps:
-      - uses: actions/checkout@v6
+        steps:
+            - uses: actions/checkout@v6
+              with:
+                  ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      - name: Log in to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            - name: Log in to GHCR
+              run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Lighter than check-in-v2's equivalent: this build is a node image and a
-      # dist/, not PHP extensions and Chrome. Dangling layers only, with the
-      # builder cache capped rather than dropped, so the shared runner's disk
-      # does not creep while npm's layer cache survives between deploys.
-      - name: Reclaim Docker disk space
-        run: |
-          docker container prune -f || true
-          docker image prune -f || true
-          # --keep-storage was renamed --max-used-space in newer buildx; pick
-          # whichever this runner's docker actually understands.
-          if docker builder prune --help 2>&1 | grep -q -- --max-used-space; then
-            docker builder prune -f --max-used-space=10GB || true
-          else
-            docker builder prune -f --keep-storage=10GB || true
-          fi
-          df -h / || true
+            # Self-hosted runner shared with check-in: images and build cache
+            # accumulate across deploys and fill the disk. Dropping the cache
+            # unconditionally would recompile the PHP extensions and re-run
+            # `npm ci` twice on every deploy, so keep it by default and only fall
+            # back to a full prune when the disk is actually low. Volumes are
+            # left alone (the Postgres data is in one) and running containers
+            # keep their images.
+            - name: Reclaim Docker disk space
+              run: |
+                  docker system df || true
+                  docker container prune -f || true
+                  docker image prune -f || true
+                  available=$(df -BG --output=avail / | tail -1 | tr -dc '0-9')
+                  if [ "${available:-0}" -lt 25 ]; then
+                    echo "Only ${available}G free - dropping the build cache to make room."
+                    docker image prune -af --filter "until=24h" || true
+                    docker builder prune -af || true
+                  else
+                    # --keep-storage was renamed --max-used-space in newer buildx;
+                    # pick whichever this runner's docker actually understands.
+                    if docker builder prune --help 2>&1 | grep -q -- --max-used-space; then
+                      cap=--max-used-space=20GB
+                    else
+                      cap=--keep-storage=20GB
+                    fi
+                    echo "${available}G free - keeping the build cache, capped at 20G ($cap)."
+                    docker builder prune -f "$cap" || true
+                  fi
+                  df -h / || true
 
-      # compose.prod.yaml reads VITE_WEATHER_* from here and passes them as
-      # build args. Vite inlines them, so this file's contents decide the
-      # bundle - it has to be in place before the build, not before `up`.
-      - name: Load prod env
-        run: cp /opt/da-server/juanplazadev/.env .env
+            # compose.prod.yaml reads VITE_* and the DB credentials from here.
+            # Vite inlines the VITE_* values, so this file's contents decide the
+            # bundle - it has to be in place before the build, not before `up`.
+            - name: Load prod env
+              run: cp /opt/da-server/juanplazadev/.env .env
 
-      # Tags the result as compose.prod.yaml's `image:`, i.e. :$IMAGE_TAG.
-      - name: Build image
-        run: docker compose -f compose.prod.yaml build
+            # Tags the result as compose.prod.yaml's `image:`, i.e. :$IMAGE_TAG.
+            - name: Build image
+              run: docker compose -f compose.prod.yaml build
 
-      - name: Push image
-        run: |
-          docker tag ghcr.io/${{ github.repository }}:$IMAGE_TAG ghcr.io/${{ github.repository }}:latest
-          docker push ghcr.io/${{ github.repository }}:$IMAGE_TAG
-          docker push ghcr.io/${{ github.repository }}:latest
+            - name: Push image
+              run: |
+                  docker tag ghcr.io/${{ github.repository }}:$IMAGE_TAG ghcr.io/${{ github.repository }}:latest
+                  docker push ghcr.io/${{ github.repository }}:$IMAGE_TAG
+                  docker push ghcr.io/${{ github.repository }}:latest
 
-      # No `pull` first: the runner and the deploy target are the same box, so
-      # the image is already local. GHCR is for history and rollback, not for
-      # the deploy path.
-      - name: Deploy
-        run: docker compose -f compose.prod.yaml up -d --remove-orphans
+            # No `pull` first: the runner and the deploy target are the same box,
+            # so the image is already local. GHCR is for history and rollback,
+            # not for the deploy path.
+            - name: Deploy
+              run: docker compose -f compose.prod.yaml up -d --remove-orphans
 
-      # `up -d` returns as soon as the container is created, which would make a
-      # container that crashes on boot look like a green deploy. Lean on the
-      # healthcheck compose.prod.yaml already defines.
-      - name: Wait for healthy
-        run: |
-          for _ in $(seq 1 30); do
-            status=$(docker inspect -f '{{.State.Health.Status}}' juanplaza 2>/dev/null || echo missing)
-            if [ "$status" = healthy ]; then
-              echo "juanplaza is healthy"
-              exit 0
-            fi
-            echo "status=$status, waiting..."
-            sleep 5
-          done
-          echo "juanplaza never became healthy"
-          docker logs --tail 50 juanplaza || true
-          exit 1
+            # After `up`, so the pgsql healthcheck has gated this. No seeding:
+            # DatabaseSeeder creates a known-password test user, and the content
+            # editor in routes/admin.php sits behind nothing but auth+verified.
+            # The first admin user is created by hand, once.
+            - name: Migrate
+              run: docker compose -f compose.prod.yaml run --rm app php artisan migrate --force
+
+            # The reload is not optional: `optimize` writes the config/route
+            # cache after Octane's workers have already booted, so without it
+            # they keep serving with the uncached config they started on.
+            - name: Optimize
+              run: |
+                  docker compose -f compose.prod.yaml exec -T app php artisan optimize
+                  docker compose -f compose.prod.yaml exec -T app php artisan octane:reload
+
+            # `up -d` returns as soon as the container is created, which would
+            # make a container that crashes on boot look like a green deploy.
+            # Lean on the healthcheck the Dockerfile defines - it covers both
+            # Octane and the SSR process.
+            - name: Wait for healthy
+              run: |
+                  for _ in $(seq 1 30); do
+                    status=$(docker inspect -f '{{.State.Health.Status}}' juanplaza 2>/dev/null || echo missing)
+                    if [ "$status" = healthy ]; then
+                      echo "juanplaza is healthy"
+                      exit 0
+                    fi
+                    echo "status=$status, waiting..."
+                    sleep 5
+                  done
+                  echo "juanplaza never became healthy"
+                  docker logs --tail 50 juanplaza || true
+                  exit 1
