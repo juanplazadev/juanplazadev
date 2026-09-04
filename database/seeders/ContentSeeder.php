@@ -34,16 +34,17 @@ final class ContentSeeder extends Seeder
 
         Architecture::query()->firstOrCreate(['slug' => 'juanplaza-dev'], [
             'title' => 'juanplaza.dev',
-            'tagline' => 'This site. One container behind Caddy, deployed from a self-hosted runner on the same box it serves from.',
+            'tagline' => 'This site. Laravel on Octane in one container behind Caddy, deployed from a self-hosted runner on the same box it serves from.',
             'status' => 'Live',
             'active' => true,
             'position' => 0,
             'stack' => [
-                ['label' => 'React 19', 'icon' => 'react'],
-                ['label' => 'TypeScript', 'icon' => 'typescript'],
+                ['label' => 'Laravel 13', 'icon' => 'laravel'],
+                ['label' => 'PHP 8.5', 'icon' => 'php'],
+                ['label' => 'Inertia + React 19', 'icon' => 'inertia'],
                 ['label' => 'Vite', 'icon' => 'vite'],
                 ['label' => 'Tailwind v4', 'icon' => 'tailwind'],
-                ['label' => 'nginx', 'icon' => 'nginx'],
+                ['label' => 'PostgreSQL 18', 'icon' => 'postgresql'],
                 ['label' => 'Caddy', 'icon' => 'caddy'],
                 ['label' => 'GitHub Actions', 'icon' => 'githubActions'],
             ],
