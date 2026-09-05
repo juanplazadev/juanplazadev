@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Cache;
  */
 final readonly class CachedSiteAnalytics
 {
-    private const TTL_MINUTES = 15;
+    private const int TTL_MINUTES = 15;
 
     public function __construct(private SiteAnalytics $analytics) {}
 

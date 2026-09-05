@@ -43,7 +43,7 @@ final readonly class SiteAnalytics
      * Verify a name against the live schema before adding one here:
      *   {__type(name:"AccountRumPageloadEventsAdaptiveGroupsDimensions"){fields{name}}}
      */
-    private const BREAKDOWNS = [
+    private const array BREAKDOWNS = [
         'topPaths' => 'requestPath',
         'topReferrers' => 'refererHost',
         'topCountries' => 'countryName',
@@ -79,10 +79,10 @@ final readonly class SiteAnalytics
 
         try {
             $rum = $this->client->query($this->rumDocument(), $this->rumVariables($range));
-        } catch (Throwable $e) {
+        } catch (Throwable $throwable) {
             // The dashboard degrades to an error card rather than a 500: an
             // upstream outage should not take down the page it decorates.
-            Log::warning('Cloudflare analytics request failed.', ['exception' => $e]);
+            Log::warning('Cloudflare analytics request failed.', ['exception' => $throwable]);
 
             return $this->empty($range, 'Could not reach Cloudflare.');
         }
@@ -112,8 +112,8 @@ final readonly class SiteAnalytics
             'generatedAt' => now()->toIso8601String(),
             'error' => null,
             'totals' => [
-                'visits' => (int) array_sum(array_column($series, 'visits')),
-                'pageViews' => (int) array_sum(array_column($series, 'pageViews')),
+                'visits' => array_sum(array_column($series, 'visits')),
+                'pageViews' => array_sum(array_column($series, 'pageViews')),
                 'requests' => $zone['requests'],
                 'bytes' => $zone['bytes'],
                 'cacheHitRatio' => $zone['cacheHitRatio'],
@@ -198,8 +198,8 @@ final readonly class SiteAnalytics
 
         try {
             $data = $this->client->query($this->zoneDocument(), $this->zoneVariables($range));
-        } catch (Throwable $e) {
-            Log::info('Cloudflare zone analytics unavailable.', ['exception' => $e]);
+        } catch (Throwable $throwable) {
+            Log::info('Cloudflare zone analytics unavailable.', ['exception' => $throwable]);
 
             return $none;
         }
@@ -330,7 +330,7 @@ final readonly class SiteAnalytics
             return [];
         }
 
-        return array_values(array_filter($rows, 'is_array'));
+        return array_values(array_filter($rows, is_array(...)));
     }
 
     /**

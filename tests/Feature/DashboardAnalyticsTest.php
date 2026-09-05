@@ -103,11 +103,9 @@ function fakeCloudflare(?array $rum = null, ?array $zone = null): void
     $zone ??= zoneBody();
 
     Http::fake([
-        GRAPHQL => function ($request) use ($rum, $zone) {
-            return Http::response(
-                str_contains((string) ($request['query'] ?? ''), 'httpRequests1dGroups') ? $zone : $rum,
-            );
-        },
+        GRAPHQL => fn (array $request) => Http::response(
+            str_contains((string) ($request['query'] ?? ''), 'httpRequests1dGroups') ? $zone : $rum,
+        ),
     ]);
 }
 
@@ -119,7 +117,7 @@ function fakeCloudflare(?array $rum = null, ?array $zone = null): void
  */
 function inertiaVersion(): string
 {
-    return (string) app(HandleInertiaRequests::class)->version(request());
+    return (string) resolve(HandleInertiaRequests::class)->version(request());
 }
 
 /** Cloudflare requests only - Inertia's SSR gateway shares the same recorder. */
@@ -146,7 +144,7 @@ function assertCloudflareNotCalled(): void
 
 function analytics(): SiteAnalytics
 {
-    return app(SiteAnalytics::class);
+    return resolve(SiteAnalytics::class);
 }
 
 // Mapper -------------------------------------------------------------------
@@ -273,7 +271,7 @@ test('a graphql errors array throws even though the status is 200', function ():
         'errors' => [['message' => 'not authorized for that account']],
     ], 200)]);
 
-    app(CloudflareGraphQlClient::class)->query('{ viewer { __typename } }');
+    resolve(CloudflareGraphQlClient::class)->query('{ viewer { __typename } }');
 })->throws(CloudflareGraphQlException::class, 'not authorized for that account');
 
 test('an upstream failure degrades to an error string rather than an exception', function (): void {
@@ -301,8 +299,8 @@ test('it does not call cloudflare when the credentials are missing', function ()
 test('a second lookup in the same window is served from the cache', function (): void {
     fakeCloudflare();
 
-    app(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last7Days);
-    app(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last7Days);
+    resolve(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last7Days);
+    resolve(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last7Days);
 
     expect(rumCalls())->toBe(1);
 });
@@ -310,8 +308,8 @@ test('a second lookup in the same window is served from the cache', function ():
 test('each range is cached separately', function (): void {
     fakeCloudflare();
 
-    app(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last7Days);
-    app(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last30Days);
+    resolve(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last7Days);
+    resolve(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last30Days);
 
     expect(rumCalls())->toBe(2);
 });
@@ -319,8 +317,8 @@ test('each range is cached separately', function (): void {
 test('a failed lookup is not cached', function (): void {
     fakeCloudflare(rum: ['errors' => [['message' => 'boom']]]);
 
-    app(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last7Days);
-    app(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last7Days);
+    resolve(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last7Days);
+    resolve(CachedSiteAnalytics::class)->summary(AnalyticsRange::Last7Days);
 
     expect(rumCalls())->toBe(2);
 });

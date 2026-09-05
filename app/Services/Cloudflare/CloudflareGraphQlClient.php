@@ -77,8 +77,6 @@ final readonly class CloudflareGraphQlClient
             throw CloudflareGraphQlException::fromErrors($errors);
         }
 
-        if (! isset($body['data']) || ! is_array($body['data'])) {
-            throw new CloudflareGraphQlException('Cloudflare GraphQL: response contained no data.');
-        }
+        throw_if(! isset($body['data']) || ! is_array($body['data']), CloudflareGraphQlException::class, 'Cloudflare GraphQL: response contained no data.');
     }
 }
