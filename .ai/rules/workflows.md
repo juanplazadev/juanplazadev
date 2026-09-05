@@ -16,3 +16,7 @@ Traps:
 - Container name, port 8080 and the `proxy` network are load-bearing: the Caddyfile in the separate caddy project proxies juanplaza.dev to juanplaza:8080. Changing any of them means changing that too.
 - The base image sets XDG_DATA_HOME=/data and XDG_CONFIG_HOME=/config as root-owned; they are chowned to www-data or Caddy logs storage errors on every boot.
 - `optimize` is always followed by `octane:reload` - it writes the config/route cache after the workers already booted.
+
+## The healthcheck's Host header is load-bearing
+
+The Dockerfile HEALTHCHECK curls the app over loopback, so its Host header must be one `trustHosts` in bootstrap/app.php accepts - hence `-H 'Host: juanplaza.dev'`. Without it Symfony sees Host `127.0.0.1:8080`, throws SuspiciousOperationException, and `/up` answers 400: the container sits at `unhealthy` forever and deploy.yml's "Wait for healthy" prints "juanplaza never became healthy" while the app itself is serving fine (Caddy forwards the real Host). Change the trusted host list and you must change this line. Neither local nor CI catches the drift - TrustHosts is a no-op outside production - so tests/Feature/TrustedProxyTest.php pins it instead.
