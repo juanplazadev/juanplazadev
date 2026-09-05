@@ -66,20 +66,20 @@
         ],
         "lint": [
             "rector",
-            "pint --parallel"
+            "pint --parallel --tia"
         ],
         "lint:check": [
             "pint --parallel --test",
             "rector --dry-run"
         ],
-        "test:type-coverage": "@php -d memory_limit=-1 vendor/bin/pest --type-coverage --min=80",
+        "test:type-coverage": "@php -d memory_limit=-1 vendor/bin/pest --type-coverage --parallel --tia --min=80",
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
             "npm run check",
             "npm run types:check",
             "@test"
         ],
-        "test:unit": "XDEBUG_MODE=\"coverage\" php -d memory_limit=-1 vendor/bin/pest --parallel --coverage --exactly=94.8",
+        "test:unit": "XDEBUG_MODE=\"coverage\" php -d memory_limit=-1 vendor/bin/pest --testsuite=Unit,Feature --parallel --tia --coverage --exactly=95.0",
         "test": [
             "@test:type-coverage",
             "@test:unit",
@@ -91,7 +91,7 @@
             "@php -d memory_limit=-1 vendor/bin/phpstan"
         ],
         "test:feature-browser": [
-            "pest"
+            "pest --testsuite=Browser --parallel --tia"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

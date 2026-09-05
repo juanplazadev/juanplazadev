@@ -9,6 +9,7 @@ use App\Services\Cloudflare\CachedSiteAnalytics;
 use App\Services\Cloudflare\CloudflareGraphQlClient;
 use App\Services\Cloudflare\CloudflareGraphQlException;
 use App\Services\Cloudflare\SiteAnalytics;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 
 const GRAPHQL = 'api.cloudflare.com/*';
@@ -103,7 +104,7 @@ function fakeCloudflare(?array $rum = null, ?array $zone = null): void
     $zone ??= zoneBody();
 
     Http::fake([
-        GRAPHQL => fn (array $request) => Http::response(
+        GRAPHQL => fn (Request $request) => Http::response(
             str_contains((string) ($request['query'] ?? ''), 'httpRequests1dGroups') ? $zone : $rum,
         ),
     ]);

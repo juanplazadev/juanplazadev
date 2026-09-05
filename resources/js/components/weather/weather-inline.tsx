@@ -25,7 +25,10 @@ export default function WeatherInline() {
                     className="bg-muted-foreground/20 h-3 w-11 animate-pulse rounded-full"
                 />
             ) : (
-                <span className="inline-flex items-center gap-1.5">
+                <span
+                    data-test="weather-reading"
+                    className="inline-flex items-center gap-1.5"
+                >
                     <WeatherIcon icon={state.weather.icon} />
                     <span className="tabular-nums">
                         {Math.round(state.weather.temperature)}°F

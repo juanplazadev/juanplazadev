@@ -18,7 +18,14 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->in('Feature');
+    ->in('Feature', 'Browser');
+
+/*
+ * Test impact analysis re-runs only the tests a change actually touches and
+ * replays the rest from cache. locally() rather than always(): on CI the whole
+ * point is a full run against a clean checkout, and `--ci` turns this off.
+ */
+pest()->tia()->locally();
 
 /*
 |--------------------------------------------------------------------------
