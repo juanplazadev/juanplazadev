@@ -60,6 +60,12 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
+      # The Pest browser plugin shells out to ./node_modules/.bin/playwright and
+      # needs the browser binaries on the runner. Chromium only - the suite does
+      # not pin a browser, so it uses the plugin's default.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
       - name: Provide the .env
         run: |
           cp .env.example .env

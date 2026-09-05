@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\Content\BodyRenderer;
+use App\Content\BodyRenderer;
 
 beforeEach(function (): void {
     $this->renderer = new BodyRenderer;

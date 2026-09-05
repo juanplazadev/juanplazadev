@@ -18,7 +18,12 @@ return [
     */
 
     'ssr' => [
-        'enabled' => true,
+        // Read from the environment so phpunit.xml's INERTIA_SSR_ENABLED=false is
+        // actually honoured. Hardcoded true made that override inert, so every
+        // feature test rendering an Inertia page dispatched a real SSR request -
+        // silently swallowed by HttpGateway, but slow, and it landed in any
+        // Http::fake() recording the test was making assertions against.
+        'enabled' => env('INERTIA_SSR_ENABLED', true),
         'url' => 'http://127.0.0.1:13714',
         // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
 

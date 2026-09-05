@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 
+import Wordmark from '@/components/wordmark';
 import { home } from '@/routes';
 import PalettePicker from './palette-picker';
 import ThemeToggle from './theme-toggle';
@@ -34,9 +35,7 @@ export default function PageHeader() {
                     prefetch="mount"
                 >
                     <BackIcon />
-                    <span className="font-inter-tight text-foreground font-semibold tracking-tight">
-                        juanplaza<span className="text-primary">.dev</span>
-                    </span>
+                    <Wordmark className="text-sm" />
                 </Link>
                 <div className="flex items-center gap-2">
                     <PalettePicker />

@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import ArchitectureController from '@/actions/App/Http/Controllers/Admin/ArchitectureController';
 import type { ContentRow } from '@/components/admin/content-index';
 import ContentIndex from '@/components/admin/content-index';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import AppLayout from '@/layouts/app-layout';
 
 type Row = ContentRow & { position: number };

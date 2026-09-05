@@ -1,4 +1,5 @@
 /.phpunit.cache
+/tests/Browser/Screenshots
 /bootstrap/ssr
 /config/composer/
 /config/psysh/*

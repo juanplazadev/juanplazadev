@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Content;
+namespace App\Content;
 
 use Illuminate\Support\Str;
 

@@ -13,7 +13,11 @@ set -uo pipefail
 php artisan inertia:start-ssr &
 ssr=$!
 
-php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=8080 --admin-port=2019 &
+# --caddyfile points at our copy of Octane's stub, which adds immutable
+# Cache-Control for /build/assets. $(pwd) rather than a literal path so this
+# does not depend on the image's WORKDIR.
+php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=8080 --admin-port=2019 \
+    --caddyfile="$(pwd)/docker/Caddyfile" &
 octane=$!
 
 # Forward the SIGTERM compose sends on `up -d`/`down` so both shut down cleanly

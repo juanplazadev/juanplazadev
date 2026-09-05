@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin\ArchitectureController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\PreviewController;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,7 @@ Route::middleware(['auth', 'verified'])
     ->prefix('dashboard')
     ->name('admin.')
     ->group(function (): void {
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource('posts', PostController::class)->except('show');
         Route::resource('architectures', ArchitectureController::class)->except('show');
         Route::post('content/preview', PreviewController::class)->name('content.preview');

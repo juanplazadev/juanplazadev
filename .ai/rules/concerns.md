@@ -1,6 +1,6 @@
 ---
 paths:
-    - 'app/Support/Content/**,app/Models/{Post,Architecture}.php,app/Concerns/{Publishable,RendersMarkdownBody}.php'
+    - 'app/Content/**,app/Models/{Post,Architecture}.php,app/Concerns/{Publishable,RendersMarkdownBody}.php'
 ---
 
 # Concerns

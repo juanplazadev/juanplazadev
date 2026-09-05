@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Support\Content\BodyRenderer;
+use App\Content\BodyRenderer;
 
 /**
  * Keeps the compiled `rendered` column in step with `body` and `blocks`.

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Content\BodyRenderer;
 use App\Models\Architecture;
 use App\Models\Post;
 use App\Rules\ValidBlocks;
-use App\Support\Content\BodyRenderer;
 use Database\Seeders\ContentSeeder;
 use Illuminate\Support\Collection;
 

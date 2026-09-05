@@ -1,3 +1,4 @@
+import Wordmark from '@/components/wordmark';
 import GitHubIcon from './github-icon';
 
 export default function Footer() {
@@ -49,9 +50,7 @@ export default function Footer() {
         <footer className="space-y-12 pb-16 text-center">
             {/* Initials monogram */}
             <div>
-                <span className="font-inter-tight text-foreground text-4xl font-bold tracking-tight">
-                    J<span className="text-primary">P</span>
-                </span>
+                <Wordmark variant="monogram" className="text-4xl font-bold" />
             </div>
             <div className="space-y-6">
                 {/* Social icons */}

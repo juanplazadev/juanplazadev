@@ -21,7 +21,7 @@ return new class extends Migration
             // `body` is the markdown a human writes and the only editable
             // source. `blocks` holds the non-prose payloads it references by
             // key, and `rendered` is the interleaved output both are compiled
-            // into on save - see App\Support\Content\BodyRenderer.
+            // into on save - see App\Content\BodyRenderer.
             $table->text('body');
             $table->json('blocks')->nullable();
             $table->json('rendered')->nullable();

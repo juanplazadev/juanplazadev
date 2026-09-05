@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import PostController from '@/actions/App/Http/Controllers/Admin/PostController';
 import type { ContentRow } from '@/components/admin/content-index';
 import ContentIndex from '@/components/admin/content-index';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import AppLayout from '@/layouts/app-layout';
 
 export default function AdminPostsIndex({ posts }: { posts: ContentRow[] }) {

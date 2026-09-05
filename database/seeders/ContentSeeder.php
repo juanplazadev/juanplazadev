@@ -11,7 +11,7 @@ use Illuminate\Database\Seeder;
 use RuntimeException;
 
 /**
- * Bootstraps the content that used to live in app/Support/Content and in a page
+ * Bootstraps the content that used to live in app/Content and in a page
  * component per slug.
  *
  * firstOrCreate, not updateOrCreate: once the admin UI exists the database is
@@ -64,9 +64,12 @@ final class ContentSeeder extends Seeder
                 ['label' => 'PHP 8.5', 'icon' => 'php'],
                 ['label' => 'Inertia + React', 'icon' => 'inertia'],
                 ['label' => 'Vite', 'icon' => 'vite'],
+                ['label' => 'Tailwind v4', 'icon' => 'tailwind'],
                 ['label' => 'PostgreSQL', 'icon' => 'postgresql'],
                 ['label' => 'Redis', 'icon' => 'redis'],
                 ['label' => 'Horizon', 'icon' => 'laravelHorizon'],
+                ['label' => 'Caddy', 'icon' => 'caddy'],
+                ['label' => 'GitHub Actions', 'icon' => 'githubActions'],
             ],
             'links' => [
                 ['label' => 'Live demo', 'href' => 'https://ci.thatdevjp.com'],

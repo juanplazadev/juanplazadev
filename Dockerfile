@@ -90,6 +90,12 @@ RUN { \
       echo "opcache.max_accelerated_files=20000"; \
     } > /usr/local/etc/php/conf.d/zz-opcache.ini
 
+# Not an opcache setting despite the neighbours: expose_php is core PHP and
+# there is no `opcache.expose_php` - PHP ignores that spelling silently, so the
+# header stayed. Off drops X-Powered-By, which otherwise announces the exact
+# patch version to anyone running headers against the site.
+RUN echo "expose_php=Off" > /usr/local/etc/php/conf.d/zz-app.ini
+
 # Deployed commit SHA, for correlating a running container with a commit.
 ARG GIT_COMMIT=unknown
 ENV GIT_COMMIT=${GIT_COMMIT}
