@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Services\Cloudflare\CachedSiteAnalytics;
+use App\Services\Cloudflare\CloudflareGraphQlClient;
+use App\Services\Cloudflare\SiteAnalytics;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -22,7 +25,7 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->registerAnalytics();
     }
 
     /**
@@ -32,6 +35,31 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureErrorPages();
+    }
+
+    /**
+     * Wire the Cloudflare analytics stack.
+     *
+     * scoped(), not singleton(): Octane boots the container once and reuses it
+     * across requests, so a singleton here would outlive the request that built
+     * it and keep whatever config it captured even after a config:cache reload.
+     */
+    private function registerAnalytics(): void
+    {
+        $this->app->scoped(CloudflareGraphQlClient::class, fn (): CloudflareGraphQlClient => new CloudflareGraphQlClient(
+            config('services.cloudflare.api_token'),
+        ));
+
+        $this->app->scoped(SiteAnalytics::class, fn ($app): SiteAnalytics => new SiteAnalytics(
+            $app->make(CloudflareGraphQlClient::class),
+            config('services.cloudflare.account_id'),
+            config('services.cloudflare.site_tag'),
+            config('services.cloudflare.zone_id'),
+        ));
+
+        $this->app->scoped(CachedSiteAnalytics::class, fn ($app): CachedSiteAnalytics => new CachedSiteAnalytics(
+            $app->make(SiteAnalytics::class),
+        ));
     }
 
     /**

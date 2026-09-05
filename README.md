@@ -117,7 +117,7 @@ a fresh clone must build once before type checking will pass.
 ### Content
 
 `Post` and `Architecture` store a markdown `body` plus named JSON `blocks`
-(diagrams, spec lists). `App\Support\Content\BodyRenderer` splits the body on
+(diagrams, spec lists). `App\Content\BodyRenderer` splits the body on
 `::block{key="..."}` directives and compiles the result into the `rendered`
 column on save, so the public read path never parses markdown and there is no
 cache to invalidate. A row with a null or future `published_at` is a draft:

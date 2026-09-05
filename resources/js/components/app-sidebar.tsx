@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/sidebar';
 import ArchitectureController from '@/actions/App/Http/Controllers/Admin/ArchitectureController';
 import PostController from '@/actions/App/Http/Controllers/Admin/PostController';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [

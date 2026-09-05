@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Content\BodyRenderer;
 use App\Http\Controllers\Controller;
 use App\Rules\ValidBlocks;
-use App\Support\Content\BodyRenderer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

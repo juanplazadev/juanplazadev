@@ -19,9 +19,5 @@ Route::get('architecture/{slug}', [ArchitectureController::class, 'show'])
     ->where('slug', '[a-z0-9-]+')
     ->name('architecture.show');
 
-Route::middleware(['auth', 'verified'])->group(function (): void {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
-});
-
 require __DIR__.'/admin.php';
 require __DIR__.'/settings.php';

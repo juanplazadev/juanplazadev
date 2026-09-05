@@ -8,6 +8,7 @@ import GitHubIcon from './github-icon';
 import PalettePicker from './palette-picker';
 import StatusDot from './status-dot';
 import ThemeToggle from './theme-toggle';
+import Wordmark from '@/components/wordmark';
 import WeatherInline from '@/components/weather/weather-inline';
 
 const PinIcon = () => (
@@ -84,9 +85,7 @@ export default function Header() {
                 {/* Wordmark and the appearance controls share the top rail so they read
             as part of a bar rather than floating over the avatar. */}
                 <div className="hero-in mb-8 flex items-center justify-between">
-                    <span className="font-inter-tight text-foreground text-sm font-semibold tracking-tight">
-                        juanplaza<span className="text-primary">.dev</span>
-                    </span>
+                    <Wordmark className="text-sm" />
                     <div className="flex items-center gap-2">
                         <PalettePicker />
                         <ThemeToggle />
