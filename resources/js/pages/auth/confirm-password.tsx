@@ -10,6 +10,7 @@ import {
     store as confirmStore,
 } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyConfirmationController';
 import PasskeyVerify from '@/components/passkey-verify';
+import AuthLayout from '@/layouts/auth-layout';
 
 export default function ConfirmPassword() {
     return (
@@ -59,8 +60,11 @@ export default function ConfirmPassword() {
     );
 }
 
-ConfirmPassword.layout = {
-    title: 'Confirm password',
-    description:
-        'This is a secure area of the application. Please confirm your password before continuing.',
-};
+ConfirmPassword.layout = [
+    AuthLayout,
+    {
+        title: 'Confirm password',
+        description:
+            'This is a secure area of the application. Please confirm your password before continuing.',
+    },
+];

@@ -30,7 +30,11 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-/.ai
+# .ai holds nothing but rules/, which is shared and committed - the four
+# existing rule files were force-added past this. Without the negation every
+# new rule Boost records is silently ignored and the team never inherits it.
+/.ai/*
+!/.ai/rules/
 /.claude
 
 **/caddy

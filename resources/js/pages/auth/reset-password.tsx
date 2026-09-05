@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { update } from '@/routes/password';
+import AuthLayout from '@/layouts/auth-layout';
 
 type Props = {
     token: string;
@@ -90,7 +91,10 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
     );
 }
 
-ResetPassword.layout = {
-    title: 'Reset password',
-    description: 'Please enter your new password below',
-};
+ResetPassword.layout = [
+    AuthLayout,
+    {
+        title: 'Reset password',
+        description: 'Please enter your new password below',
+    },
+];

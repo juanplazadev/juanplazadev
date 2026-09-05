@@ -2,6 +2,8 @@ import { Head } from '@inertiajs/react';
 import AppearanceTabs from '@/components/appearance-tabs';
 import Heading from '@/components/heading';
 import { edit as editAppearance } from '@/routes/appearance';
+import AppLayout from '@/layouts/app-layout';
+import SettingsLayout from '@/layouts/settings/layout';
 
 export default function Appearance() {
     return (
@@ -22,11 +24,17 @@ export default function Appearance() {
     );
 }
 
-Appearance.layout = {
-    breadcrumbs: [
+Appearance.layout = [
+    [
+        AppLayout,
         {
-            title: 'Appearance settings',
-            href: editAppearance(),
+            breadcrumbs: [
+                {
+                    title: 'Appearance settings',
+                    href: editAppearance(),
+                },
+            ],
         },
     ],
-};
+    SettingsLayout,
+];

@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 
 import ArchitectureCard from '@/components/cards/architecture-card';
+import PageLayout from '@/layouts/page-layout';
 import type { Architecture } from '@/types/content';
 
 export default function ArchitectureIndex({
@@ -45,3 +46,5 @@ export default function ArchitectureIndex({
         </>
     );
 }
+
+ArchitectureIndex.layout = PageLayout;

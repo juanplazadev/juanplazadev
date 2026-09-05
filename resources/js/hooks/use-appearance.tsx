@@ -34,7 +34,14 @@ const getStoredAppearance = (): Appearance => {
         return 'system';
     }
 
-    return (localStorage.getItem('appearance') as Appearance) || 'system';
+    try {
+        return (localStorage.getItem('appearance') as Appearance) || 'system';
+    } catch {
+        // Private mode or blocked storage. This runs at module load, so an
+        // uncaught throw here would take the whole bundle down; system is the
+        // same answer a visitor who never chose would get anyway.
+        return 'system';
+    }
 };
 
 const isDarkMode = (appearance: Appearance): boolean => {
@@ -52,10 +59,26 @@ const applyTheme = (appearance: Appearance): void => {
     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 };
 
+/*
+  The OS preference is part of the store, not something read during render.
+
+  `prefers-color-scheme` is only knowable on the client, so a render-time
+  matchMedia() read resolves to light on the server and dark on a dark-mode
+  client's hydration pass - an attribute mismatch React refuses to patch up,
+  which left the toggle's aria-pressed stale. Subscribing here instead keeps the
+  hydration render equal to the server's and lets React re-render once with the
+  real value, and it means an OS theme change now reaches subscribers at all.
+*/
 const subscribe = (callback: () => void) => {
     listeners.add(callback);
 
-    return () => listeners.delete(callback);
+    const query = mediaQuery();
+    query?.addEventListener('change', callback);
+
+    return () => {
+        listeners.delete(callback);
+        query?.removeEventListener('change', callback);
+    };
 };
 
 const notify = (): void => listeners.forEach((listener) => listener());
@@ -70,14 +93,18 @@ const mediaQuery = (): MediaQueryList | null => {
 
 const handleSystemThemeChange = (): void => applyTheme(currentAppearance);
 
+/*
+  A first-time visitor is left unpersisted on purpose.
+
+  Nothing is written to localStorage or the appearance cookie until the visitor
+  actually picks a theme, so an untouched browser keeps following the OS: the
+  blade pre-paint script reads no cookie, falls through to "system" and resolves
+  it against prefers-color-scheme. Seeding storage with "system" up front only
+  wrote a value that the absent-cookie default already implies.
+*/
 export function initializeTheme(): void {
     if (typeof window === 'undefined') {
         return;
-    }
-
-    if (!localStorage.getItem('appearance')) {
-        localStorage.setItem('appearance', 'system');
-        setCookie('appearance', 'system');
     }
 
     currentAppearance = getStoredAppearance();
@@ -94,9 +121,14 @@ export function useAppearance(): UseAppearanceReturn {
         () => 'system',
     );
 
-    const resolvedAppearance: ResolvedAppearance = isDarkMode(appearance)
-        ? 'dark'
-        : 'light';
+    // Server and hydration both resolve to light; the subscription above then
+    // re-renders with the real value. Deriving this inline would read matchMedia
+    // during render and break hydration.
+    const resolvedAppearance: ResolvedAppearance = useSyncExternalStore(
+        subscribe,
+        () => (isDarkMode(currentAppearance) ? 'dark' : 'light'),
+        () => 'light',
+    );
 
     const updateAppearance = (mode: Appearance): void => {
         currentAppearance = mode;

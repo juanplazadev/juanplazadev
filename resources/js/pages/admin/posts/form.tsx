@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { dashboard } from '@/routes';
+import AppLayout from '@/layouts/app-layout';
 
 type PostForm = {
     slug: string;
@@ -159,9 +160,12 @@ export default function AdminPostForm({ post }: { post: PostForm | null }) {
     );
 }
 
-AdminPostForm.layout = {
-    breadcrumbs: [
-        { title: 'Dashboard', href: dashboard() },
-        { title: 'Posts', href: PostController.index() },
-    ],
-};
+AdminPostForm.layout = [
+    AppLayout,
+    {
+        breadcrumbs: [
+            { title: 'Dashboard', href: dashboard() },
+            { title: 'Posts', href: PostController.index() },
+        ],
+    },
+];

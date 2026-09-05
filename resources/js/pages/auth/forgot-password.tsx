@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
+import AuthLayout from '@/layouts/auth-layout';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     return (
@@ -63,7 +64,10 @@ export default function ForgotPassword({ status }: { status?: string }) {
     );
 }
 
-ForgotPassword.layout = {
-    title: 'Forgot password',
-    description: 'Enter your email to receive a password reset link',
-};
+ForgotPassword.layout = [
+    AuthLayout,
+    {
+        title: 'Forgot password',
+        description: 'Enter your email to receive a password reset link',
+    },
+];

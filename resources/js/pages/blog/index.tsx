@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 
 import PostCard from '@/components/cards/post-card';
+import PageLayout from '@/layouts/page-layout';
 import type { Post } from '@/types/content';
 
 export default function BlogIndex({ posts }: { posts: Post[] }) {
@@ -40,3 +41,5 @@ export default function BlogIndex({ posts }: { posts: Post[] }) {
         </>
     );
 }
+
+BlogIndex.layout = PageLayout;

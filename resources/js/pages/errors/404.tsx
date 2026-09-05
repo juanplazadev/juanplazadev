@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 
+import PageLayout from '@/layouts/page-layout';
 import { home } from '@/routes';
 
 export default function NotFound() {
@@ -25,3 +26,5 @@ export default function NotFound() {
         </>
     );
 }
+
+NotFound.layout = PageLayout;
