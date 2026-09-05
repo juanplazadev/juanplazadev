@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-import UserImg from '@/images/user-image.jpg';
+import UserImg from '@images/user-image.webp';
 
 import Badge from './badge';
 import Button from './button';

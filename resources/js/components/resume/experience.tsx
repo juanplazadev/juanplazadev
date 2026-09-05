@@ -1,8 +1,8 @@
 import { cn } from '@/lib/utils';
 import Section from '@/components/site/section';
-import LogoMartori from '@/images/logo-martori.png';
-import LogoRbc from '@/images/logo-rbc.png';
-import LogoSknv from '@/images/logo-sknv.png';
+import LogoMartori from '@images/logo-martori.webp';
+import LogoRbc from '@images/logo-rbc.webp';
+import LogoSknv from '@images/logo-sknv.webp';
 
 /*
   How a logo should sit in its circle. The three files are not the same kind of

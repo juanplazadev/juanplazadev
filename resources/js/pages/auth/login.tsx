@@ -10,6 +10,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import PasskeyVerify from '@/components/passkey-verify';
+import AuthLayout from '@/layouts/auth-layout';
 
 type Props = {
     status?: string;
@@ -103,7 +104,10 @@ export default function Login({ status, canResetPassword }: Props) {
     );
 }
 
-Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
-};
+Login.layout = [
+    AuthLayout,
+    {
+        title: 'Log in to your account',
+        description: 'Enter your email and password below to log in',
+    },
+];

@@ -4,6 +4,7 @@ import ArchitectureController from '@/actions/App/Http/Controllers/Admin/Archite
 import type { ContentRow } from '@/components/admin/content-index';
 import ContentIndex from '@/components/admin/content-index';
 import { dashboard } from '@/routes';
+import AppLayout from '@/layouts/app-layout';
 
 type Row = ContentRow & { position: number };
 
@@ -34,9 +35,12 @@ export default function AdminArchitecturesIndex({
     );
 }
 
-AdminArchitecturesIndex.layout = {
-    breadcrumbs: [
-        { title: 'Dashboard', href: dashboard() },
-        { title: 'Architecture', href: ArchitectureController.index() },
-    ],
-};
+AdminArchitecturesIndex.layout = [
+    AppLayout,
+    {
+        breadcrumbs: [
+            { title: 'Dashboard', href: dashboard() },
+            { title: 'Architecture', href: ArchitectureController.index() },
+        ],
+    },
+];

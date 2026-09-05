@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { dashboard } from '@/routes';
+import AppLayout from '@/layouts/app-layout';
 
 type ArchitectureForm = {
     slug: string;
@@ -226,9 +227,12 @@ export default function AdminArchitectureForm({
     );
 }
 
-AdminArchitectureForm.layout = {
-    breadcrumbs: [
-        { title: 'Dashboard', href: dashboard() },
-        { title: 'Architecture', href: ArchitectureController.index() },
-    ],
-};
+AdminArchitectureForm.layout = [
+    AppLayout,
+    {
+        breadcrumbs: [
+            { title: 'Dashboard', href: dashboard() },
+            { title: 'Architecture', href: ArchitectureController.index() },
+        ],
+    },
+];

@@ -7,6 +7,7 @@ import Education from '@/components/resume/education';
 import Experience from '@/components/resume/experience';
 import OpenSource from '@/components/resume/open-source';
 import Skills from '@/components/resume/skills';
+import SiteLayout from '@/layouts/site-layout';
 //import Writing from "@/components/resume/writing";
 
 export default function Home() {
@@ -33,3 +34,5 @@ export default function Home() {
         </>
     );
 }
+
+Home.layout = SiteLayout;

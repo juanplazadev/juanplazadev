@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { edit } from '@/routes/security';
 import type { Props as ManagePasskeysProps } from '@/components/manage-passkeys';
 import ManagePasskeys from '@/components/manage-passkeys';
+import AppLayout from '@/layouts/app-layout';
+import SettingsLayout from '@/layouts/settings/layout';
 
 // oxfmt-ignore
 type Props = {
@@ -129,11 +131,17 @@ export default function Security(props: Props) {
     );
 }
 
-Security.layout = {
-    breadcrumbs: [
+Security.layout = [
+    [
+        AppLayout,
         {
-            title: 'Security settings',
-            href: edit(),
+            breadcrumbs: [
+                {
+                    title: 'Security settings',
+                    href: edit(),
+                },
+            ],
         },
     ],
-};
+    SettingsLayout,
+];

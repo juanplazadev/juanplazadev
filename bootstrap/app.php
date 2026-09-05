@@ -18,6 +18,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+
+        // We're behind Caddy
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO,
+        );
+
+        $middleware->trustHosts(at: ['juanplaza.dev']);
+
         $middleware->encryptCookies(except: ['appearance', 'palette', 'sidebar_state']);
 
         $middleware->web(append: [

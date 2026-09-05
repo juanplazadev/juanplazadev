@@ -34,6 +34,19 @@ export default defineConfig({
             formVariants: true,
         }),
     ]),
+    /*
+      Images live outside resources/js, so they need an alias of their own.
+
+      laravel-vite-plugin only ever defines "@" -> /resources/js, and Vite's dev
+      resolver does not read tsconfig `paths` - only the Rolldown build resolver
+      does. A tsconfig-only entry therefore type-checks and builds while the dev
+      server fails on the same import, so the alias has to be declared here.
+    */
+    resolve: {
+        alias: {
+            '@images': '/resources/images',
+        },
+    },
     server: {
         watch: {
             ignored: [
