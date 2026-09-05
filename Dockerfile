@@ -123,8 +123,13 @@ EXPOSE 8080
 # Both processes, so a dead SSR child marks the container unhealthy instead of
 # quietly serving un-prerendered pages. 127.0.0.1 rather than localhost: the
 # latter resolves to ::1 first and these bind IPv4.
+#
+# The Host header is not optional. bootstrap/app.php pins trustHosts to
+# juanplaza.dev, so Symfony rejects a bare loopback curl - Host 127.0.0.1:8080 -
+# with a 400 and the container never goes healthy. Keep this value in step with
+# that trustHosts list. The SSR curl needs none: 13714 is a plain Node server.
 HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=5 \
-    CMD curl -fsS http://127.0.0.1:8080/up && curl -fsS http://127.0.0.1:13714/health || exit 1
+    CMD curl -fsS -H 'Host: juanplaza.dev' http://127.0.0.1:8080/up && curl -fsS http://127.0.0.1:13714/health || exit 1
 
 # Base image ENTRYPOINT (docker-php-entrypoint) execs this.
 CMD ["app-entrypoint"]
