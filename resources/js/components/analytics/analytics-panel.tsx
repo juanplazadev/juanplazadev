@@ -1,11 +1,13 @@
 import { router } from '@inertiajs/react';
 
-import StatTile from '@/components/analytics/stat-tile';
+import EmptyCard from '@/components/admin/empty-card';
+import { formatBytes } from '@/components/admin/format';
+import PanelHeader from '@/components/admin/panel-header';
+import RangePicker from '@/components/admin/range-picker';
+import StatTile from '@/components/admin/stat-tile';
 import TopList from '@/components/analytics/top-list';
 import TrafficChart from '@/components/analytics/traffic-chart';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { dashboard } from '@/routes/admin';
+import { analytics as analyticsRoute } from '@/routes/admin';
 import type { Analytics, AnalyticsRangeOption } from '@/types/analytics';
 
 type AnalyticsPanelProps = {
@@ -21,39 +23,19 @@ export default function AnalyticsPanel({
 }: AnalyticsPanelProps) {
     return (
         <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <h2 className="text-foreground font-display text-lg font-semibold">
-                        Traffic
-                    </h2>
-                    <p className="text-muted-foreground text-xs">
-                        Cloudflare Web Analytics · {analytics.label}
-                    </p>
-                </div>
-
-                <div className="border-border flex rounded-lg border p-0.5">
-                    {ranges.map((option) => (
-                        <Button
-                            key={option.value}
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            aria-pressed={option.value === range}
-                            className={cn(
-                                'h-7 px-3 text-xs',
-                                option.value === range &&
-                                    'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
-                            )}
-                            onClick={() => selectRange(option.value)}
-                        >
-                            {option.label}
-                        </Button>
-                    ))}
-                </div>
-            </div>
+            <PanelHeader
+                title="Traffic"
+                subtitle={`Cloudflare Web Analytics · ${analytics.label}`}
+            >
+                <RangePicker
+                    value={range}
+                    options={ranges}
+                    onSelect={selectRange}
+                />
+            </PanelHeader>
 
             {analytics.error ? (
-                <ErrorCard message={analytics.error} />
+                <EmptyCard message={analytics.error} />
             ) : (
                 <Panels analytics={analytics} />
             )}
@@ -69,7 +51,7 @@ export default function AnalyticsPanel({
  * losing focus mid-click.
  */
 function selectRange(value: string): void {
-    router.visit(dashboard.url({ query: { range: value } }), {
+    router.visit(analyticsRoute.url({ query: { range: value } }), {
         only: ['analytics', 'range'],
         preserveState: true,
         preserveScroll: true,
@@ -119,7 +101,7 @@ function Panels({ analytics }: { analytics: Analytics }) {
             {series.length > 0 ? (
                 <TrafficChart series={series} />
             ) : (
-                <ErrorCard message="No pageviews recorded in this window yet." />
+                <EmptyCard message="No pageviews recorded in this window yet." />
             )}
 
             <div className="grid gap-4 lg:grid-cols-2">
@@ -134,25 +116,4 @@ function Panels({ analytics }: { analytics: Analytics }) {
             </div>
         </>
     );
-}
-
-function ErrorCard({ message }: { message: string }) {
-    return (
-        <div className="border-border bg-card text-muted-foreground rounded-xl border border-dashed p-6 text-center text-sm">
-            {message}
-        </div>
-    );
-}
-
-function formatBytes(bytes: number): string {
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    let value = bytes;
-    let unit = 0;
-
-    while (value >= 1024 && unit < units.length - 1) {
-        value /= 1024;
-        unit += 1;
-    }
-
-    return `${value.toFixed(value >= 10 || unit === 0 ? 0 : 1)} ${units[unit]}`;
 }

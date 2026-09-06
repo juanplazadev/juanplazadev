@@ -9,14 +9,15 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": "^8.5",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.17",
         "laravel/octane": "^2.19",
         "laravel/tinker": "^3.0",
-        "laravel/wayfinder": "^0.1.14"
+        "laravel/wayfinder": "^0.1.14",
+        "sentry/sentry-laravel": "^4.27"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.6",
@@ -79,7 +80,7 @@
             "npm run types:check",
             "@test"
         ],
-        "test:unit": "XDEBUG_MODE=\"coverage\" php -d memory_limit=-1 vendor/bin/pest --testsuite=Unit,Feature --parallel --coverage --exactly=95.0",
+        "test:unit": "XDEBUG_MODE=\"coverage\" php -d memory_limit=-1 vendor/bin/pest --testsuite=Unit,Feature --parallel --coverage --exactly=95.7",
         "test": [
             "@test:type-coverage",
             "@test:unit",

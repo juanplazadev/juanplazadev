@@ -1,4 +1,12 @@
-@import 'tailwindcss';
+/* source(none) turns OFF Tailwind's automatic content detection, which walks
+   the project from the root and only skips what .gitignore names. storage/ is
+   not gitignored, so every request for this file was rescanning 4MB of logs,
+   228 compiled blade views and the inertia-devtools dump - and Tailwind
+   regenerates on ANY source change, so that cost landed on the first CSS
+   request after every single edit (~4-5s, measured). The globs below are the
+   only places this project writes class names; nothing outside resources/
+   contains any. */
+@import 'tailwindcss' source(none);
 
 @import 'tw-animate-css';
 
@@ -9,6 +17,7 @@
 @import './additional-styles/motion.css';
 @import './additional-styles/prose.css';
 
+@source '../js/**/*.{ts,tsx}';
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 

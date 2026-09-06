@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 
 import type { AnalyticsPoint } from '@/types/analytics';
+import PanelCard from '@/components/admin/panel-card';
 
 type TrafficChartProps = {
     series: AnalyticsPoint[];
@@ -28,11 +29,7 @@ type TrafficChartProps = {
  */
 export default function TrafficChart({ series }: TrafficChartProps) {
     return (
-        <div className="border-border bg-card rounded-xl border p-4">
-            <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                Traffic
-            </h3>
-
+        <PanelCard title="Traffic">
             <div className="mt-4 h-64">
                 <ResponsiveContainer
                     width="100%"
@@ -124,7 +121,7 @@ export default function TrafficChart({ series }: TrafficChartProps) {
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
-        </div>
+        </PanelCard>
     );
 }
 

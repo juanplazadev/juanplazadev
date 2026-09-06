@@ -21,3 +21,14 @@ Assert on a page's own description, not its title: the admin sidebar carries "Po
 Assets: with public/hot present the tests run against the Vite dev server on :5180 (needs the Docker dev stack up); without it they need a current `npm run build`. Both paths verified. Never delete public/hot to "fix" a blank page - the running dev server owns it.
 
 Selector `@name` resolves to [data-testid=name], [data-test=name]. This project uses data-test.
+
+## Every browser test failing at once means a wedged Vite dev server, not the tests
+Symptom: all of `sail composer test:feature-browser` fails with "Expected to see text [...] but it was not found", the screenshots are a blank page in the app's background colour, and `assertNoJavaScriptErrors()` / `assertNoConsoleLogs()` both pass.
+
+Cause: with public/hot present the tests load modules from the running `vp dev` server. If node_modules changed under it (an `npm install` while it was running), its optimizer cache goes stale and it answers `504 Outdated Optimize Dep` for deps whose URLs it still emits - e.g. `/node_modules/.vite/deps/sonner.js?v=<hash>`. A failing `<script type=module>` fires an error event on the element, which does NOT reach a non-capturing window listener, so the plugin's InitScript records nothing: no console logs, no JS errors, `#app` simply stays empty.
+
+Fix: restart the dev server (`sail npm run dev`). Never delete public/hot.
+
+To diagnose, ask the server for the hash it is handing out and then request a dep at that hash:
+`curl -s http://localhost:5180/resources/js/app.tsx | grep -o '?v=[a-z0-9]*'`
+A 504 at a hash the server itself emits is the tell. To surface a swallowed resource error from inside a test, register a capture-phase listener (`addEventListener('error', h, true)`); the non-capture one misses it.

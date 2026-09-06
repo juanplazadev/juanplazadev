@@ -8,6 +8,9 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Services\Cloudflare\CachedSiteAnalytics;
 use App\Services\Cloudflare\CloudflareGraphQlClient;
 use App\Services\Cloudflare\SiteAnalytics;
+use App\Services\Sentry\CachedErrorInsights;
+use App\Services\Sentry\ErrorInsights;
+use App\Services\Sentry\SentryApiClient;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -26,6 +29,7 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->registerAnalytics();
+        $this->registerErrorInsights();
     }
 
     /**
@@ -59,6 +63,32 @@ final class AppServiceProvider extends ServiceProvider
 
         $this->app->scoped(CachedSiteAnalytics::class, fn ($app): CachedSiteAnalytics => new CachedSiteAnalytics(
             $app->make(SiteAnalytics::class),
+        ));
+    }
+
+    /**
+     * Wire the Sentry error insights stack.
+     *
+     * scoped() for the same Octane reason as the analytics stack above, and
+     * separate from it on purpose: the two providers share a page shape but not
+     * a credential, an endpoint, or a failure mode.
+     */
+    private function registerErrorInsights(): void
+    {
+        $this->app->scoped(SentryApiClient::class, fn (): SentryApiClient => new SentryApiClient(
+            config('services.sentry.api_token'),
+            config('services.sentry.api_url'),
+        ));
+
+        $this->app->scoped(ErrorInsights::class, fn ($app): ErrorInsights => new ErrorInsights(
+            $app->make(SentryApiClient::class),
+            config('services.sentry.organization'),
+            config('services.sentry.project'),
+            (int) config('services.sentry.monthly_error_quota'),
+        ));
+
+        $this->app->scoped(CachedErrorInsights::class, fn ($app): CachedErrorInsights => new CachedErrorInsights(
+            $app->make(ErrorInsights::class),
         ));
     }
 

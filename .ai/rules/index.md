@@ -4,15 +4,18 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
-| app/Services/Cloudflare/**,app/Enums/AnalyticsRange.php,config/services.php,app/Http/Controllers/Admin/DashboardController.php | .ai/rules/analytics.md |
+| {routes/admin.php,app/Http/Controllers/Admin/**,resources/js/pages/dashboard.tsx,resources/js/pages/admin/analytics.tsx} | .ai/rules/admin.md |
+| app/Services/Cloudflare/**,app/Enums/AnalyticsRange.php,config/services.php,app/Http/Controllers/Admin/AnalyticsController.php | .ai/rules/analytics.md |
 | bootstrap/app.php | .ai/rules/bootstrap.md |
 | tests/Browser/** | .ai/rules/browser.md |
+| {resources/js/components/admin/**,resources/js/components/analytics/**,resources/js/components/errors/**,resources/js/components/overview/**,resources/js/components/deployments/**} | .ai/rules/components-admin.md |
 | {config/inertia.php,phpunit.xml,package.json,resources/js/components/analytics/**} | .ai/rules/components-analytics.md |
 | app/Content/**,app/Models/{Post,Architecture}.php,app/Concerns/{Publishable,RendersMarkdownBody}.php | .ai/rules/concerns.md |
 | resources/css/additional-styles/prose.css,resources/js/components/content/** | .ai/rules/content.md |
+| resources/css/app.css,resources/css/additional-styles/** | .ai/rules/css.md |
 | {docker/Caddyfile,docker-entrypoint.sh,Dockerfile} | .ai/rules/docker.md |
 | {vite.config.ts,tsconfig.json,resources/images/**,config/inertia.php,resources/js/app.tsx} | .ai/rules/js.md |
-| {routes/admin.php,app/Http/Controllers/Admin/**,resources/js/pages/dashboard.tsx} | .ai/rules/pages.md |
+| {app/Services/Sentry/**,app/Http/Controllers/Admin/{Errors,Deployments}Controller.php,config/services.php,resources/js/pages/admin/deployments.tsx} | .ai/rules/sentry.md |
 | {resources/js/components/wordmark.tsx,resources/js/components/app-logo.tsx,resources/js/components/site/**} | .ai/rules/site.md |
 | tests/** | .ai/rules/tests.md |
 | {Dockerfile,docker-entrypoint.sh,compose.prod.yaml,.dockerignore,.github/workflows/deploy.yml} | .ai/rules/workflows.md |

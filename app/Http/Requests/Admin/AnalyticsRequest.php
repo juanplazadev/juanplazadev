@@ -9,7 +9,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-final class DashboardRequest extends FormRequest
+final class AnalyticsRequest extends FormRequest
 {
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
@@ -22,7 +22,7 @@ final class DashboardRequest extends FormRequest
     }
 
     /**
-     * The range the dashboard should render, defaulted when none was asked for.
+     * The range the traffic page should render, defaulted when none was asked for.
      */
     public function range(): AnalyticsRange
     {
@@ -33,7 +33,7 @@ final class DashboardRequest extends FormRequest
      * Drop an unusable range rather than failing on it.
      *
      * `?range=` is a link in the page, not a form field: a stale bookmark or a
-     * hand-typed value should render the default dashboard, not an error. The
+     * hand-typed value should render the default range, not an error. The
      * rule below then only ever sees a valid case or nothing at all.
      *
      * query() is typed array|string|null - a repeated ?range= arrives as an
