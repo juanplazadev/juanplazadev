@@ -1,4 +1,5 @@
 import type { AnalyticsRow } from '@/types/analytics';
+import PanelCard from '@/components/admin/panel-card';
 
 type TopListProps = {
     title: string;
@@ -22,11 +23,7 @@ export default function TopList({
     const highest = rows.reduce((max, row) => Math.max(max, row.visits), 0);
 
     return (
-        <div className="border-border bg-card rounded-xl border p-4">
-            <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                {title}
-            </h3>
-
+        <PanelCard title={title}>
             {rows.length === 0 ? (
                 <p className="text-muted-foreground mt-3 text-sm">
                     {emptyLabel}
@@ -58,6 +55,6 @@ export default function TopList({
                     ))}
                 </ol>
             )}
-        </div>
+        </PanelCard>
     );
 }

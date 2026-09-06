@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'app/Services/Cloudflare/**,app/Enums/AnalyticsRange.php,config/services.php,app/Http/Controllers/Admin/DashboardController.php'
+  - 'app/Services/Cloudflare/**,app/Enums/AnalyticsRange.php,config/services.php,app/Http/Controllers/Admin/AnalyticsController.php'
 ---
 
 # Analytics

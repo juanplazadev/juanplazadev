@@ -9,6 +9,7 @@ use App\Models\Post;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use RuntimeException;
+use Throwable;
 
 /**
  * Bootstraps the content that used to live in app/Content and in a page
@@ -21,6 +22,9 @@ use RuntimeException;
  */
 final class ContentSeeder extends Seeder
 {
+    /**
+     * @throws Throwable
+     */
     public function run(): void
     {
         Post::query()->firstOrCreate(['slug' => 'automatic-https-with-caddy'], [
@@ -47,6 +51,7 @@ final class ContentSeeder extends Seeder
                 ['label' => 'PostgreSQL 18', 'icon' => 'postgresql'],
                 ['label' => 'Caddy', 'icon' => 'caddy'],
                 ['label' => 'GitHub Actions', 'icon' => 'githubActions'],
+                ['label' => 'Sentry', 'icon' => 'sentry'],
             ],
             'links' => null,
             'published_at' => CarbonImmutable::parse('2026-08-24'),
@@ -88,6 +93,8 @@ final class ContentSeeder extends Seeder
      * anything that reads JSON.
      *
      * @return array{body: string, blocks: array<string, mixed>|null}
+     *
+     * @throws Throwable
      */
     private function body(string $slug): array
     {

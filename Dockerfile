@@ -100,6 +100,19 @@ RUN echo "expose_php=Off" > /usr/local/etc/php/conf.d/zz-app.ini
 ARG GIT_COMMIT=unknown
 ENV GIT_COMMIT=${GIT_COMMIT}
 
+# The same SHA again, under the name config/sentry.php reads, so every event
+# this container reports is attributed to the build that emitted it. Empty by
+# default rather than `unknown`: a local `docker compose build` must not invent
+# a release, and the errors dashboard compares this against the newest release
+# Sentry knows about to spot a deploy that shipped but never restarted.
+#
+# It has to be baked here rather than set in the runtime .env, and it must stay
+# out of that file: compose's `env_file:` overrides an image ENV for any key the
+# file names, so a stray blank `SENTRY_RELEASE=` there would silently untag
+# every event.
+ARG SENTRY_RELEASE=
+ENV SENTRY_RELEASE=${SENTRY_RELEASE}
+
 COPY --chown=www-data:www-data . .
 COPY --from=vendor --chown=www-data:www-data /app/vendor ./vendor
 COPY --from=vendor --chown=www-data:www-data /app/bootstrap/cache ./bootstrap/cache

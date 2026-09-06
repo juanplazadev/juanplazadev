@@ -124,3 +124,36 @@ jobs:
                   echo "juanplaza never became healthy"
                   docker logs --tail 50 juanplaza || true
                   exit 1
+
+            # Last, so a release only exists for a deploy that actually served
+            # traffic - a build that never went healthy is already a red run
+            # here and does not need a row on the errors dashboard.
+            #
+            # `release` MUST equal the SENTRY_RELEASE baked into the image by
+            # compose.prod.yaml; both are IMAGE_TAG, which is why that value is
+            # the workflow's single source of provenance. If they drift, Sentry
+            # shows a release with no events against it.
+            #
+            # continue-on-error because this is bookkeeping, not the deploy: the
+            # app is already healthy by this point, and a Sentry outage must not
+            # turn a good release red. Same split the read side uses, where
+            # ErrorInsights lets an optional half fail without taking the page.
+            #
+            # The token is the ORGANIZATION auth token (org:ci), not the user
+            # token in .env - see .ai/rules/sentry.md. They are opposites: the
+            # org one creates releases and cannot read issues, the user one
+            # reads issues and cannot create releases.
+            - name: Tag the Sentry release
+              uses: getsentry/action-release@v3
+              continue-on-error: true
+              env:
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_RELEASE_TOKEN }}
+                  SENTRY_ORG: ${{ vars.SENTRY_ORGANIZATION }}
+                  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+              with:
+                  release: ${{ env.IMAGE_TAG }}
+                  environment: production
+                  # `auto`, the default, needs both fetch-depth: 0 on the
+                  # checkout above and a Sentry<->GitHub integration on the org.
+                  # Without the integration it fails the step.
+                  set_commits: skip

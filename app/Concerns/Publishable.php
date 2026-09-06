@@ -49,6 +49,24 @@ trait Publishable
     }
 
     /**
+     * The inverse of published(): never dated, or dated for later.
+     *
+     * Stated once here rather than rebuilt by each caller for the same reason
+     * constrainToPublished() exists - the admin panel counts drafts and the
+     * public read path hides them, and those two must not be able to disagree
+     * about what a draft is.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function drafts(Builder $query): void
+    {
+        $query->where(function (Builder $query): void {
+            $query->whereNull('published_at')->orWhere('published_at', '>', now());
+        });
+    }
+
+    /**
      * Visible to this viewer.
      *
      * An authenticated user is the author, so they see drafts at their real

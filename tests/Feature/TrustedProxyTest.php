@@ -54,7 +54,7 @@ test('the Dockerfile healthcheck uses a host the app trusts', function (): void 
     expect($host)->not->toBeNull('The Dockerfile healthcheck must send a Host header.');
 
     // Static, process-wide state, and this app runs on Octane: always reset it.
-    Request::setTrustedHosts(array_filter((new TrustHosts(app()))->hosts()));
+    Request::setTrustedHosts(array_filter(new TrustHosts(app())->hosts()));
 
     try {
         expect(Request::create("http://{$host}/up")->getHost())->toBe($host);

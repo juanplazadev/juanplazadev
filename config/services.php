@@ -44,4 +44,17 @@ return [
         'zone_id' => env('CLOUDFLARE_ZONE_ID'),
     ],
 
+    /*
+     * Reading errors back out of Sentry, which is a different credential from
+     * the DSN in config/sentry.php: that one submits events, this one queries
+     * them. See .env.example for how to mint the token and find each slug.
+     */
+    'sentry' => [
+        'api_token' => env('SENTRY_API_TOKEN'),
+        'organization' => env('SENTRY_ORGANIZATION'),
+        'project' => env('SENTRY_PROJECT'),
+        'api_url' => env('SENTRY_API_URL', 'https://us.sentry.io/api/0'),
+        'monthly_error_quota' => (int) env('SENTRY_MONTHLY_ERROR_QUOTA', 5000),
+    ],
+
 ];

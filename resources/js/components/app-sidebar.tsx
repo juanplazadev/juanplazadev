@@ -1,10 +1,13 @@
 import { Link } from '@inertiajs/react';
 import {
     BookOpen,
+    ChartLine,
     FolderGit2,
-    LayoutGrid,
+    Gauge,
     Network,
     PenLine,
+    Rocket,
+    TriangleAlert,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -21,15 +24,40 @@ import {
 } from '@/components/ui/sidebar';
 import ArchitectureController from '@/actions/App/Http/Controllers/Admin/ArchitectureController';
 import PostController from '@/actions/App/Http/Controllers/Admin/PostController';
-import { dashboard } from '@/routes/admin';
+import { analytics, dashboard, deployments, errors } from '@/routes/admin';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
+/*
+  Two groups, because the panel answers two different kinds of question.
+  Monitoring is what the site is doing without you; Content is what you do to
+  it. The hrefs are mixed on purpose: the monitoring pages are plain GETs and
+  come from the named-route helpers, while the CRUD pages come from their
+  controller actions so the form verbs travel with them.
+*/
+const monitoringNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Overview',
         href: dashboard(),
-        icon: LayoutGrid,
+        icon: Gauge,
     },
+    {
+        title: 'Traffic',
+        href: analytics(),
+        icon: ChartLine,
+    },
+    {
+        title: 'Errors',
+        href: errors(),
+        icon: TriangleAlert,
+    },
+    {
+        title: 'Deployments',
+        href: deployments(),
+        icon: Rocket,
+    },
+];
+
+const contentNavItems: NavItem[] = [
     {
         title: 'Posts',
         href: PostController.index(),
@@ -71,7 +99,8 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain label="Monitoring" items={monitoringNavItems} />
+                <NavMain label="Content" items={contentNavItems} />
             </SidebarContent>
 
             <SidebarFooter>

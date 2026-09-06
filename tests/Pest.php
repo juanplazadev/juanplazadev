@@ -51,7 +51,12 @@ expect()->extend('toBeOne', fn () => $this->toBe(1));
 |
 */
 
-function something(): void
-{
-    // ..
-}
+/*
+ * Vendor fixtures shared by more than one feature test.
+ *
+ * Required here rather than declared in a test file: a test file's functions
+ * are only loaded when that file is, so a helper borrowed from a sibling works
+ * for a full-suite run and vanishes the moment someone passes --filter.
+ */
+require_once __DIR__.'/Helpers/cloudflare.php';
+require_once __DIR__.'/Helpers/sentry.php';

@@ -43,6 +43,10 @@ services:
                 VITE_WEATHER_TIMEZONE: '${VITE_WEATHER_TIMEZONE:-}'
                 VITE_WEATHER_API_URL: '${VITE_WEATHER_API_URL:-}'
                 GIT_COMMIT: '${IMAGE_TAG:-unknown}'
+                # Must equal the `release:` the Sentry step in deploy.yml
+                # tags, or Sentry shows a release with no events against it.
+                # Both are IMAGE_TAG for exactly that reason.
+                SENTRY_RELEASE: '${IMAGE_TAG:-}'
         env_file: [.env]
         # No `ports:` on purpose - Caddy reaches this over the shared proxy
         # network by container name, so 8080 is never bound on the host and

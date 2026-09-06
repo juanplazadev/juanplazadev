@@ -4,45 +4,59 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Content\ContentSnapshot;
 use App\Enums\AnalyticsRange;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\DashboardRequest;
 use App\Services\Cloudflare\CachedSiteAnalytics;
+use App\Services\Sentry\CachedErrorInsights;
 use Inertia\Inertia;
 use Inertia\Response;
 
 final class DashboardController extends Controller
 {
-    public function __construct(private readonly CachedSiteAnalytics $analytics) {}
+    public function __construct(
+        private readonly CachedSiteAnalytics $analytics,
+        private readonly CachedErrorInsights $insights,
+        private readonly ContentSnapshot $content,
+    ) {}
 
     /**
-     * The authenticated dashboard, with Cloudflare traffic for the chosen range.
+     * The admin root: one condensed reading from every source the panel has.
      *
-     * The analytics prop is deferred rather than resolved inline. Three reasons,
-     * in order of how much they matter:
+     * This page owns no data of its own. Every number on it is a summary the
+     * section pages already fetch, asked for at AnalyticsRange::default() - and
+     * that default is the point, not a shortcut. Both caches key on the range,
+     * so asking at the default lands on the exact entries /dashboard/analytics
+     * and /dashboard/errors use when you arrive at them with no ?range=.
+     * Visiting the overview warms the sections and the sections warm the
+     * overview; the panel as a whole spends no more on vendor calls than it did
+     * when the root was a single page.
      *
-     * 1. Cloudflare is a second network hop. Blocking the page on it would put
-     *    a stranger's latency in front of every dashboard load.
-     * 2. A deferred prop is fetched client-side only, so it never reaches the
-     *    SSR pass - which is what keeps recharts, whose containers render blank
-     *    without a DOM to measure, out of the server bundle's way.
-     * 3. It degrades. SiteAnalytics catches its own failures and returns an
-     *    error string, so an outage costs the panel, not the page.
+     * Three deferred groups rather than one. Grouped deferred props are fetched
+     * in parallel requests, so the slow or throttled source delays its own card
+     * and nothing else. That matters most for Sentry, which rate-limits on
+     * caller identity: without the split, one 429 would blank the traffic card
+     * it has nothing to do with.
      */
-    public function index(DashboardRequest $request): Response
+    public function index(): Response
     {
-        $range = $request->range();
+        $range = AnalyticsRange::default();
 
         return Inertia::render('dashboard', [
-            'range' => $range->value,
-            'ranges' => array_map(
-                static fn (AnalyticsRange $case): array => [
-                    'value' => $case->value,
-                    'label' => $case->label(),
-                ],
-                AnalyticsRange::cases(),
-            ),
-            'analytics' => Inertia::defer(fn (): array => $this->analytics->summary($range)),
+            // Two small table scans. No network, so no reason to defer it - the
+            // content card and the drafts tile paint with the first response.
+            'content' => $this->content->summary(),
+
+            // The build this container is running. Eager, and deliberately not
+            // read from any cached summary: the caches hold for fifteen minutes
+            // and a deploy does not clear them, so a cached `running` would
+            // report drift that had already been fixed for a quarter of an hour
+            // after every release. This is config, not an answer from Sentry.
+            'running' => config('sentry.release'),
+
+            'traffic' => Inertia::defer(fn (): array => $this->analytics->summary($range), 'traffic'),
+            'health' => Inertia::defer(fn (): array => $this->insights->summary($range), 'health'),
+            'deploys' => Inertia::defer(fn (): array => $this->insights->deployments(), 'deploys'),
         ]);
     }
 }
