@@ -1,0 +1,71 @@
+# Octane's FrankenPHP Caddyfile, copied so /build/assets can be sent immutable.
+#
+# This is vendor/laravel/octane/src/Commands/stubs/Caddyfile with one block
+# added, marked below. It is a copy because the only injection point the stub
+# offers, {$CADDY_SERVER_EXTRA_DIRECTIVES}, is overwritten by Octane itself with
+# the Mercure config. docker-entrypoint.sh passes this file via --caddyfile.
+#
+# Every {$...} placeholder is filled by StartFrankenPhpCommand at boot, so they
+# must survive verbatim. When Octane is upgraded, diff the stub against this
+# file and reapply the marked block:
+#
+#   diff vendor/laravel/octane/src/Commands/stubs/Caddyfile docker/Caddyfile
+{
+	{$CADDY_GLOBAL_OPTIONS}
+
+	admin {$CADDY_SERVER_ADMIN_HOST}:{$CADDY_SERVER_ADMIN_PORT}
+
+	frankenphp {
+		worker {
+			file "{$APP_PUBLIC_PATH}/frankenphp-worker.php"
+			{$CADDY_SERVER_WORKER_DIRECTIVE}
+			{$CADDY_SERVER_WATCH_DIRECTIVES}
+		}
+	}
+}
+
+{$CADDY_EXTRA_CONFIG}
+
+{$CADDY_SERVER_SERVER_NAME} {
+	log {
+		level {$CADDY_SERVER_LOG_LEVEL}
+
+		# Redact the authorization query parameter that can be set by Mercure...
+		format filter {
+			wrap {$CADDY_SERVER_LOGGER}
+			fields {
+				uri query {
+					replace authorization REDACTED
+				}
+			}
+		}
+	}
+
+	route {
+		root * "{$APP_PUBLIC_PATH}"
+		encode zstd br gzip
+
+		# --- added, not from the stub -------------------------------------
+		# Vite writes a content hash into every filename under build/assets,
+		# so a changed file is a changed URL and nothing here can go stale.
+		# Without this the origin sends no Cache-Control at all and Cloudflare
+		# falls back to its 4 hour default, which expires bundles and fonts
+		# that could have been cached for a year.
+		#
+		# Scoped to assets/ deliberately: build/manifest.json sits one level up
+		# and is NOT hashed, so it must stay revalidated.
+		@immutable path /build/assets/*
+		header @immutable Cache-Control "public, max-age=31536000, immutable"
+		# --- end added ----------------------------------------------------
+
+		# Mercure configuration is injected here...
+		{$CADDY_SERVER_EXTRA_DIRECTIVES}
+
+		php_server {
+			index frankenphp-worker.php
+			try_files {path} frankenphp-worker.php
+			# Required for the public/storage/ directory...
+			resolve_root_symlink
+		}
+	}
+}
