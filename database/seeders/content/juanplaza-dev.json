@@ -41,6 +41,11 @@
                 "label": "CI/CD",
                 "value": "GitHub Actions, self-hosted runner",
                 "icon": "githubActions"
+            },
+            {
+                "label": "Monitoring",
+                "value": "Sentry",
+                "icon": "sentry"
             }
         ]
     },

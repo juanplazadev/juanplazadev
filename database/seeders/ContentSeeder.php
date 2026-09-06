@@ -47,6 +47,7 @@ final class ContentSeeder extends Seeder
                 ['label' => 'PostgreSQL 18', 'icon' => 'postgresql'],
                 ['label' => 'Caddy', 'icon' => 'caddy'],
                 ['label' => 'GitHub Actions', 'icon' => 'githubActions'],
+                ['label' => 'Sentry', 'icon' => 'sentry'],
             ],
             'links' => null,
             'published_at' => CarbonImmutable::parse('2026-08-24'),
