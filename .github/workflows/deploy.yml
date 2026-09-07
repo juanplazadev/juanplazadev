@@ -129,10 +129,10 @@ jobs:
             # traffic - a build that never went healthy is already a red run
             # here and does not need a row on the errors dashboard.
             #
-            # `release` MUST equal the SENTRY_RELEASE baked into the image by
-            # compose.prod.yaml; both are IMAGE_TAG, which is why that value is
-            # the workflow's single source of provenance. If they drift, Sentry
-            # shows a release with no events against it.
+            # The posted `version` MUST equal the SENTRY_RELEASE baked into
+            # the image by compose.prod.yaml; both are IMAGE_TAG, which is why
+            # that value is the workflow's single source of provenance. If they
+            # drift, Sentry shows a release with no events against it.
             #
             # continue-on-error because this is bookkeeping, not the deploy: the
             # app is already healthy by this point, and a Sentry outage must not
@@ -143,17 +143,44 @@ jobs:
             # token in .env - see .ai/rules/sentry.md. They are opposites: the
             # org one creates releases and cannot read issues, the user one
             # reads issues and cannot create releases.
+            #
+            # Two curl calls rather than getsentry/action-release, which is a
+            # Docker action: `Log in to GHCR` above leaves the repo-scoped
+            # GITHUB_TOKEN in the runner's credential store, docker then sends
+            # it for every ghcr.io pull, and GHCR answers `denied` for another
+            # org's package instead of falling back to an anonymous one. The
+            # action's image is public - the login is what breaks it. Any
+            # third-party Docker action placed after the push step fails the
+            # same way.
+            #
+            # The deploys call is not optional: /releases/ alone leaves
+            # lastDeploy null, and ErrorInsights::environment() reads exactly
+            # that to decide whether a release carries the production badge.
             - name: Tag the Sentry release
-              uses: getsentry/action-release@v3
               continue-on-error: true
               env:
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_RELEASE_TOKEN }}
+                  SENTRY_API_URL: ${{ vars.SENTRY_API_URL || 'https://us.sentry.io/api/0' }}
                   SENTRY_ORG: ${{ vars.SENTRY_ORGANIZATION }}
                   SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
-              with:
-                  release: ${{ env.IMAGE_TAG }}
-                  environment: production
-                  # `auto`, the default, needs both fetch-depth: 0 on the
-                  # checkout above and a Sentry<->GitHub integration on the org.
-                  # Without the integration it fails the step.
-                  set_commits: skip
+              run: |
+                  body="$RUNNER_TEMP/sentry-response.json"
+
+                  # Status check rather than `curl -f`: re-tagging an existing
+                  # release answers 208, which is a success here, and a real
+                  # failure should print Sentry's reason rather than an exit
+                  # code. The token only ever travels in a header.
+                  post() {
+                    code=$(curl -sS -o "$body" -w '%{http_code}' -X POST "$SENTRY_API_URL$1" \
+                      -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+                      -H 'Content-Type: application/json' \
+                      -d "$2")
+                    echo "POST $1 -> $code"
+                    if [ "$code" -ge 400 ]; then cat "$body"; echo; return 1; fi
+                  }
+
+                  post "/organizations/$SENTRY_ORG/releases/" \
+                    "{\"version\":\"$IMAGE_TAG\",\"projects\":[\"$SENTRY_PROJECT\"],\"dateReleased\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+
+                  post "/organizations/$SENTRY_ORG/releases/$IMAGE_TAG/deploys/" \
+                    '{"environment":"production"}'
