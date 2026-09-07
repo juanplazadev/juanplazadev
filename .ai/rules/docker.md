@@ -31,3 +31,29 @@ So `docker compose restart juanplazadev` kills it. In dev the @inertiajs/vite pl
 Recover with `docker compose exec -d juanplazadev npm run dev` and wait for :5180 to answer. Never delete `public/hot` (see browser.md).
 
 You rarely need the restart anyway: Octane runs with `--watch` and picks up an edited `.env` in about 8 seconds, which is enough to verify a config-flag change end to end.
+
+## Run container commands as `sail`, or you salt the caches with root-owned files
+`docker exec juanplazadev-juanplazadev-1 <cmd>` runs as ROOT. `sail <cmd>` runs as uid 501 (`sail`). Mixing them poisons every cache that lives inside the container: rector writes `/tmp/rector`, phpstan writes `/tmp/phpstan` and `/tmp/phpstan-tests`, and a file root created there cannot be replaced by the sail user afterwards.
+
+The symptom is not a permissions message from the tool you ran. It is rector dying mid-run with
+
+    Unable to delete '/tmp/rector/5e/70/<hash>.php'. Permission denied
+
+and then printing its own `--help` usage, which reads like a bad argument rather than a filesystem problem. phpstan degrades more quietly - it just cannot write its result cache.
+
+Always pass `-u sail` when reaching in with `docker exec`:
+
+    docker exec -u sail juanplazadev-juanplazadev-1 composer test
+
+To recover after it has already happened:
+
+    docker exec juanplazadev-juanplazadev-1 chown -R sail:sail /tmp/rector /tmp/phpstan /tmp/phpstan-tests
+
+Project files under the bind mount are NOT affected - `find /var/www/html -user root` matches almost everything on macOS because of how Docker Desktop presents the host mount, so that result is a red herring, not evidence of damage.
+
+## compose.yaml runs no queue worker either
+Same shape as the Vite note above: `SUPERVISOR_PHP_COMMAND` starts Octane and nothing else, so a queued job in local development sits in the `jobs` table forever. Production is different - docker-entrypoint.sh runs a supervised `queue:work` (see .ai/rules/workflows.md).
+
+The failure is silent and looks like a bug in the feature: the résumé dialog answers 201 and shows its success panel, no mail arrives, and nothing is logged. Check `php artisan queue:monitor default` before suspecting Mailgun or Mailpit.
+
+Drain by hand with `sail artisan queue:work --stop-when-empty`, or keep a worker up with `sail artisan queue:listen --tries=1`. Use `listen`, not `work`, in development: `queue:work` caches the job classes at boot and keeps running the old code after an edit, which Octane's `--watch` does not cover.
