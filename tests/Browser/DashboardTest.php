@@ -445,3 +445,119 @@ it('makes a delivery readable once its row is expanded', function (): void {
         // columns that agreed with nothing above them.
         ->assertSee('permanent · suppress-bounce');
 });
+
+/*
+ * The body editor is the one part of the panel a feature test cannot reach at
+ * all. Everything it does happens after mount, in a chunk the server never
+ * loads: MDXEditor is Lexical plus CodeMirror, so markdown-field.tsx gates the
+ * lazy() behind a mount effect and the SSR pass renders a skeleton instead.
+ *
+ * So the assertions here are the three things that gate can get wrong. The
+ * prose has to survive the markdown -> Lexical parse; the ::block directive has
+ * to come back as a chip rather than as literal syntax; and the hidden input the
+ * form actually submits has to hold the markdown, because a body that renders
+ * beautifully and posts an empty string would pass every other test in the file.
+ *
+ * compileBody() is a saving event the factory does not fire - see
+ * .ai/rules/browser.md. Without it the edit form loads with an empty body and
+ * every assertion below passes vacuously.
+ */
+it('edits a body in the rich text editor', function (): void {
+    $this->actingAs(User::factory()->create());
+
+    $post = Post::factory()->create([
+        'body' => "## The edge\n\nCaddy fronts every container.\n\n::block{key=\"edge-diagram\"}\n",
+        'blocks' => [
+            'edge-diagram' => [
+                'type' => 'specs',
+                'items' => [['label' => 'Edge', 'value' => 'Caddy']],
+            ],
+        ],
+    ]);
+
+    $post->compileBody()->save();
+
+    visit("/dashboard/posts/{$post->slug}/edit")
+        ->waitForEvent('networkidle')
+        ->assertNoSmoke()
+        // The prose came through the parse.
+        ->assertSee('The edge')
+        ->assertSee('Caddy fronts every container.')
+        // The directive is a chip, not the raw line. All three matter: the chip
+        // proves directivesPlugin resolved it, the key proves the chip is bound
+        // to the right block, and the absent literal proves it is not simply
+        // sitting there as text. The key is deliberately not `request-path` -
+        // the field's own hint uses that one as its example, so the literal
+        // would be on the page either way.
+        ->assertPresent('@block-directive')
+        ->assertSee('edge-diagram')
+        ->assertDontSee('::block{key="edge-diagram"}')
+        // What the form posts. The editor is not a form control, so this input
+        // is the whole submission path for `body`.
+        ->assertValue('input[name="body"]', $post->body);
+});
+
+/*
+ * The round trip, which is the failure mode with the widest blast radius.
+ *
+ * MDXEditor does not edit text - it parses markdown into Lexical and
+ * re-serialises the whole document through mdast on every change. So every
+ * construct the site's write-ups actually use has to survive a pass it never
+ * had to survive when the field was a textarea, and a construct that does not
+ * is rewritten in the database the first time an author touches an unrelated
+ * paragraph.
+ *
+ * Each line below is a specific thing that goes wrong unpinned:
+ *
+ *   - the ::block directive is the only reason directivesPlugin is configured;
+ *     without it BodyRenderer's line-anchored, double-quoted form is what
+ *     breaks, and every diagram silently vanishes from the page.
+ *   - `caddyfile` has no CodeMirror grammar. The fence must keep its language
+ *     even though the editor cannot highlight it.
+ *   - bullets and emphasis are mdast defaults (`*` for both) pinned back to
+ *     what the existing bodies use, so opening a post does not rewrite it.
+ *
+ * The keypress is what forces the export: onChange does not fire on mount, so
+ * without it the hidden input still holds the untouched original and every
+ * expectation below would pass without the serialiser running at all.
+ */
+it('round trips the markdown constructs the write-ups use', function (): void {
+    $this->actingAs(User::factory()->create());
+
+    $body = <<<'MARKDOWN'
+    ## The edge
+
+    Everything _around_ it is pushed onto a queue.
+
+    ::block{key="edge-diagram"}
+
+    - **The first point.** With a sentence after it.
+    - **The second point.** And another.
+
+    ```caddyfile
+    reverse_proxy juanplaza:8080
+    ```
+    MARKDOWN;
+
+    $post = Post::factory()->create([
+        'body' => $body,
+        'blocks' => ['edge-diagram' => ['type' => 'specs', 'items' => [['label' => 'Edge', 'value' => 'Caddy']]]],
+    ]);
+
+    $post->compileBody()->save();
+
+    $page = visit("/dashboard/posts/{$post->slug}/edit")
+        ->waitForEvent('networkidle')
+        ->assertNoSmoke()
+        // data-lexical-editor, not [contenteditable]: a fenced code block is a
+        // CodeMirror instance with a contenteditable of its own, so the looser
+        // selector matches two elements and Playwright's strict mode throws.
+        ->keys('[data-lexical-editor="true"]', ['a', 'Backspace']);
+
+    expect($page->value('input[name="body"]'))
+        ->toContain('::block{key="edge-diagram"}')
+        ->toContain("```caddyfile\nreverse_proxy juanplaza:8080\n```")
+        ->toContain('- **The first point.**')
+        ->toContain('_around_')
+        ->toContain('## The edge');
+});

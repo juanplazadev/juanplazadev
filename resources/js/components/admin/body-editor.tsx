@@ -1,11 +1,35 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import ContentBody from '@/components/content/content-body';
 import Field from '@/components/admin/field';
+import MarkdownField from '@/components/admin/markdown-field';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { preview } from '@/routes/admin/content';
 import type { RenderedBlock } from '@/types/content';
+
+/**
+ * The block names the Blocks JSON currently defines.
+ *
+ * Parsed leniently: the textarea is mid-edit for most of its life, so invalid
+ * JSON means "no keys yet", not an error. The save path and the preview both
+ * still run it through the ValidBlocks rule.
+ */
+function parseBlockKeys(blocks: string): string[] {
+    if (blocks.trim() === '') {
+        return [];
+    }
+
+    try {
+        const parsed: unknown = JSON.parse(blocks);
+
+        return parsed !== null && typeof parsed === 'object'
+            ? Object.keys(parsed)
+            : [];
+    } catch {
+        return [];
+    }
+}
 
 /*
   The markdown body, its block payloads, and a preview of the two compiled
@@ -30,6 +54,8 @@ export default function BodyEditor({
     const [rendered, setRendered] = useState<RenderedBlock[] | null>(null);
     const [problem, setProblem] = useState<string | null>(null);
     const [pending, setPending] = useState(false);
+
+    const blockKeys = useMemo(() => parseBlockKeys(draftBlocks), [draftBlocks]);
 
     async function refresh() {
         setPending(true);
@@ -88,19 +114,18 @@ export default function BodyEditor({
                 label="Body"
                 hint={
                     <>
-                        Markdown. Embed a stored block on its own line with{' '}
-                        <code>{'::block{key="request-path"}'}</code>.
+                        Rich text over markdown. A stored block is embedded as{' '}
+                        <code>{'::block{key="request-path"}'}</code> - insert
+                        one from the toolbar, or switch to source and write it.
                     </>
                 }
                 error={errors.body}
             >
-                <Textarea
-                    id="body"
+                <MarkdownField
                     name="body"
-                    className="min-h-96 font-mono text-[13px]"
-                    value={draft}
-                    onChange={(event) => setDraft(event.target.value)}
-                    required
+                    markdown={draft}
+                    blockKeys={blockKeys}
+                    onChange={setDraft}
                 />
             </Field>
 
