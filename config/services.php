@@ -37,6 +37,39 @@ return [
         ],
     ],
 
+    /*
+     * Mailgun sends the résumé email in production and posts back what happened
+     * to it. Two credentials, and they are not interchangeable: `secret` is the
+     * sending API key, `webhook_signing_key` is the HMAC key Mailgun signs
+     * webhooks with (Dashboard → Webhooks → HTTP webhook signing key). Signing
+     * a payload with the API key produces a signature that never verifies.
+     *
+     * `endpoint` is normalised to a bare host because that is what Symfony's
+     * Mailgun transport wants; a URL with a scheme is silently wrong.
+     */
+    'mailgun' => [
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => parse_url((string) env('MAILGUN_ENDPOINT', 'api.mailgun.net'), PHP_URL_HOST)
+            ?? env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'scheme' => 'https',
+        'webhook_signing_key' => env('MAILGUN_WEBHOOK_SIGNING_KEY'),
+    ],
+
+    /*
+     * Cloudflare Turnstile guards the résumé form. Both keys or neither: with
+     * the secret unset the challenge is skipped end to end (no widget, no
+     * verification, a null `turnstile_success`), which is what lets local and
+     * the test suite run without Cloudflare credentials.
+     *
+     * Note there is no score to read - Turnstile answers pass/fail plus error
+     * codes, unlike reCAPTCHA v3.
+     */
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
     'cloudflare' => [
         'api_token' => env('CLOUDFLARE_API_TOKEN'),
         'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),

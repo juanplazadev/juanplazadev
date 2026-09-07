@@ -17,6 +17,8 @@ declare module '@inertiajs/core' {
             palettes: Palette[];
             /** Availability signalling on the landing page - see config/site.php. */
             hiring: boolean;
+            /** Null when Turnstile is unconfigured, which switches the challenge off. */
+            turnstileSiteKey: string | null;
             [key: string]: unknown;
         };
     }

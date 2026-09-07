@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Models\ResumeDelivery;
+
 it('renders the landing page', function (): void {
     visit('/')
         ->assertNoSmoke()
@@ -58,15 +60,15 @@ it('drops every availability signal outside hiring mode', function (): void {
 
 /*
  * The résumé is no longer a direct download - the button opens a dialog that
- * asks for an address first. Nothing is wired to the backend yet, so this
- * asserts the UI contract: the dialog opens, a bad address is rejected without
- * leaving the form, and a good one lands on the confirmation.
+ * asks for an address first, and submitting it POSTs to resume.request.
  *
- * assertSee never retries (see .ai/rules/browser.md), so every assertion below
- * is reached through an action that does wait: type() and click() are Playwright
- * actionability calls, which is what rides out the dialog's 200ms entrance. The
- * one explicit wait covers the component's own fake send delay, which stands in
- * for the request that does not exist yet.
+ * Browser tests share this process (.ai/rules/browser.md), so the row this
+ * writes is visible to the assertion below; phpunit.xml pins QUEUE_CONNECTION
+ * to sync and MAIL_MAILER to array, so the send runs inline and goes nowhere.
+ *
+ * assertSee never retries, so every assertion is reached through an action that
+ * does wait: type() and click() are Playwright actionability calls, which is
+ * what rides out the dialog's 200ms entrance and the round trip.
  */
 it('asks for an email address instead of downloading the résumé', function (): void {
     visit('/')
@@ -75,11 +77,35 @@ it('asks for an email address instead of downloading the résumé', function ():
         ->type('email', 'not-an-address')
         ->assertSee('Get the résumé')
         ->click('@resume-submit')
+        // Rejected on the client, before a request is made.
         ->assertSee('That does not look like an address I can send to.')
         ->type('email', 'hiring@example.com')
         ->click('@resume-submit')
-        ->wait(1.2)
+        ->waitForEvent('networkidle')
         ->assertVisible('@resume-sent')
         ->assertSee('On its way')
         ->assertSee('hiring@example.com');
+
+    expect(ResumeDelivery::query()->sole())
+        ->email->toBe('hiring@example.com')
+        // Unconfigured Turnstile means the challenge never ran - see
+        // App\Services\Cloudflare\TurnstileVerifier.
+        ->turnstile_success->toBeNull()
+        ->email_sent_at->not->toBeNull();
+});
+
+it('rejects an address the server will not accept', function (): void {
+    visit('/')
+        ->click('@resume-trigger')
+        // A leading hyphen in the domain passes the dialog's own regex and
+        // fails Rule::email()'s strict mode, which is what makes this a test of
+        // the server's message reaching the dialog rather than of the regex.
+        ->type('email', 'hiring@-example.com')
+        ->click('@resume-submit')
+        ->waitForEvent('networkidle')
+        ->assertSee('The email field must be a valid email address.')
+        ->assertVisible('@resume-email')
+        ->assertDontSee('On its way');
+
+    expect(ResumeDelivery::query()->count())->toBe(0);
 });

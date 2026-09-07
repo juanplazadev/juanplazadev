@@ -55,6 +55,12 @@ return [
             'transport' => 'ses',
         ],
 
+        // Production. Credentials live under services.mailgun; the local
+        // default stays smtp so mail lands in Mailpit.
+        'mailgun' => [
+            'transport' => 'mailgun',
+        ],
+
         'postmark' => [
             'transport' => 'postmark',
             // 'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID'),

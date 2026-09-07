@@ -32,3 +32,16 @@ Zone traffic uses `httpRequests1dGroups`, not `httpRequestsAdaptiveGroups`: the 
 `zoneTotals()` catches its own throwable, logs at info, and returns zeroes with a null ratio. A missing zone id skips the request entirely. Covered by 'a zone side failure does not cost the visitor numbers' and 'the zone half asks for daily rollups' in tests/Feature/DashboardAnalyticsTest.php - the second pins the dataset so a refactor cannot silently regress to the adaptive one.
 
 Note on debugging: GraphQL validates before it executes. An unknown dimension or field is a validation error that fails the document outright, so if you get an EXECUTION error back (a range limit, an authz refusal) every field name in that document is already known-good.
+
+## Turnstile: an unset secret switches the challenge OFF, not open
+`TurnstileVerifier` and `TurnstileVerification` sit in this namespace because Turnstile is Cloudflare, but they share nothing with the GraphQL analytics stack above - different endpoint, different credential, different failure mode.
+
+With `services.turnstile.secret_key` unset the feature is off END TO END: `verify()` returns a skipped verification, `HandleInertiaRequests` shares a null `turnstileSiteKey` so the widget never renders, `ResumeDeliveryRequest` stops requiring a token, and `turnstile_success` is stored as NULL. Null therefore means "never asked", which is a different fact from false ("Cloudflare refused") - do not collapse the column to a plain boolean.
+
+That policy is the only reason local and the test suite run without Cloudflare credentials. Anything that makes an unset secret behave like a passing challenge in production would open the résumé form to any bot that can POST.
+
+The opposite trap: a TRANSPORT failure fails the check. Cloudflare being unreachable is not evidence the visitor is human, and failing open turns a siteverify blip into an open relay for a form that sends mail. Covered by 'refuses when cloudflare cannot be reached' in tests/Feature/ResumeDeliveryTest.php.
+
+phpunit.xml BLANKS `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` and both Mailgun keys, the same way it blanks the Sentry DSN. It does not otherwise shadow `.env`, and with real keys present the browser tests try to fetch Cloudflare's challenge script from an in-process server on a random port: the widget reports a load failure, the dialog refuses to submit, and every résumé test fails on a challenge that could never have loaded. Unset is also the state those suites assert.
+
+There is NO score in a Turnstile response. It answers `success` plus `error-codes`; a numeric score is a reCAPTCHA v3 idea and appears only on Turnstile Enterprise. A `turnstile_score` column would be permanently null, which is why there is not one.

@@ -12,10 +12,14 @@ The second half (`.dev` / `P`) is `text-primary` on purpose, so it tracks the pa
 
 Size and weight come in through `className` and are merged with `cn`; the component owns `font-inter-tight text-foreground font-semibold tracking-tight`.
 
-## The hero résumé CTA is a lead-capture dialog with no backend
+## The hero résumé CTA is a lead-capture dialog
 `resume-dialog.tsx` replaced the hero's `<a href="/juan-plaza-resume.pdf" download>`. Asking for an address before handing over the PDF is the whole point, so there is deliberately NO direct-download link inside the dialog - do not add one back as a "convenience".
 
-The submit is a 700ms `setTimeout`, not a request: there is no route, controller or mailable yet. Replace that timeout with the POST when the backend lands; do not "fix" it by flipping straight to the sent state, because the button's pending state is then the thing that goes untested.
+It POSTs to `resume.request` with Inertia v3's `useHttp`, NOT `useForm` or `router.post`: those speak the Inertia protocol and would navigate the page out from under a modal that has its own success state to show. See .ai/rules/mail.md for what happens server side.
+
+The client-side email regex is a courtesy that saves a round trip; `ResumeDeliveryRequest` is the authority, and server errors take precedence over the local message. `tests/Browser/HomePageTest.php` covers both paths, using `hiring@-example.com` for the server one specifically because it passes the client regex and fails `Rule::email()`'s strict mode - swap that address for a plainly bad one and the test silently stops proving anything.
+
+Turnstile renders into the dialog only while it is open (a token minted on page load would have expired by the time anyone clicks Résumé) and only when `turnstileSiteKey` is shared. `appearance: 'interaction-only'` keeps the container empty and zero-height for the visitors who pass silently, which is why the dialog does not reserve space for it. A token is single use, so `onError` resets the widget.
 
 Two details the look depends on: the dialog reuses the hero's own `.hero-grid` / `.hero-glow` (`additional-styles/hero.css`) so it tracks the palette picker's `--primary`, and it passes `overlayClassName` to soften the shared `bg-black/80` scrim. That prop was added to `ui/dialog.tsx` as an optional pass-through - it changes nothing for the admin and settings dialogs that omit it.
 

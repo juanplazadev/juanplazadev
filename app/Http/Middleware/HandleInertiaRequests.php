@@ -50,6 +50,13 @@ final class HandleInertiaRequests extends Middleware
             'palette' => Palette::fromRequest($request->cookie(Palette::COOKIE))->value,
             'palettes' => Palette::options(),
             'hiring' => config()->boolean('site.hiring'),
+            /*
+             * Null switches the résumé form's challenge off in the browser, and
+             * TurnstileVerifier switches it off on the server for the same
+             * reason - an unset secret. Shared rather than inlined into the
+             * bundle so the key can change without a rebuild.
+             */
+            'turnstileSiteKey' => config('services.turnstile.site_key'),
         ];
     }
 }

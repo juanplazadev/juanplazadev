@@ -1,7 +1,11 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useHttp, usePage } from '@inertiajs/react';
+import { useState, type FormEvent } from 'react';
 
 import Button from './button';
 import InputError from '@/components/input-error';
+import { useAppearance } from '@/hooks/use-appearance';
+import { useTurnstile } from '@/hooks/use-turnstile';
+import { request as resumeRequest } from '@/routes/resume';
 import {
     Dialog,
     DialogClose,
@@ -68,46 +72,57 @@ const CheckIcon = () => (
 );
 
 /*
-  Deliberately loose: one @, a dot in the domain, no spaces. The only job here
-  is catching a typo before it becomes a silent failure - the address has to
-  survive real validation server side anyway, and every clever local-part regex
-  ends up rejecting somebody's perfectly valid mailbox.
+  Deliberately loose: one @, a dot in the domain, no spaces. This is only here
+  to catch a typo before it costs a round trip - ResumeDeliveryRequest is what
+  actually validates, and every clever local-part regex ends up rejecting
+  somebody's perfectly valid mailbox.
 */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-type Status = 'idle' | 'submitting' | 'sent';
 
 /*
   The hero's résumé call to action. It used to be a plain `<a download>` to the
   PDF, which handed the file over anonymously; asking for an address first is
   the whole point of the dialog, so there is no direct-download link inside it.
 
-  There is no backend yet - see the timeout in onSubmit.
+  POSTs to resume.request and stays put. useHttp rather than useForm or
+  router.post on purpose: those speak the Inertia protocol and would navigate
+  the page out from under a modal that has its own success state to show.
 */
 export default function ResumeDialog() {
-    const [open, setOpen] = useState(false);
-    const [email, setEmail] = useState('');
-    const [error, setError] = useState<string | null>(null);
-    const [status, setStatus] = useState<Status>('idle');
-    const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const { turnstileSiteKey } = usePage().props;
+    const { appearance } = useAppearance();
 
-    useEffect(
-        () => () => {
-            if (timer.current) {
-                clearTimeout(timer.current);
-            }
-        },
-        [],
-    );
+    const [open, setOpen] = useState(false);
+    const [sent, setSent] = useState(false);
+    // The address the confirmation reports, frozen at submit time so editing
+    // the field afterwards cannot rewrite what the panel claims was sent.
+    const [sentTo, setSentTo] = useState('');
+    const [localError, setLocalError] = useState<string | null>(null);
+
+    const turnstile = useTurnstile({
+        siteKey: turnstileSiteKey,
+        // Rendered only while the dialog is open. A challenge minted on page
+        // load would have expired by the time most people click Résumé.
+        active: open,
+        theme: appearance === 'system' ? 'auto' : appearance,
+    });
+
+    const form = useHttp({ email: '', turnstile_token: '' });
+    const { data, setData, processing, errors, clearErrors, reset } = form;
+
+    // Server-side messages win: the client regex is a courtesy, the form
+    // request is the authority.
+    const error = errors.email ?? errors.turnstile_token ?? localError;
 
     // Reset on the way in rather than on the way out. Radix keeps the content
     // mounted through its 200ms exit animation, so clearing on close would flip
     // the success panel back to an empty form while the dialog is still fading.
     const onOpenChange = (next: boolean) => {
         if (next) {
-            setEmail('');
-            setError(null);
-            setStatus('idle');
+            reset();
+            clearErrors();
+            setLocalError(null);
+            setSent(false);
         }
 
         setOpen(next);
@@ -116,25 +131,57 @@ export default function ResumeDialog() {
     const onSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        const address = email.trim();
+        const address = data.email.trim();
 
         if (!EMAIL_PATTERN.test(address)) {
-            setError('That does not look like an address I can send to.');
+            setLocalError('That does not look like an address I can send to.');
 
             return;
         }
 
-        setEmail(address);
-        setError(null);
-        setStatus('submitting');
+        if (turnstile.failed) {
+            setLocalError(
+                'The challenge could not load. Check your connection and try again.',
+            );
 
-        // Stands in for the request that does not exist yet, so the button has a
-        // real pending state to render. Replace it with the POST, not with an
-        // instant flip to 'sent'.
-        timer.current = setTimeout(() => setStatus('sent'), 700);
+            return;
+        }
+
+        if (turnstile.pending) {
+            setLocalError(
+                turnstile.interactive
+                    ? 'Tick the box below to confirm you are human, then send.'
+                    : 'Still verifying you are human - one moment.',
+            );
+
+            return;
+        }
+
+        setLocalError(null);
+        setData({ email: address, turnstile_token: turnstile.token ?? '' });
+
+        // Voided deliberately: every outcome is handled in the callbacks
+        // below, and the returned promise is only there for callers that want
+        // to await it.
+        void form.post(resumeRequest.url(), {
+            // X-Requested-With alone already makes Laravel answer 422 with a
+            // JSON error bag, but saying so explicitly means a change to that
+            // heuristic cannot quietly turn a validation failure into a
+            // redirect this dialog has no way to render.
+            headers: { Accept: 'application/json' },
+            onSuccess: () => {
+                setSentTo(address);
+                setSent(true);
+            },
+            onError: () => {
+                // Tokens are single use, so a rejected submit needs a new one
+                // before the visitor can try again.
+                turnstile.reset();
+            },
+        });
     };
 
-    const isSent = status === 'sent';
+    const isSent = sent;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -188,7 +235,7 @@ export default function ResumeDialog() {
                                 <>
                                     Sent to{' '}
                                     <span className="text-foreground font-medium">
-                                        {email}
+                                        {sentTo}
                                     </span>
                                     . Give it a minute, then check spam.
                                 </>
@@ -228,11 +275,13 @@ export default function ResumeDialog() {
                                 data-test="resume-email"
                                 autoComplete="email"
                                 placeholder="you@company.com"
-                                value={email}
-                                onChange={(event) =>
-                                    setEmail(event.target.value)
-                                }
-                                aria-invalid={error !== null}
+                                value={data.email}
+                                onChange={(event) => {
+                                    setLocalError(null);
+                                    clearErrors('email');
+                                    setData('email', event.target.value);
+                                }}
+                                aria-invalid={error != null}
                                 aria-describedby={
                                     error ? 'resume-email-error' : undefined
                                 }
@@ -248,14 +297,28 @@ export default function ResumeDialog() {
                                 />
                             )}
 
+                            {/*
+                              Turnstile mounts here. With appearance
+                              interaction-only the container stays empty and
+                              zero-height for almost everybody, and only grows
+                              when Cloudflare actually wants a checkbox - so the
+                              dialog does not reserve space for a widget that
+                              usually never appears. Absent entirely when no
+                              site key was shared.
+                            */}
+                            <div
+                                ref={turnstile.containerRef}
+                                className="mt-3 empty:hidden"
+                            />
+
                             <Button
                                 type="submit"
                                 variant="shimmer"
                                 data-test="resume-submit"
-                                disabled={status === 'submitting'}
+                                disabled={processing}
                                 className="mt-4 w-full py-2.5 disabled:opacity-70"
                             >
-                                {status === 'submitting' ? (
+                                {processing ? (
                                     <>
                                         <Spinner />
                                         Sending
