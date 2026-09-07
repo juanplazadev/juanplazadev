@@ -1,14 +1,30 @@
+import { ChartLine } from 'lucide-react';
+import { Suspense, lazy } from 'react';
+
 import Sparkline from '@/components/admin/sparkline';
 import SectionCard from '@/components/overview/section-card';
 import { analytics } from '@/routes/admin';
 import type { Analytics } from '@/types/analytics';
 
+/*
+ * Module scope, not inside the component: lazy() called during render creates a
+ * new component type every pass and remounts the chart on each one.
+ */
+const TrafficAreaChart = lazy(
+    () => import('@/components/overview/traffic-area-chart'),
+);
+
+/** Matches the chart's own height, so the swap does not resize the card. */
+const CHART_HEIGHT = 'h-40';
+
 /**
- * A week of visitors, at a glance.
+ * A week of visitors, with the shape drawn properly.
  *
- * The shape comes from the shared SVG sparkline rather than recharts, which is
- * what keeps the admin root off the chart bundle entirely. The full chart, with
- * axes and a tooltip and both series, is one click away on the traffic page.
+ * recharts arrives through lazy() rather than a plain import, which keeps the
+ * admin root's entry chunk off the chart bundle while still giving the overview
+ * real axes. The sparkline is the fallback rather than a skeleton: the shape of
+ * the week is the point of the card, and it can be drawn from data already in
+ * hand while the chunk is still in flight.
  */
 export default function TrafficCard({ traffic }: { traffic: Analytics }) {
     const { totals, series, error } = traffic;
@@ -16,6 +32,7 @@ export default function TrafficCard({ traffic }: { traffic: Analytics }) {
     return (
         <SectionCard
             title="Traffic"
+            icon={ChartLine}
             href={analytics.url()}
             linkLabel="Full report"
         >
@@ -23,7 +40,7 @@ export default function TrafficCard({ traffic }: { traffic: Analytics }) {
                 <p className="text-muted-foreground mt-3 text-sm">{error}</p>
             ) : (
                 <>
-                    <p className="text-foreground font-display mt-2 text-3xl font-semibold tabular-nums">
+                    <p className="text-foreground font-display mt-2 text-3xl font-semibold">
                         {totals.visits.toLocaleString()}
                         <span className="text-muted-foreground text-base font-normal">
                             {' '}
@@ -38,10 +55,25 @@ export default function TrafficCard({ traffic }: { traffic: Analytics }) {
                             : 'no visits yet'}
                     </p>
 
-                    <Sparkline
-                        counts={series.map((point) => point.visits)}
-                        className="mt-4 h-10 w-full"
-                    />
+                    <div className={`mt-4 ${CHART_HEIGHT}`}>
+                        {series.length > 1 ? (
+                            <Suspense
+                                fallback={
+                                    <ChartPending
+                                        counts={series.map(
+                                            (point) => point.visits,
+                                        )}
+                                    />
+                                }
+                            >
+                                <TrafficAreaChart series={series} />
+                            </Suspense>
+                        ) : (
+                            <p className="text-muted-foreground text-xs">
+                                Not enough days recorded to chart yet.
+                            </p>
+                        )}
+                    </div>
 
                     <p className="text-muted-foreground mt-2 text-xs">
                         {topPath(traffic)}
@@ -49,6 +81,15 @@ export default function TrafficCard({ traffic }: { traffic: Analytics }) {
                 </>
             )}
         </SectionCard>
+    );
+}
+
+/** The sparkline, centred in the box the chart is about to fill. */
+function ChartPending({ counts }: { counts: number[] }) {
+    return (
+        <div className="flex h-full items-center">
+            <Sparkline counts={counts} className="h-16 w-full" />
+        </div>
     );
 }
 

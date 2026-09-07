@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Content\ContentSnapshot;
 use App\Enums\AnalyticsRange;
 use App\Http\Controllers\Controller;
+use App\Mail\ResumeDeliverySnapshot;
 use App\Services\Cloudflare\CachedSiteAnalytics;
 use App\Services\Sentry\CachedErrorInsights;
 use Inertia\Inertia;
@@ -18,6 +19,7 @@ final class DashboardController extends Controller
         private readonly CachedSiteAnalytics $analytics,
         private readonly CachedErrorInsights $insights,
         private readonly ContentSnapshot $content,
+        private readonly ResumeDeliverySnapshot $deliveries,
     ) {}
 
     /**
@@ -46,6 +48,11 @@ final class DashboardController extends Controller
             // Two small table scans. No network, so no reason to defer it - the
             // content card and the drafts tile paint with the first response.
             'content' => $this->content->summary(),
+
+            // Local aggregates for the same reason, and deliberately NOT a
+            // fourth deferred group: a group costs a parallel HTTP request,
+            // which is the wrong trade for six counts against one table.
+            'deliveries' => $this->deliveries->overview($range),
 
             // The build this container is running. Eager, and deliberately not
             // read from any cached summary: the caches hold for fifteen minutes

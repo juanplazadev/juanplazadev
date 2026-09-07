@@ -16,6 +16,7 @@ export default function ThemeToggle() {
                 isDark ? 'Switch to light theme' : 'Switch to dark theme'
             }
             aria-pressed={isDark}
+            data-test="theme-toggle"
             className="border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary focus-visible:ring-ring focus-visible:ring-offset-background relative flex h-9 w-9 items-center justify-center rounded-full border transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
             {/* Both icons are always mounted and cross-fade, so the swap animates

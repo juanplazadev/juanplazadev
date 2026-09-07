@@ -32,3 +32,31 @@ Mailgun retries any non-2xx for days. `MailgunWebhookController` therefore retur
 
 ## MAIL_PORT is 1025 for Mailpit
 It was 1080 in both `.env` and `.env.example`, which is nothing - local mail could not send at all. `compose.yaml` maps Mailpit's SMTP on 1025 and its web UI on 8025.
+
+## The dashboard that counts refused requests reads it back, and status is derived
+`/dashboard/deliveries` is the read side of everything above. `resume_deliveries` has no status
+column and must not grow one: every input is already a column, and a denormalised copy would have
+to be kept in step by `markSent()`, `markDelivered()`, `markFailed()` and the webhook - four
+places that only have to disagree once for the badge and the filter to start lying.
+
+`App\Enums\DeliveryStatus` holds the rules twice and both halves must stay in step: `of()` for a
+loaded row, `scope()` for the SQL the filter and the tiles run. Case order is load-bearing -
+Blocked, Failed, Delivered, Sent, Pending, first match wins - because a delivered row is also a
+sent row and a bounced one was sent before it failed. 'the five statuses partition the window' in
+tests/Feature/ResumeDeliverySnapshotTest.php fails the moment the two drift.
+
+`turnstile_success` is tested for FALSE specifically, never for falsy, for the reason analytics.md
+gives: null is "never asked", not "refused". Two consequences. Null must never render as Blocked.
+And the SQL spells the negation out as "true or null" rather than `whereNot(... = false)`, because
+SQL's NOT is NULL for a NULL row - the negation form silently drops every request made while the
+challenge was switched off, which is every request in local development and in the test suite.
+
+`ResumeDeliverySnapshot` is modelled on `App\Content\ContentSnapshot`, NOT on the Cloudflare and
+Sentry service trios: two local tables, so no API client, no cache, and deliberately no `error`
+key to render. Its totals always count the whole window and ignore the status filter - narrowing
+the tiles along with the table would leave the reader looking at "4 failed" with no denominator.
+The list is capped at `RECENT_LIMIT` while `totals.requested` keeps reporting the true count.
+
+An empty event timeline is a normal state, not missing data. Mailpit returns its own queue id, so
+a locally-sent message never reconciles and never will; the component says so rather than leaving
+it to read as a bug.

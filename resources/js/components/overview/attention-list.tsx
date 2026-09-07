@@ -1,17 +1,24 @@
 import { Link } from '@inertiajs/react';
-import { CircleCheck } from 'lucide-react';
+import { CircleCheck, ListChecks } from 'lucide-react';
 
 import PanelCard from '@/components/admin/panel-card';
+import { deployVerdict } from '@/components/deployments/release-glyphs';
 import { timeAgo } from '@/lib/time';
 import PostController from '@/actions/App/Http/Controllers/Admin/PostController';
 import ArchitectureController from '@/actions/App/Http/Controllers/Admin/ArchitectureController';
-import { deployments, errors } from '@/routes/admin';
+import {
+    deliveries as deliveriesRoute,
+    deployments,
+    errors,
+} from '@/routes/admin';
+import type { DeliveryOverview } from '@/types/deliveries';
 import type { Deployments } from '@/types/deployments';
 import type { ErrorInsights } from '@/types/errors';
 import type { ContentSnapshot } from '@/types/overview';
 
 type AttentionListProps = {
     content: ContentSnapshot;
+    deliveries: DeliveryOverview;
     running: string | null;
     health?: ErrorInsights;
     deploys?: Deployments;
@@ -34,14 +41,15 @@ type Item = {
  */
 export default function AttentionList({
     content,
+    deliveries,
     running,
     health,
     deploys,
 }: AttentionListProps) {
-    const items = collect(content, running, health, deploys);
+    const items = collect(content, deliveries, running, health, deploys);
 
     return (
-        <PanelCard title="Needs attention">
+        <PanelCard title="Needs attention" icon={ListChecks}>
             {items.length === 0 ? (
                 <p className="text-muted-foreground mt-3 flex items-center gap-2 text-sm">
                     <CircleCheck className="text-chart-2 size-4 shrink-0" />
@@ -67,11 +75,24 @@ export default function AttentionList({
 
 function collect(
     content: ContentSnapshot,
+    deliveries: DeliveryOverview,
     running: string | null,
     health?: ErrorInsights,
     deploys?: Deployments,
 ): Item[] {
     const items: Item[] = [];
+
+    // Failures only. A blocked request is the challenge working as intended,
+    // not something asking you for a decision.
+    if (deliveries.totals.failed > 0) {
+        const count = deliveries.totals.failed;
+
+        items.push({
+            key: 'bounced',
+            href: deliveriesRoute.url({ query: { status: 'failed' } }),
+            text: `${count.toLocaleString()} résumé ${count === 1 ? 'email' : 'emails'} never arrived`,
+        });
+    }
 
     if (health && !health.error && health.totals.issues > 0) {
         const count = health.totals.issues;
@@ -95,14 +116,13 @@ function collect(
         }
     }
 
-    // Drift is only knowable once both halves are in hand, and only meaningful
-    // when the running build appears somewhere other than the top of the list.
-    if (deploys && !deploys.error && running !== null) {
-        const index = deploys.releases.findIndex(
-            (release) => release.version === running,
-        );
+    // Drift is only knowable once both halves are in hand. The comparison lives
+    // in deployments/release-glyphs.tsx, which the deployments page and the
+    // header chip read too - it had been written out separately in all four.
+    if (deploys && !deploys.error) {
+        const verdict = deployVerdict(running, deploys.releases);
 
-        if (index > 0) {
+        if (verdict === 'drifted') {
             items.push({
                 key: 'drift',
                 href: deployments.url(),

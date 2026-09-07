@@ -1,0 +1,144 @@
+/*
+  Binds MDXEditor's own tokens to the panel's.
+
+  Co-located with the component rather than living in
+  resources/css/additional-styles/, and that is load-bearing rather than a
+  filing preference. Everything in additional-styles/ is @imported by app.css,
+  which loads well before the editor's async chunk; these selectors and
+  MDXEditor's are both a single class, so on equal specificity source order
+  decides and the vendor stylesheet would win every one of them. Importing this
+  file immediately after '@mdxeditor/editor/style.css' inside markdown-editor.tsx
+  is what puts it after in the cascade - and keeps that vendor sheet's 60KB off
+  every other page.
+
+  Plain CSS on purpose: outside app.css there is no Tailwind context here, so no
+  @apply and no utilities.
+
+  Dark mode mostly comes free: MDXEditor keys its Radix ramps on a bare `.dark`
+  selector, which is the class use-appearance.tsx toggles on <html>. The one
+  exception is CodeMirror, which ships a light theme only - see the bottom of
+  this file.
+*/
+
+.mdx-editor {
+    --basePageBg: var(--background);
+    --baseBase: var(--card);
+    --baseBg: var(--card);
+    --baseBgSubtle: var(--card);
+    --baseBgHover: var(--accent);
+    --baseBgActive: var(--accent);
+    --baseLine: var(--border);
+    --baseBorder: var(--border);
+    /* Not --ring. MDXEditor colours a DISABLED toolbar icon with this token,
+       so a focus ring here paints greyed-out undo/redo in the accent and makes
+       the two controls you cannot use the loudest things on the bar. */
+    --baseBorderHover: var(--muted-foreground);
+    --baseSolid: var(--muted-foreground);
+    --baseSolidHover: var(--foreground);
+    --baseText: var(--foreground);
+    --baseTextContrast: var(--foreground);
+
+    --accentBase: var(--card);
+    --accentBgSubtle: var(--accent);
+    --accentBg: var(--accent);
+    --accentBgHover: var(--accent);
+    --accentBgActive: var(--accent);
+    --accentLine: var(--border);
+    --accentBorder: var(--border);
+    --accentBorderHover: var(--primary);
+    --accentSolid: var(--primary);
+    --accentSolidHover: var(--primary);
+    --accentText: var(--primary);
+    --accentTextContrast: var(--primary-foreground);
+
+    --error-color: var(--destructive);
+
+    --font-body: var(--font-sans);
+    --radius-medium: var(--radius-md);
+    --radius-large: var(--radius-lg);
+}
+
+/*
+  The class is applied to the editor root AND to the popup container MDXEditor
+  appends for its link and table dialogs, which is an empty positioned overlay.
+  The tokens above belong on both; the box below belongs only to the root, or
+  the overlay paints a stray bordered rectangle over the page.
+*/
+.mdx-editor.mdxeditor {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* Wraps rather than scrolls: the panel column is narrow and a row of controls
+   that scrolls sideways hides the ones nobody thinks to look for. */
+.mdx-editor [role='toolbar'] {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    flex-wrap: wrap;
+    gap: 0.125rem;
+}
+
+/* The content area carries .prose, so its typography is the published page's.
+   Only the box around it is the editor's business. */
+.mdx-editor .prose {
+    min-height: 24rem;
+    padding: 1.25rem 1.5rem;
+}
+
+.mdx-editor .prose:focus-visible {
+    outline: none;
+}
+
+/* .prose gives an h2 a 2.25em top margin, which on the published page always
+   has a paragraph above it. Here the first block sits against the toolbar, so
+   the margin reads as an unexplained gap. */
+.mdx-editor .prose > :first-child {
+    margin-top: 0;
+}
+
+/* Source and diff mode are a CodeMirror instance, which .prose does not reach. */
+.mdx-editor .cm-editor {
+    background: var(--card);
+    font-size: 13px;
+}
+
+.mdx-editor .cm-editor .cm-gutters {
+    background: var(--card);
+    border-right: 1px solid var(--border);
+}
+
+/*
+  MDXEditor ships cm6-theme-basic-light and no dark counterpart, so in dark mode
+  a fenced block - and the whole of source mode - keeps that theme's near-black
+  #2e3440 tokens on the panel's dark surface and is effectively invisible.
+
+  Collapsing to one readable colour rather than porting a dark highlight theme
+  is also the more faithful of the two: BodyRenderer emits a plain <pre> with no
+  token spans at all, so the published page has never had syntax highlighting.
+*/
+.dark .mdx-editor .cm-content,
+.dark .mdx-editor .cm-content span {
+    color: var(--foreground);
+}
+
+.dark .mdx-editor .cm-gutters {
+    color: var(--muted-foreground);
+}
+
+.dark .mdx-editor .cm-cursor,
+.dark .mdx-editor .cm-dropCursor {
+    border-left-color: var(--foreground);
+}
+
+.dark .mdx-editor .cm-activeLine,
+.dark .mdx-editor .cm-activeLineGutter {
+    background-color: var(--muted);
+}
+
+.dark .mdx-editor .cm-selectionBackground,
+.dark .mdx-editor .cm-content ::selection {
+    background-color: var(--accent);
+}

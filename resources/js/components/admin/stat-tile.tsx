@@ -17,8 +17,8 @@ type StatTileProps = {
  * Deliberately no sparkline or delta arrow: on a section page the chart below
  * already carries the shape of the data, and a second, smaller rendering of the
  * same series next to the total reads as decoration rather than information.
- * The overview's cards draw their own sparkline because there is no chart under
- * them to do it.
+ * The overview's traffic card draws a chart under its number because there is
+ * no section page beneath it doing that job.
  */
 export default function StatTile({
     label,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\ArchitectureController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DeliveriesController;
 use App\Http\Controllers\Admin\DeploymentsController;
 use App\Http\Controllers\Admin\ErrorsController;
 use App\Http\Controllers\Admin\PostController;
@@ -32,6 +33,7 @@ Route::middleware(['auth', 'verified'])
         Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics');
         Route::get('errors', [ErrorsController::class, 'index'])->name('errors');
         Route::get('deployments', [DeploymentsController::class, 'index'])->name('deployments');
+        Route::get('deliveries', [DeliveriesController::class, 'index'])->name('deliveries');
         Route::resource('posts', PostController::class)->except('show');
         Route::resource('architectures', ArchitectureController::class)->except('show');
         Route::post('content/preview', PreviewController::class)->name('content.preview');

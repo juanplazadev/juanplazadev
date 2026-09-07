@@ -3,6 +3,7 @@ import { Deferred, Head } from '@inertiajs/react';
 import EmptyCard from '@/components/admin/empty-card';
 import PanelHeader from '@/components/admin/panel-header';
 import DeploymentsSkeleton from '@/components/deployments/deployments-skeleton';
+import ReleaseStats from '@/components/deployments/release-stats';
 import ReleaseTable from '@/components/deployments/release-table';
 import RunningBuild from '@/components/deployments/running-build';
 import AppLayout from '@/layouts/app-layout';
@@ -40,6 +41,10 @@ export default function DeploymentsPage({
                                     running={running}
                                     releases={deployments.releases}
                                 />
+                                {/* Below the verdict, not above it: the verdict
+                                    is what the page is for, and the tiles are
+                                    the summary of the table they sit on. */}
+                                <ReleaseStats releases={deployments.releases} />
                                 <ReleaseTable
                                     releases={deployments.releases}
                                     running={running}

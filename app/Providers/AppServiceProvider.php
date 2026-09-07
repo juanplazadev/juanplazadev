@@ -88,6 +88,7 @@ final class AppServiceProvider extends ServiceProvider
             config('services.sentry.organization'),
             config('services.sentry.project'),
             (int) config('services.sentry.monthly_error_quota'),
+            config('services.sentry.api_url'),
         ));
 
         $this->app->scoped(CachedErrorInsights::class, fn ($app): CachedErrorInsights => new CachedErrorInsights(

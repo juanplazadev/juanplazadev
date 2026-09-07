@@ -1,15 +1,17 @@
 import { Link } from '@inertiajs/react';
 import {
-    BookOpen,
     ChartLine,
     FolderGit2,
     Gauge,
+    House,
+    MailCheck,
     Network,
     PenLine,
     Rocket,
     TriangleAlert,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
+import { NavConsole } from '@/components/nav-console';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -24,7 +26,14 @@ import {
 } from '@/components/ui/sidebar';
 import ArchitectureController from '@/actions/App/Http/Controllers/Admin/ArchitectureController';
 import PostController from '@/actions/App/Http/Controllers/Admin/PostController';
-import { analytics, dashboard, deployments, errors } from '@/routes/admin';
+import { home } from '@/routes';
+import {
+    analytics,
+    dashboard,
+    deliveries,
+    deployments,
+    errors,
+} from '@/routes/admin';
 import type { NavItem } from '@/types';
 
 /*
@@ -55,6 +64,11 @@ const monitoringNavItems: NavItem[] = [
         href: deployments(),
         icon: Rocket,
     },
+    {
+        title: 'Deliveries',
+        href: deliveries(),
+        icon: MailCheck,
+    },
 ];
 
 const contentNavItems: NavItem[] = [
@@ -70,16 +84,23 @@ const contentNavItems: NavItem[] = [
     },
 ];
 
+/*
+  NavFooter renders every item as a plain anchor with target="_blank" and has no
+  internal-link branch, which is what "View site" wants: looking at the public
+  page you just edited should not navigate the panel out from under you. The
+  starter kit's laravel.com/docs entry is gone - it was boilerplate, not
+  something this panel ever needed.
+*/
 const footerNavItems: NavItem[] = [
+    {
+        title: 'View site',
+        href: home(),
+        icon: House,
+    },
     {
         title: 'Repository',
         href: 'https://github.com/juanplazadev',
         icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs',
-        icon: BookOpen,
     },
 ];
 
@@ -105,6 +126,7 @@ export function AppSidebar() {
 
             <SidebarFooter>
                 <NavFooter items={footerNavItems} className="mt-auto" />
+                <NavConsole />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

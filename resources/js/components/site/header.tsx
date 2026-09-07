@@ -3,15 +3,16 @@ import type { CSSProperties } from 'react';
 
 import UserImg from '@images/user-image.webp';
 
+import PalettePicker from '@/components/palette-picker';
+import ThemeToggle from '@/components/theme-toggle';
+import WeatherInline from '@/components/weather/weather-inline';
+import Wordmark from '@/components/wordmark';
+
 import Badge from './badge';
 import Button from './button';
 import GitHubIcon from './github-icon';
-import PalettePicker from './palette-picker';
 import ResumeDialog from './resume-dialog';
 import StatusDot from './status-dot';
-import ThemeToggle from './theme-toggle';
-import Wordmark from '@/components/wordmark';
-import WeatherInline from '@/components/weather/weather-inline';
 
 const PinIcon = () => (
     <svg

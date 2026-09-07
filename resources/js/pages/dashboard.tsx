@@ -1,9 +1,9 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
 
 import AttentionList from '@/components/overview/attention-list';
-import BuildCard from '@/components/overview/build-card';
 import CardSkeleton from '@/components/overview/card-skeleton';
 import ContentCard from '@/components/overview/content-card';
+import DeliveriesCard from '@/components/overview/deliveries-card';
 import HealthCard from '@/components/overview/health-card';
 import HealthStrip from '@/components/overview/health-strip';
 import OverviewHeader from '@/components/overview/overview-header';
@@ -11,6 +11,7 @@ import TrafficCard from '@/components/overview/traffic-card';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes/admin';
 import type { Analytics } from '@/types/analytics';
+import type { DeliveryOverview } from '@/types/deliveries';
 import type { Deployments } from '@/types/deployments';
 import type { ErrorInsights } from '@/types/errors';
 import type { ContentSnapshot } from '@/types/overview';
@@ -18,6 +19,8 @@ import type { ContentSnapshot } from '@/types/overview';
 type OverviewProps = {
     /** Two table scans, resolved with the page. Never absent. */
     content: ContentSnapshot;
+    /** Local aggregates, resolved with the page for the same reason. */
+    deliveries: DeliveryOverview;
     /** config('sentry.release'). Eager so it can never be a stale cached copy. */
     running: string | null;
     traffic?: Analytics;
@@ -33,12 +36,19 @@ type OverviewProps = {
  * what makes a throttled Sentry cost the error card alone - the traffic card
  * beside it resolves on its own request and paints when it is ready.
  *
- * No chart library on this page by design. The traffic card draws its week with
- * the shared SVG sparkline, so the admin root never pulls in recharts; the two
- * pages that need real axes pay for it and nothing else does.
+ * recharts reaches this page, but only through the lazy boundary inside
+ * TrafficCard, so it lands in its own async chunk rather than the admin root's
+ * entry. That is safe here specifically because the chart sits inside the
+ * deferred `traffic` prop and therefore never renders during SSR; see
+ * .ai/rules/components-admin.md before charting anything eager.
+ *
+ * One grid of three columns, not two. The traffic chart earns the double width
+ * and "Needs attention" sits beside it, which fills six cells exactly - the old
+ * two-column grid held five cards and left Build alone on the last row.
  */
 export default function Overview({
     content,
+    deliveries,
     running,
     traffic,
     health,
@@ -59,24 +69,35 @@ export default function Overview({
 
                 <HealthStrip
                     content={content}
+                    deliveries={deliveries}
                     traffic={traffic}
                     health={health}
                 />
 
-                <AttentionList
-                    content={content}
-                    running={running}
-                    health={health}
-                    deploys={deploys}
-                />
-
-                <div className="grid gap-4 lg:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-3">
                     <Deferred
                         data="traffic"
-                        fallback={<CardSkeleton label="Loading traffic…" />}
+                        fallback={
+                            <CardSkeleton
+                                label="Loading traffic…"
+                                className="h-[300px] lg:col-span-2"
+                            />
+                        }
                     >
-                        {traffic ? <TrafficCard traffic={traffic} /> : null}
+                        {traffic ? (
+                            <div className="lg:col-span-2">
+                                <TrafficCard traffic={traffic} />
+                            </div>
+                        ) : null}
                     </Deferred>
+
+                    <AttentionList
+                        content={content}
+                        deliveries={deliveries}
+                        running={running}
+                        health={health}
+                        deploys={deploys}
+                    />
 
                     <Deferred
                         data="health"
@@ -87,14 +108,7 @@ export default function Overview({
 
                     <ContentCard content={content} />
 
-                    <Deferred
-                        data="deploys"
-                        fallback={<CardSkeleton label="Loading deploys…" />}
-                    >
-                        {deploys ? (
-                            <BuildCard running={running} deploys={deploys} />
-                        ) : null}
-                    </Deferred>
+                    <DeliveriesCard deliveries={deliveries} />
                 </div>
             </div>
         </>

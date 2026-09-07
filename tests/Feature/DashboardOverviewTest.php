@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\AnalyticsRange;
 use App\Models\Post;
+use App\Models\ResumeDelivery;
 use App\Models\User;
 use App\Services\Cloudflare\CachedSiteAnalytics;
 use App\Services\Sentry\CachedErrorInsights;
@@ -233,6 +234,30 @@ test('a section page after the overview spends no further vendor requests', func
 });
 
 // What the cards are built from ------------------------------------------------
+
+test('the overview resolves the delivery counts inline alongside the content', function (): void {
+    fakeBothVendors();
+
+    ResumeDelivery::factory()->count(2)->delivered()->create();
+    ResumeDelivery::factory()->blocked()->create();
+
+    $this->actingAs(User::factory()->create());
+
+    // Local aggregates, so they are not a fourth deferred group: a group costs
+    // a parallel HTTP request, which is the wrong trade for six counts against
+    // one table. The strip tile, the card and the attention list all read them.
+    $this->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('deliveries.totals.requested', 3)
+            ->where('deliveries.totals.delivered', 2)
+            ->where('deliveries.totals.blocked', 1)
+            ->has('deliveries.lastRequestedAt')
+            // The overview gets the counts and nothing else - the table of
+            // requests belongs to /dashboard/deliveries.
+            ->missing('deliveries.deliveries'),
+        );
+});
 
 test('the content prop carries the drafts the attention list names', function (): void {
     fakeBothVendors();

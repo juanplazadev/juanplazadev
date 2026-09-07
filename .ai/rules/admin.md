@@ -14,6 +14,36 @@ The overview pins `AnalyticsRange::default()` and takes no `?range=`. That is th
 
 It sends three deferred props in three named groups (`traffic`, `health`, `deploys`), not one. Grouped deferred props are fetched in parallel requests, so a throttled Sentry delays its own card instead of blanking the traffic card beside it. Pinned by 'each deferred group is announced under its own name'.
 
+Those groups are also what makes the overview's traffic chart safe to lazy-load. `traffic` is absent
+from the first response, so during SSR `<Deferred>` renders its skeleton and the chart subtree is
+never created - the dynamic `import()` behind `traffic-card.tsx` never runs on the server, and there
+is nothing for hydration to disagree about. A chart placed on `content`, `deliveries` or `running`
+would not have that protection. The Build card was folded into the header chip so the running release
+is stated once rather than in both places; four cards then fill the three-column grid without an
+orphan. See `.ai/rules/components-admin.md`.
+
 `?range=` on the traffic page goes through `App\Http\Requests\Admin\AnalyticsRequest` (renamed from `DashboardRequest`), which sanitises an unrecognised value away in `prepareForValidation()` rather than failing it. Deliberate: the range is a link in the page, so a stale bookmark renders the default panel instead of an error. Pinned by 'an unrecognised range falls back to the default instead of failing'.
 
 Wayfinder emits these from `resources/js/routes/admin/index.ts`, so the imports are `import { dashboard, analytics, errors, deployments } from '@/routes/admin'` - `@/routes` does not export them. Regenerate with `php artisan wayfinder:generate --with-form`; without the flag the `.form` variants the CRUD pages rely on disappear and `tsc` fails across a dozen files.
+
+## /dashboard/deliveries is the one section page with an eager data prop
+Every other section page defers: traffic, errors and deployments are each a network hop to a
+vendor that rate-limits, degrades and needs an error string rendered for it, and deferring is what
+keeps one throttled vendor from delaying a card it has nothing to do with. The deliveries page is
+six counts and a fifty-row select against two local tables, so a deferred prop there would buy a
+second round trip and a skeleton for data already in hand. Same reasoning as `content` on the
+overview. Pinned by 'the page resolves its deliveries inline rather than deferring them'.
+
+For the same reason the overview's `deliveries` prop is NOT a fourth deferred group. A group costs
+a parallel HTTP request, which is the wrong trade for a local aggregate - and the group count is
+itself pinned by 'each deferred group is announced under its own name', which fails if one is
+added. Three components read that one prop: the health strip tile, the section card, and the
+"Needs attention" bounce entry.
+
+`DeliveriesRequest` sanitises BOTH `range` and `status` away in `prepareForValidation()` rather
+than failing them, for the reason `AnalyticsRequest` does it for `range` alone: both are links in
+the page, so a stale bookmark renders the default view instead of a 422.
+
+The status filter reuses `components/admin/range-picker.tsx` rather than copying it - it is
+already generic over `{value, label}`, and a near-duplicate is exactly what that directory exists
+to prevent. "All" is a client-side sentinel that drops the parameter from the URL entirely.

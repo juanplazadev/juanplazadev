@@ -1,9 +1,9 @@
 import { Link } from '@inertiajs/react';
 
+import PalettePicker from '@/components/palette-picker';
+import ThemeToggle from '@/components/theme-toggle';
 import Wordmark from '@/components/wordmark';
 import { home } from '@/routes';
-import PalettePicker from './palette-picker';
-import ThemeToggle from './theme-toggle';
 
 const BackIcon = () => (
     <svg

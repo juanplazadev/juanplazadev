@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\AnalyticsRange;
+use App\Enums\DeliveryStatus;
 use Carbon\CarbonImmutable;
 use Database\Factories\ResumeDeliveryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -92,6 +94,17 @@ final class ResumeDelivery extends Model
         ])->save();
     }
 
+    /**
+     * Where this request got to, derived rather than stored.
+     *
+     * The rules and their order live on the enum, so the badge, the tiles and
+     * the status filter all read the same five definitions.
+     */
+    public function status(): DeliveryStatus
+    {
+        return DeliveryStatus::of($this);
+    }
+
     public function markFailed(string $reason): void
     {
         // Truncated rather than rejected: a provider's failure sentence is
@@ -117,6 +130,21 @@ final class ResumeDelivery extends Model
     protected function newestFirst(Builder $query): void
     {
         $query->latest('created_at')->orderByDesc('id');
+    }
+
+    /**
+     * Requests made inside the window the panel is showing.
+     *
+     * The lower bound only. AnalyticsRange::endsAt() is now, and a row cannot be
+     * created later than that, so an upper bound would be an index lookup that
+     * can never exclude anything.
+     *
+     * @param  Builder<covariant static>  $query
+     */
+    #[Scope]
+    protected function requestedWithin(Builder $query, AnalyticsRange $range): void
+    {
+        $query->where('created_at', '>=', $range->startsAt());
     }
 
     /**

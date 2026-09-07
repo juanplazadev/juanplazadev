@@ -14,6 +14,15 @@ export type ErrorRelease = {
     deployedAt: string | null;
     /** Null for a release Sentry inferred from an event rather than a deploy. */
     environment: string | null;
+    /**
+     * The release's page in Sentry's web UI.
+     *
+     * Constructed server-side rather than returned by the API, unlike an
+     * issue's permalink - the release endpoint hands back no link to itself.
+     * Null when no API URL is configured, so the row simply drops its link
+     * instead of pointing at a half-built one.
+     */
+    permalink: string | null;
 };
 
 export type Deployments = {

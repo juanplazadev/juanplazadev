@@ -42,6 +42,17 @@ final readonly class SiteAnalytics
      *
      * Verify a name against the live schema before adding one here:
      *   {__type(name:"AccountRumPageloadEventsAdaptiveGroupsDimensions"){fields{name}}}
+     *
+     * Two of these lie about what they return, and both were confirmed against
+     * live data rather than assumed:
+     *
+     * - `countryName` reports the ISO 3166-1 alpha-2 CODE, not a name. Rows
+     *   arrive as `US`, and the frontend resolves the display name and the flag
+     *   from it. There is no country-code dimension to switch to - the schema
+     *   holds 21 dimensions and this is the only geographic one.
+     * - `userAgentBrowser` folds the platform into a CamelCase string, so the
+     *   live values are `MobileSafari` and `FirefoxMobile`, not `Safari` and
+     *   `Firefox`. row-glyphs.tsx matches on a substring for that reason.
      */
     private const array BREAKDOWNS = [
         'topPaths' => 'requestPath',
@@ -158,12 +169,17 @@ final readonly class SiteAnalytics
     {
         $mapped = [];
 
+        // An empty refererHost is direct traffic, which is a fact. An empty
+        // anything else is a fact Cloudflare did not have, and calling that
+        // "Direct" reads as nonsense the moment the row is a device or a
+        // country rather than a referrer.
+        $missing = $dimension === 'refererHost' ? 'Direct' : 'Unknown';
+
         foreach ($rows as $row) {
             $label = $this->dimension($row, $dimension);
 
             $mapped[] = [
-                // An empty refererHost is direct traffic, not a missing value.
-                'label' => ($label === null || $label === '') ? 'Direct' : $label,
+                'label' => ($label === null || $label === '') ? $missing : $label,
                 'visits' => $this->visits($row),
                 'pageViews' => $this->pageViews($row),
             ];

@@ -1,8 +1,12 @@
 import { ExternalLink } from 'lucide-react';
 
 import Sparkline from '@/components/admin/sparkline';
+import {
+    levelColor,
+    levelGlyph,
+    levelLabel,
+} from '@/components/errors/level-glyphs';
 import { timeAgo } from '@/lib/time';
-import { cn } from '@/lib/utils';
 import type { ErrorIssue } from '@/types/errors';
 import PanelCard from '@/components/admin/panel-card';
 
@@ -17,6 +21,11 @@ type IssueListProps = {
  * Ranked by event count rather than recency on purpose: this page exists to
  * answer "what is broken", and the thing firing a thousand times an hour is the
  * answer even when something quieter happened more recently.
+ *
+ * The heading carries no glyph, and neither does the quota meter beside the
+ * chart. That is a deliberate asymmetry with the traffic page rather than an
+ * omission: the icons on this page mark severity, and a card titled "Unresolved
+ * issues" above a column of severity glyphs does not need a sixth one.
  */
 export default function IssueList({
     issues,
@@ -35,13 +44,19 @@ export default function IssueList({
                             key={issue.id}
                             className="flex items-center gap-3 py-2.5"
                         >
+                            {/* A fixed box whatever the glyph is, so the
+                                titles line up down the list - the same reason
+                                TopList boxes its row glyphs. */}
                             <span
-                                aria-hidden
-                                className={cn(
-                                    'size-2 shrink-0 rounded-full',
-                                    levelColor(issue.level),
-                                )}
-                            />
+                                data-test="level-glyph"
+                                className="flex size-4 shrink-0 items-center justify-center"
+                                style={{ color: levelColor(issue.level) }}
+                            >
+                                {levelGlyph(issue.level)}
+                                <span className="sr-only">
+                                    {levelLabel(issue.level)}
+                                </span>
+                            </span>
 
                             <div className="min-w-0 flex-1">
                                 <p className="text-foreground truncate text-sm font-medium">
@@ -83,16 +98,4 @@ export default function IssueList({
             )}
         </PanelCard>
     );
-}
-
-function levelColor(level: string): string {
-    switch (level) {
-        case 'fatal':
-        case 'error':
-            return 'bg-destructive';
-        case 'warning':
-            return 'bg-chart-4';
-        default:
-            return 'bg-muted-foreground';
-    }
 }

@@ -1,6 +1,7 @@
 import { type KeyboardEvent, useRef } from 'react';
 
 import { usePalette } from '@/hooks/use-palette';
+import { cn } from '@/lib/utils';
 
 /*
   A radio group rather than a row of independent buttons: picking a palette is
@@ -9,7 +10,7 @@ import { usePalette } from '@/hooks/use-palette';
   content. That means managing focus by hand - the roving tabindex below is what
   the pattern requires.
 */
-export default function PalettePicker() {
+export default function PalettePicker({ className }: { className?: string }) {
     const { palette, palettes, setPalette } = usePalette();
     const groupRef = useRef<HTMLDivElement>(null);
 
@@ -43,7 +44,10 @@ export default function PalettePicker() {
             role="radiogroup"
             aria-label="Color palette"
             onKeyDown={onKeyDown}
-            className="border-border bg-card flex items-center gap-1 rounded-full border p-1"
+            className={cn(
+                'border-border bg-card flex items-center gap-1 rounded-full border p-1',
+                className,
+            )}
         >
             {palettes.map((entry) => {
                 const isActive = entry.id === palette;

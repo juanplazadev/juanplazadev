@@ -1,11 +1,14 @@
 import StatTile from '@/components/admin/stat-tile';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Analytics } from '@/types/analytics';
+import type { DeliveryOverview } from '@/types/deliveries';
 import type { ErrorInsights } from '@/types/errors';
 import type { ContentSnapshot } from '@/types/overview';
 
 type HealthStripProps = {
     content: ContentSnapshot;
+    /** Local aggregates, so this one is never pending either. */
+    deliveries: DeliveryOverview;
     /** Undefined until the traffic group resolves. */
     traffic?: Analytics;
     /** Undefined until the health group resolves. */
@@ -13,22 +16,26 @@ type HealthStripProps = {
 };
 
 /**
- * The four numbers worth seeing before anything else.
+ * The five numbers worth seeing before anything else.
  *
  * Each tile owns its own loading state rather than the row sharing one. The
- * drafts count comes from the database and is there on first paint; the other
- * three come from two vendors fetched in parallel, and a row that waited for
- * the slowest of them would hide a number it already had.
+ * drafts count and the résumé requests come from the database and are there on
+ * first paint; the other three come from two vendors fetched in parallel, and a
+ * row that waited for the slowest of them would hide a number it already had.
+ *
+ * Three columns at lg rather than five: five tiles across a sidebar-inset panel
+ * leaves each one narrower than the number it has to hold.
  */
 export default function HealthStrip({
     content,
+    deliveries,
     traffic,
     health,
 }: HealthStripProps) {
     const drafts = content.posts.drafts + content.architectures.drafts;
 
     return (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <StatTile
                 label="Visits"
                 value={
@@ -65,6 +72,12 @@ export default function HealthStrip({
                 label="Drafts"
                 value={drafts.toLocaleString()}
                 hint={`${content.posts.published + content.architectures.published} published`}
+            />
+
+            <StatTile
+                label="Résumé requests"
+                value={deliveries.totals.requested.toLocaleString()}
+                hint={`${deliveries.totals.delivered.toLocaleString()} delivered`}
             />
 
             <StatTile

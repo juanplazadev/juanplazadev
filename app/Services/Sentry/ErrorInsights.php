@@ -33,7 +33,7 @@ use Throwable;
  * @phpstan-type ErrorInsightsTotals array{errors: int, dropped: int, users: int, issues: int, accepted: int, quota: int}
  * @phpstan-type ErrorInsightsPoint array{date: string, accepted: int, dropped: int}
  * @phpstan-type ErrorInsightsIssue array{id: string, shortId: string, title: string, culprit: string, level: string, count: int, userCount: int, lastSeen: string, permalink: string, sparkline: list<int>}
- * @phpstan-type ErrorInsightsRelease array{version: string, shortVersion: string, newGroups: int, deployedAt: string|null, environment: string|null}
+ * @phpstan-type ErrorInsightsRelease array{version: string, shortVersion: string, newGroups: int, deployedAt: string|null, environment: string|null, permalink: string|null}
  * @phpstan-type ErrorInsightsStats array{series: list<ErrorInsightsPoint>, accepted: int}
  * @phpstan-type ErrorInsightsSummary array{
  *     range: string,
@@ -92,6 +92,7 @@ final readonly class ErrorInsights
         private ?string $organization,
         private ?string $project,
         private int $monthlyQuota,
+        private ?string $apiUrl = null,
     ) {}
 
     /**
@@ -376,10 +377,23 @@ final readonly class ErrorInsights
                 'newGroups' => (int) ($release['newGroups'] ?? 0),
                 'deployedAt' => $this->deployedAt($release),
                 'environment' => $this->environment($release),
+                'permalink' => $this->releaseUrl($version),
             ];
         }
 
         return $releases;
+    }
+
+    /**
+     * The Sentry web UI's page for a release.
+     *
+     * Shared with the panel's Sentry console link through SentryWebUrl, which
+     * owns the reasoning about which host and path form are safe to build.
+     */
+    private function releaseUrl(string $version): ?string
+    {
+        return new SentryWebUrl($this->apiUrl, $this->organization, $this->project)
+            ->release($version);
     }
 
     /**

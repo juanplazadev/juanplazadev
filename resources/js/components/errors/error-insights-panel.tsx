@@ -7,6 +7,7 @@ import StatTile from '@/components/admin/stat-tile';
 import ErrorVolumeChart from '@/components/errors/error-volume-chart';
 import IssueList from '@/components/errors/issue-list';
 import QuotaMeter from '@/components/errors/quota-meter';
+import SeverityCard from '@/components/errors/severity-card';
 import { errors } from '@/routes/admin';
 import type { AnalyticsRangeOption } from '@/types/analytics';
 import type { ErrorInsights } from '@/types/errors';
@@ -64,6 +65,10 @@ function selectRange(value: string): void {
  * one thing worth reading the most cramped thing on the page. The quota meter
  * moved up next to the chart instead - both are counts over a window, and the
  * meter is the footnote to the volume rather than to the issues.
+ *
+ * Severity sits outside that grid and directly above the list it describes. A
+ * part-to-whole bar wants to be wide and short, and as a third column it would
+ * have been a tall card holding one bar.
  */
 function Panels({ insights }: { insights: ErrorInsights }) {
     const { totals, series, issues } = insights;
@@ -112,6 +117,8 @@ function Panels({ insights }: { insights: ErrorInsights }) {
 
                 <QuotaMeter totals={totals} />
             </div>
+
+            <SeverityCard issues={issues} />
 
             <IssueList issues={issues} />
         </>
