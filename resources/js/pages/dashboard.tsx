@@ -4,6 +4,7 @@ import AttentionList from '@/components/overview/attention-list';
 import BuildCard from '@/components/overview/build-card';
 import CardSkeleton from '@/components/overview/card-skeleton';
 import ContentCard from '@/components/overview/content-card';
+import DeliveriesCard from '@/components/overview/deliveries-card';
 import HealthCard from '@/components/overview/health-card';
 import HealthStrip from '@/components/overview/health-strip';
 import OverviewHeader from '@/components/overview/overview-header';
@@ -11,6 +12,7 @@ import TrafficCard from '@/components/overview/traffic-card';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes/admin';
 import type { Analytics } from '@/types/analytics';
+import type { DeliveryOverview } from '@/types/deliveries';
 import type { Deployments } from '@/types/deployments';
 import type { ErrorInsights } from '@/types/errors';
 import type { ContentSnapshot } from '@/types/overview';
@@ -18,6 +20,8 @@ import type { ContentSnapshot } from '@/types/overview';
 type OverviewProps = {
     /** Two table scans, resolved with the page. Never absent. */
     content: ContentSnapshot;
+    /** Local aggregates, resolved with the page for the same reason. */
+    deliveries: DeliveryOverview;
     /** config('sentry.release'). Eager so it can never be a stale cached copy. */
     running: string | null;
     traffic?: Analytics;
@@ -39,6 +43,7 @@ type OverviewProps = {
  */
 export default function Overview({
     content,
+    deliveries,
     running,
     traffic,
     health,
@@ -59,12 +64,14 @@ export default function Overview({
 
                 <HealthStrip
                     content={content}
+                    deliveries={deliveries}
                     traffic={traffic}
                     health={health}
                 />
 
                 <AttentionList
                     content={content}
+                    deliveries={deliveries}
                     running={running}
                     health={health}
                     deploys={deploys}
@@ -86,6 +93,8 @@ export default function Overview({
                     </Deferred>
 
                     <ContentCard content={content} />
+
+                    <DeliveriesCard deliveries={deliveries} />
 
                     <Deferred
                         data="deploys"

@@ -5,13 +5,19 @@ import PanelCard from '@/components/admin/panel-card';
 import { timeAgo } from '@/lib/time';
 import PostController from '@/actions/App/Http/Controllers/Admin/PostController';
 import ArchitectureController from '@/actions/App/Http/Controllers/Admin/ArchitectureController';
-import { deployments, errors } from '@/routes/admin';
+import {
+    deliveries as deliveriesRoute,
+    deployments,
+    errors,
+} from '@/routes/admin';
+import type { DeliveryOverview } from '@/types/deliveries';
 import type { Deployments } from '@/types/deployments';
 import type { ErrorInsights } from '@/types/errors';
 import type { ContentSnapshot } from '@/types/overview';
 
 type AttentionListProps = {
     content: ContentSnapshot;
+    deliveries: DeliveryOverview;
     running: string | null;
     health?: ErrorInsights;
     deploys?: Deployments;
@@ -34,11 +40,12 @@ type Item = {
  */
 export default function AttentionList({
     content,
+    deliveries,
     running,
     health,
     deploys,
 }: AttentionListProps) {
-    const items = collect(content, running, health, deploys);
+    const items = collect(content, deliveries, running, health, deploys);
 
     return (
         <PanelCard title="Needs attention">
@@ -67,11 +74,24 @@ export default function AttentionList({
 
 function collect(
     content: ContentSnapshot,
+    deliveries: DeliveryOverview,
     running: string | null,
     health?: ErrorInsights,
     deploys?: Deployments,
 ): Item[] {
     const items: Item[] = [];
+
+    // Failures only. A blocked request is the challenge working as intended,
+    // not something asking you for a decision.
+    if (deliveries.totals.failed > 0) {
+        const count = deliveries.totals.failed;
+
+        items.push({
+            key: 'bounced',
+            href: deliveriesRoute.url({ query: { status: 'failed' } }),
+            text: `${count.toLocaleString()} résumé ${count === 1 ? 'email' : 'emails'} never arrived`,
+        });
+    }
 
     if (health && !health.error && health.totals.issues > 0) {
         const count = health.totals.issues;

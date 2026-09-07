@@ -4,6 +4,7 @@ import {
     ChartLine,
     FolderGit2,
     Gauge,
+    MailCheck,
     Network,
     PenLine,
     Rocket,
@@ -24,7 +25,13 @@ import {
 } from '@/components/ui/sidebar';
 import ArchitectureController from '@/actions/App/Http/Controllers/Admin/ArchitectureController';
 import PostController from '@/actions/App/Http/Controllers/Admin/PostController';
-import { analytics, dashboard, deployments, errors } from '@/routes/admin';
+import {
+    analytics,
+    dashboard,
+    deliveries,
+    deployments,
+    errors,
+} from '@/routes/admin';
 import type { NavItem } from '@/types';
 
 /*
@@ -54,6 +61,11 @@ const monitoringNavItems: NavItem[] = [
         title: 'Deployments',
         href: deployments(),
         icon: Rocket,
+    },
+    {
+        title: 'Deliveries',
+        href: deliveries(),
+        icon: MailCheck,
     },
 ];
 
