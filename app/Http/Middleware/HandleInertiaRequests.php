@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Enums\Console;
 use App\Enums\Palette;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -49,6 +50,13 @@ final class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'palette' => Palette::fromRequest($request->cookie(Palette::COOKIE))->value,
             'palettes' => Palette::options(),
+            /*
+             * The panel's Consoles menu. Gated on the user because the entries
+             * carry the Sentry org slug, the Cloudflare account id and the
+             * Mailgun domain - operational detail with no business in a public
+             * visitor's page payload.
+             */
+            'consoles' => $request->user() !== null ? Console::options() : [],
             'hiring' => config()->boolean('site.hiring'),
             /*
              * Null switches the résumé form's challenge off in the browser, and

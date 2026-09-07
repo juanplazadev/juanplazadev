@@ -387,32 +387,13 @@ final readonly class ErrorInsights
     /**
      * The Sentry web UI's page for a release.
      *
-     * Constructed rather than read, unlike an issue's permalink: the release
-     * endpoint hands back no link to itself. Its `url` field belongs to the
-     * repository the release was cut from and is usually null.
-     *
-     * The host comes off the API URL with its path stripped - so
-     * `https://us.sentry.io/api/0` gives `https://us.sentry.io` - because the
-     * region is already encoded in the credential and guessing it a second time
-     * is how you send a reader to another region's empty account. The legacy
-     * `/organizations/{slug}/` path form is deliberate: it redirects correctly
-     * whichever URL scheme the organization is on, while the org-subdomain form
-     * would have to be assembled from a slug that may not be the subdomain.
+     * Shared with the panel's Sentry console link through SentryWebUrl, which
+     * owns the reasoning about which host and path form are safe to build.
      */
     private function releaseUrl(string $version): ?string
     {
-        $host = parse_url((string) $this->apiUrl, PHP_URL_HOST);
-        $scheme = parse_url((string) $this->apiUrl, PHP_URL_SCHEME);
-
-        if (! is_string($host) || $host === '' || ! is_string($scheme) || $scheme === '') {
-            return null;
-        }
-
-        $url = "{$scheme}://{$host}/organizations/{$this->organization}/releases/".rawurlencode($version).'/';
-
-        return $this->project === null || $this->project === ''
-            ? $url
-            : $url.'?project='.rawurlencode($this->project);
+        return new SentryWebUrl($this->apiUrl, $this->organization, $this->project)
+            ->release($version);
     }
 
     /**

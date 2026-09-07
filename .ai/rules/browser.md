@@ -32,3 +32,10 @@ Fix: restart the dev server (`sail npm run dev`). Never delete public/hot.
 To diagnose, ask the server for the hash it is handing out and then request a dep at that hash:
 `curl -s http://localhost:5180/resources/js/app.tsx | grep -o '?v=[a-z0-9]*'`
 A 504 at a hash the server itself emits is the tell. To surface a swallowed resource error from inside a test, register a capture-phase listener (`addEventListener('error', h, true)`); the non-capture one misses it.
+
+## A bare tag name is not an explicit selector - it times out as a text search
+`Selector::isExplicit()` only treats a string as CSS if it starts with `#`, `.`, `[`, `internal:` or contains a CSS special char (`[ ] # > + ~ : * | ^ , = ( )`) or a `.class` pattern. A bare `html`, `header` or `nav` fails all of those, so GuessLocator falls through to `[id=]`, `[name=]` and finally `getByText()` - which never matches and dies on the 5000ms timeout with a screenshot instead of a useful error.
+
+To assert on `<html>` (the `.dark` class the whole token layer keys on), write `html.dark` or `html:not(.dark)`, never `html`. Same for `attribute('html', 'class')`.
+
+Appearance assertions must also not pin a fixed value: nothing is persisted until a theme is picked, so the starting state is the browser's `prefers-color-scheme`. Read `aria-pressed` off `@theme-toggle` first and assert the flip relative to that - see 'switches the panel theme from the page header' in DashboardTest.

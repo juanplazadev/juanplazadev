@@ -1,5 +1,6 @@
 import type { Auth } from '@/types/auth';
 import type { Palette } from '@/types/content';
+import type { Console } from '@/types/navigation';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> {
@@ -15,6 +16,8 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             palette: string;
             palettes: Palette[];
+            /** Empty for a guest, and for any service this environment has no credentials for. */
+            consoles: Console[];
             /** Availability signalling on the landing page - see config/site.php. */
             hiring: boolean;
             /** Null when Turnstile is unconfigured, which switches the challenge off. */

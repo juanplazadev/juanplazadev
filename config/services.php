@@ -78,6 +78,16 @@ return [
     ],
 
     /*
+     * The local Mailpit web UI, linked from the panel's Consoles menu. Unset
+     * everywhere but local, which is the whole gate: with no URL the enum drops
+     * the case and production never renders a link to a container that is not
+     * there. See compose.yaml for the port it is published on.
+     */
+    'mailpit' => [
+        'url' => env('MAILPIT_URL'),
+    ],
+
+    /*
      * Reading errors back out of Sentry, which is a different credential from
      * the DSN in config/sentry.php: that one submits events, this one queries
      * them. See .env.example for how to mint the token and find each slug.

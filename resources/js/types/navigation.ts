@@ -12,3 +12,13 @@ export type NavItem = {
     icon?: LucideIcon | null;
     isActive?: boolean;
 };
+
+/**
+ * A third-party console in the sidebar's Consoles menu, built server side by
+ * App\Enums\Console. `id` names the case, which is what picks the icon.
+ */
+export type Console = {
+    id: string;
+    label: string;
+    url: string;
+};

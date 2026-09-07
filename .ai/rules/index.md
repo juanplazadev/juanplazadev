@@ -22,6 +22,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | {vite.config.ts,tsconfig.json,resources/images/**,config/inertia.php,resources/js/app.tsx} | .ai/rules/js.md |
 | {resources/js/components/analytics/**,resources/js/lib/browser-icons.ts} | .ai/rules/lib.md |
 | {app/Mail/**,app/Jobs/SendResumeEmail.php,app/Actions/*ResumeDelivery*.php,app/Actions/SendResumeEmailAction.php,app/Services/Mailgun/**,app/Http/Controllers/MailgunWebhookController.php,app/Models/{ResumeDelivery,EmailEvent}.php,resources/views/mail/**,config/mail.php} | .ai/rules/mail.md |
+| {resources/js/components/app-sidebar.tsx,resources/js/components/app-sidebar-header.tsx,resources/js/components/nav-console.tsx,resources/js/components/theme-toggle.tsx,resources/js/components/palette-picker.tsx,app/Enums/Console.php} | .ai/rules/panel-chrome.md |
 | {app/Services/Sentry/**,app/Http/Controllers/Admin/{Errors,Deployments}Controller.php,config/services.php,resources/js/pages/admin/deployments.tsx} | .ai/rules/sentry.md |
 | {resources/js/components/wordmark.tsx,resources/js/components/app-logo.tsx,resources/js/components/site/**} | .ai/rules/site.md |
 | tests/** | .ai/rules/tests.md |

@@ -561,3 +561,61 @@ it('round trips the markdown constructs the write-ups use', function (): void {
         ->toContain('_around_')
         ->toContain('## The edge');
 });
+
+// Panel chrome ---------------------------------------------------------------
+
+/*
+ * The appearance rail. Asserted as a change rather than against a fixed value,
+ * because nothing is persisted until a theme is picked, so the starting state
+ * is whatever prefers-color-scheme the browser reports - pinning "dark is
+ * present after one click" would pass or fail on the machine's colour scheme
+ * rather than on the toggle.
+ *
+ * The palette picker beside it is asserted by its accessible name, not its
+ * dots: it renders six sibling buttons, and a locator matching all six trips
+ * Playwright's strict mode the same way @panel-icon would.
+ */
+it('switches the panel theme from the page header', function (): void {
+    $this->actingAs(User::factory()->create());
+
+    $page = visit('/dashboard')
+        ->waitForEvent('networkidle')
+        ->assertNoSmoke()
+        ->assertPresent('[role="radiogroup"][aria-label="Color palette"]')
+        ->assertPresent('@theme-toggle');
+
+    $wasDark = $page->attribute('@theme-toggle', 'aria-pressed') === 'true';
+
+    // Both halves: the class the whole token layer keys on actually lands on
+    // <html>, and the button reports the state it just moved to. Selectors are
+    // written with a `.` or `:` because a bare tag name is not explicit enough
+    // for the plugin's locator guesser - it falls through to a text search and
+    // times out.
+    $page->click('@theme-toggle')
+        ->assertPresent($wasDark ? 'html:not(.dark)' : 'html.dark')
+        ->assertAttribute('@theme-toggle', 'aria-pressed', $wasDark ? 'false' : 'true');
+});
+
+/*
+ * The footer's two halves. "View site" is the panel's only way back to the
+ * public site, and the Consoles menu is built from a shared prop rather than
+ * hardcoded - so the assertion is on a URL that only exists if the Cloudflare
+ * account id from beforeEach() reached the DOM through App\Enums\Console.
+ *
+ * Neither console the fixture configures is asserted by its label: "Sentry" and
+ * "Cloudflare" both appear in panel copy elsewhere, and matching on the href is
+ * what makes this about the link rather than about the word.
+ */
+it('links back to the public site and out to the configured consoles', function (): void {
+    $this->actingAs(User::factory()->create());
+
+    visit('/dashboard')
+        ->waitForEvent('networkidle')
+        ->assertNoSmoke()
+        ->assertSee('View site')
+        ->assertPresent('a[href="/"][target="_blank"]')
+        ->assertDontSee('Documentation')
+        ->click('@consoles-menu')
+        ->assertPresent('a[href^="https://dash.cloudflare.com/acct-tag/"]')
+        ->assertPresent('a[href^="https://us.sentry.io/organizations/test-org/issues/"]');
+});

@@ -34,7 +34,7 @@ Why the split matters beyond tidiness: `/releases/` takes no `statsPeriod`, so t
 `running` (`config('sentry.release')`) stays an eager prop on both the deployments page and the overview. The caches hold 15 minutes and a deploy does not clear them, so a cached copy would report drift already fixed a quarter of an hour ago.
 
 ## A release's permalink is constructed, not returned
-Sentry hands an issue its own `permalink`. A release row does not: the `url` field on that payload belongs to the repository the release was cut from and is usually null. ErrorInsights::releaseUrl() builds one.
+Sentry hands an issue its own `permalink`. A release row does not: the `url` field on that payload belongs to the repository the release was cut from and is usually null. ErrorInsights::releaseUrl() builds one, delegating to `App\Services\Sentry\SentryWebUrl` - which owns this derivation for both the release row and the sidebar's Sentry console link (`App\Enums\Console`). Build a new Sentry web link through it; do not re-derive the host.
 
 The host comes off `services.sentry.api_url` with its path stripped - https://us.sentry.io/api/0 gives https://us.sentry.io - because the region is already encoded in the credential and guessing it a second time sends the reader to another region's empty account. The path form is the legacy /organizations/{slug}/releases/{version}/, which redirects correctly whichever URL scheme the org is on; the org-subdomain form would have to be assembled from a slug that may not be the subdomain.
 
