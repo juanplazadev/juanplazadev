@@ -7,6 +7,7 @@ import Badge from './badge';
 import Button from './button';
 import GitHubIcon from './github-icon';
 import PalettePicker from './palette-picker';
+import ResumeDialog from './resume-dialog';
 import StatusDot from './status-dot';
 import ThemeToggle from './theme-toggle';
 import Wordmark from '@/components/wordmark';
@@ -27,23 +28,6 @@ const PinIcon = () => (
     >
         <path d="M8 14.5s5-4.14 5-7.5a5 5 0 0 0-10 0c0 3.36 5 7.5 5 7.5Z" />
         <circle cx="8" cy="7" r="1.75" />
-    </svg>
-);
-
-const DownloadIcon = () => (
-    <svg
-        className="stroke-current"
-        xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        viewBox="0 0 16 16"
-        fill="none"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-    >
-        <path d="M8 2v8m0 0L5 7m3 3 3-3M2.5 12.5v.5a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5v-.5" />
     </svg>
 );
 
@@ -204,14 +188,7 @@ export default function Header() {
                     <Button variant="shimmer" href="mailto:juan@juanplaza.dev">
                         Get In Touch
                     </Button>
-                    <Button
-                        variant="outline"
-                        href="/juan-plaza-resume.pdf"
-                        download
-                    >
-                        <DownloadIcon />
-                        Résumé
-                    </Button>
+                    <ResumeDialog />
                     <Button
                         variant="outline"
                         href="https://github.com/juanplazadev"

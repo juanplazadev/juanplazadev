@@ -55,3 +55,31 @@ it('drops every availability signal outside hiring mode', function (): void {
         ->assertSee('RBC Bearings')
         ->assertSee('Résumé');
 });
+
+/*
+ * The résumé is no longer a direct download - the button opens a dialog that
+ * asks for an address first. Nothing is wired to the backend yet, so this
+ * asserts the UI contract: the dialog opens, a bad address is rejected without
+ * leaving the form, and a good one lands on the confirmation.
+ *
+ * assertSee never retries (see .ai/rules/browser.md), so every assertion below
+ * is reached through an action that does wait: type() and click() are Playwright
+ * actionability calls, which is what rides out the dialog's 200ms entrance. The
+ * one explicit wait covers the component's own fake send delay, which stands in
+ * for the request that does not exist yet.
+ */
+it('asks for an email address instead of downloading the résumé', function (): void {
+    visit('/')
+        ->assertNoSmoke()
+        ->click('@resume-trigger')
+        ->type('email', 'not-an-address')
+        ->assertSee('Get the résumé')
+        ->click('@resume-submit')
+        ->assertSee('That does not look like an address I can send to.')
+        ->type('email', 'hiring@example.com')
+        ->click('@resume-submit')
+        ->wait(1.2)
+        ->assertVisible('@resume-sent')
+        ->assertSee('On its way')
+        ->assertSee('hiring@example.com');
+});
