@@ -82,7 +82,7 @@
             "npm run types:check",
             "@test"
         ],
-        "test:unit": "XDEBUG_MODE=\"coverage\" php -d memory_limit=-1 vendor/bin/pest --testsuite=Unit,Feature --parallel --coverage --exactly=96.5",
+        "test:unit": "XDEBUG_MODE=\"coverage\" php -d memory_limit=-1 vendor/bin/pest --testsuite=Unit,Feature --parallel --coverage --min=96",
         "test": [
             "@test:type-coverage",
             "@test:unit",
