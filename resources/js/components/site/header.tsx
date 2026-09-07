@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import type { CSSProperties } from 'react';
 
 import UserImg from '@images/user-image.webp';
@@ -65,6 +66,11 @@ const stats = [
 ];
 
 export default function Header() {
+    // Availability signalling is server-gated (config/site.php), so with it off
+    // the copy never reaches the browser. Read once here rather than in each
+    // child, so the avatar marker and the badge cannot disagree.
+    const { hiring } = usePage().props;
+
     return (
         <header className="relative pt-6 text-center">
             {/*
@@ -111,20 +117,36 @@ export default function Header() {
                         />
                     </div>
                     {/* Availability marker on the avatar itself, so the pill below is not
-              the only thing carrying it. */}
-                    <span className="border-border bg-card absolute right-0.5 bottom-0.5 flex h-5 w-5 items-center justify-center rounded-full border shadow-xs">
-                        <StatusDot />
-                    </span>
+              the only thing carrying it. Dropped rather than replaced when not
+              hiring - the avatar reads as itself without it. */}
+                    {hiring && (
+                        <span className="border-border bg-card absolute right-0.5 bottom-0.5 flex h-5 w-5 items-center justify-center rounded-full border shadow-xs">
+                            <StatusDot />
+                        </span>
+                    )}
                 </div>
 
                 <div
                     className="hero-in mb-5 flex flex-wrap items-center justify-center gap-2"
                     style={delay(120)}
                 >
-                    <Badge variant="accent">
-                        <StatusDot />
-                        Open to remote roles
-                    </Badge>
+                    {/*
+              The one badge that says "looking" rather than "here", so it is the
+              one the flag swaps. Swapped rather than dropped: the row keeps two
+              badges and the hero its rhythm, and "Remote since 2018" is a fact
+              the 2018 Martori entry below substantiates. Deliberately not a
+              StatusDot with its ping switched off - a static dot where a
+              pinging one used to be reintroduces the exact ambiguity this flag
+              exists to remove.
+            */}
+                    {hiring ? (
+                        <Badge variant="accent">
+                            <StatusDot />
+                            Open to remote roles
+                        </Badge>
+                    ) : (
+                        <Badge variant="outline">Remote since 2018</Badge>
+                    )}
                     <Badge variant="outline">
                         <PinIcon />
                         Shelton, CT

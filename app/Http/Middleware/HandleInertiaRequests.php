@@ -49,6 +49,7 @@ final class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'palette' => Palette::fromRequest($request->cookie(Palette::COOKIE))->value,
             'palettes' => Palette::options(),
+            'hiring' => config()->boolean('site.hiring'),
         ];
     }
 }

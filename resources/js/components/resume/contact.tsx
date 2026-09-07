@@ -1,3 +1,5 @@
+import { usePage } from '@inertiajs/react';
+
 import Button from '@/components/site/button';
 import Card from '@/components/site/card';
 import Section from '@/components/site/section';
@@ -41,6 +43,8 @@ const GitHubIcon = () => (
 );
 
 export default function Contact() {
+    const { hiring } = usePage().props;
+
     const links = [
         {
             label: 'juan@juanplaza.dev',
@@ -65,9 +69,13 @@ export default function Contact() {
     return (
         <Section title="Let's Connect">
             <Card>
+                {/* The second place that says "looking", so it moves with the hero
+                    badge (config/site.php). Off-mode keeps the invitation and
+                    drops only the availability clause. */}
                 <p className="text-muted-foreground mb-5 text-sm">
-                    Open to remote roles and conversations about interesting
-                    problems - reach me anywhere below.
+                    {hiring
+                        ? 'Open to remote roles and conversations about interesting problems - reach me anywhere below.'
+                        : 'Always up for a conversation about interesting problems - reach me anywhere below.'}
                 </p>
                 <ul className="mb-6 space-y-3">
                     {links.map((link, index) => (

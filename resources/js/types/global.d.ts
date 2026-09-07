@@ -15,6 +15,8 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             palette: string;
             palettes: Palette[];
+            /** Availability signalling on the landing page - see config/site.php. */
+            hiring: boolean;
             [key: string]: unknown;
         };
     }

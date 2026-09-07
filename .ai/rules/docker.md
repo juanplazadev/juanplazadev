@@ -1,6 +1,6 @@
 ---
 paths:
-  - '{docker/Caddyfile,docker-entrypoint.sh,Dockerfile}'
+  - '{docker/Caddyfile,docker-entrypoint.sh,Dockerfile,compose.yaml}'
 ---
 
 # Docker
@@ -22,3 +22,12 @@ Verify a change by building and running, not by reading - a bad Caddyfile means 
   curl -sI -H 'Host: juanplaza.dev' http://127.0.0.1:8099/build/assets/<file>
 
 Also: `expose_php=Off` lives in zz-app.ini, NOT the opcache ini. There is no `opcache.expose_php`; PHP ignores that spelling silently and X-Powered-By stays.
+
+## compose.yaml does not run Vite - restarting the app container blanks dev SSR
+`compose.yaml` starts only Octane (with `--watch`), pgsql and mailpit. The Vite dev server is started by hand inside the app container (`npm run dev` / `vp dev`), and it owns `public/hot`.
+
+So `docker compose restart juanplazadev` kills it. In dev the @inertiajs/vite plugin serves SSR from that dev server, so the next request returns an empty `<div id="app"></div>` and a `curl | grep` for page copy finds nothing. That looks exactly like a rendering bug in whatever you just changed. It is not.
+
+Recover with `docker compose exec -d juanplazadev npm run dev` and wait for :5180 to answer. Never delete `public/hot` (see browser.md).
+
+You rarely need the restart anyway: Octane runs with `--watch` and picks up an edited `.env` in about 8 seconds, which is enough to verify a config-flag change end to end.
