@@ -31,3 +31,10 @@ secrets.SENTRY_RELEASE_TOKEN is an ORGANIZATION auth token (org:ci) - the mirror
 set_commits is `skip`. The default `auto` needs both fetch-depth: 0 on the checkout and a Sentry<->GitHub integration on the org, and fails the step without the integration.
 
 The step is last (after `Wait for healthy`) and continue-on-error: a release only exists for a deploy that served traffic, and a Sentry outage must not red a healthy deploy.
+
+## No third-party Docker action may run after the GHCR login
+`Log in to GHCR` leaves the repo-scoped GITHUB_TOKEN in the self-hosted runner's docker credential store, and docker sends it on EVERY later ghcr.io pull. GHCR answers `denied: denied` for a package outside this repo rather than falling back to an anonymous pull, so a *public* image still fails. This is what killed `getsentry/action-release@v3`, a Docker action: its image pulls fine anonymously - the login is what broke it. The credential also outlives the job on a runner shared with the check-in project.
+
+`Tag the Sentry release` is therefore two curl calls against the Sentry Web API. If a Docker action is ever genuinely needed here, isolate the login with a job-local DOCKER_CONFIG rather than `docker logout`, which would yank the credential out from under a concurrent job.
+
+The `/releases/{version}/deploys/` call is not decoration. `POST /releases/` alone leaves `lastDeploy` null, and ErrorInsights::environment() and ::deployedAt() read `lastDeploy.environment` and `lastDeploy.dateFinished` to decide the production badge and the timestamp on the deployments page. Re-tagging an existing release answers 208, which is why the step checks the status code instead of using `curl -f`.
