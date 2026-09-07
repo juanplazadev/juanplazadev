@@ -1,10 +1,18 @@
 import { router } from '@inertiajs/react';
+import { AppWindow, ExternalLink, FileText, Globe } from 'lucide-react';
 
 import EmptyCard from '@/components/admin/empty-card';
 import { formatBytes } from '@/components/admin/format';
 import PanelHeader from '@/components/admin/panel-header';
 import RangePicker from '@/components/admin/range-picker';
 import StatTile from '@/components/admin/stat-tile';
+import DevicesCard from '@/components/analytics/devices-card';
+import {
+    browserGlyph,
+    browserLabel,
+    countryGlyph,
+    countryLabel,
+} from '@/components/analytics/row-glyphs';
 import TopList from '@/components/analytics/top-list';
 import TrafficChart from '@/components/analytics/traffic-chart';
 import { analytics as analyticsRoute } from '@/routes/admin';
@@ -105,14 +113,32 @@ function Panels({ analytics }: { analytics: Analytics }) {
             )}
 
             <div className="grid gap-4 lg:grid-cols-2">
-                <TopList title="Top pages" rows={breakdowns.topPaths} />
+                <TopList
+                    title="Top pages"
+                    icon={FileText}
+                    rows={breakdowns.topPaths}
+                />
                 <TopList
                     title="Referrers"
+                    icon={ExternalLink}
                     rows={breakdowns.topReferrers}
                     emptyLabel="No referrers - all traffic was direct."
                 />
-                <TopList title="Countries" rows={breakdowns.topCountries} />
-                <TopList title="Browsers" rows={breakdowns.browsers} />
+                <TopList
+                    title="Countries"
+                    icon={Globe}
+                    rows={breakdowns.topCountries}
+                    rowIcon={(row) => countryGlyph(row.label)}
+                    rowLabel={(row) => countryLabel(row.label)}
+                />
+                <TopList
+                    title="Browsers"
+                    icon={AppWindow}
+                    rows={breakdowns.browsers}
+                    rowIcon={(row) => browserGlyph(row.label)}
+                    rowLabel={(row) => browserLabel(row.label)}
+                />
+                <DevicesCard rows={breakdowns.devices} />
             </div>
         </>
     );

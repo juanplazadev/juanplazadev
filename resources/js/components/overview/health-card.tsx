@@ -1,3 +1,6 @@
+import { TriangleAlert } from 'lucide-react';
+
+import Sparkline from '@/components/admin/sparkline';
 import SectionCard from '@/components/overview/section-card';
 import { errors } from '@/routes/admin';
 import type { ErrorInsights } from '@/types/errors';
@@ -10,17 +13,22 @@ import type { ErrorInsights } from '@/types/errors';
  * know about.
  */
 export default function HealthCard({ health }: { health: ErrorInsights }) {
-    const { totals, issues, error } = health;
+    const { totals, issues, series, error } = health;
     const loudest = issues[0];
     const share = totals.quota > 0 ? totals.accepted / totals.quota : 0;
 
     return (
-        <SectionCard title="Errors" href={errors.url()} linkLabel="All issues">
+        <SectionCard
+            title="Errors"
+            icon={TriangleAlert}
+            href={errors.url()}
+            linkLabel="All issues"
+        >
             {error ? (
                 <p className="text-muted-foreground mt-3 text-sm">{error}</p>
             ) : (
                 <>
-                    <p className="text-foreground font-display mt-2 text-3xl font-semibold tabular-nums">
+                    <p className="text-foreground font-display mt-2 text-3xl font-semibold">
                         {totals.issues.toLocaleString()}
                         <span className="text-muted-foreground text-base font-normal">
                             {' '}
@@ -33,6 +41,11 @@ export default function HealthCard({ health }: { health: ErrorInsights }) {
                             ? `Loudest: ${loudest.title}`
                             : 'Nothing unresolved in the last 7 days'}
                     </p>
+
+                    <Sparkline
+                        counts={series.map((point) => point.accepted)}
+                        className="mt-4 h-8 w-full"
+                    />
 
                     <div
                         role="meter"

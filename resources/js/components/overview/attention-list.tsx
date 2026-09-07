@@ -1,7 +1,8 @@
 import { Link } from '@inertiajs/react';
-import { CircleCheck } from 'lucide-react';
+import { CircleCheck, ListChecks } from 'lucide-react';
 
 import PanelCard from '@/components/admin/panel-card';
+import { deployVerdict } from '@/components/deployments/release-glyphs';
 import { timeAgo } from '@/lib/time';
 import PostController from '@/actions/App/Http/Controllers/Admin/PostController';
 import ArchitectureController from '@/actions/App/Http/Controllers/Admin/ArchitectureController';
@@ -48,7 +49,7 @@ export default function AttentionList({
     const items = collect(content, deliveries, running, health, deploys);
 
     return (
-        <PanelCard title="Needs attention">
+        <PanelCard title="Needs attention" icon={ListChecks}>
             {items.length === 0 ? (
                 <p className="text-muted-foreground mt-3 flex items-center gap-2 text-sm">
                     <CircleCheck className="text-chart-2 size-4 shrink-0" />
@@ -115,14 +116,13 @@ function collect(
         }
     }
 
-    // Drift is only knowable once both halves are in hand, and only meaningful
-    // when the running build appears somewhere other than the top of the list.
-    if (deploys && !deploys.error && running !== null) {
-        const index = deploys.releases.findIndex(
-            (release) => release.version === running,
-        );
+    // Drift is only knowable once both halves are in hand. The comparison lives
+    // in deployments/release-glyphs.tsx, which the deployments page and the
+    // header chip read too - it had been written out separately in all four.
+    if (deploys && !deploys.error) {
+        const verdict = deployVerdict(running, deploys.releases);
 
-        if (index > 0) {
+        if (verdict === 'drifted') {
             items.push({
                 key: 'drift',
                 href: deployments.url(),

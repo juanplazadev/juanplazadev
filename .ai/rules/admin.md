@@ -14,6 +14,14 @@ The overview pins `AnalyticsRange::default()` and takes no `?range=`. That is th
 
 It sends three deferred props in three named groups (`traffic`, `health`, `deploys`), not one. Grouped deferred props are fetched in parallel requests, so a throttled Sentry delays its own card instead of blanking the traffic card beside it. Pinned by 'each deferred group is announced under its own name'.
 
+Those groups are also what makes the overview's traffic chart safe to lazy-load. `traffic` is absent
+from the first response, so during SSR `<Deferred>` renders its skeleton and the chart subtree is
+never created - the dynamic `import()` behind `traffic-card.tsx` never runs on the server, and there
+is nothing for hydration to disagree about. A chart placed on `content`, `deliveries` or `running`
+would not have that protection. The Build card was folded into the header chip so the running release
+is stated once rather than in both places; four cards then fill the three-column grid without an
+orphan. See `.ai/rules/components-admin.md`.
+
 `?range=` on the traffic page goes through `App\Http\Requests\Admin\AnalyticsRequest` (renamed from `DashboardRequest`), which sanitises an unrecognised value away in `prepareForValidation()` rather than failing it. Deliberate: the range is a link in the page, so a stale bookmark renders the default panel instead of an error. Pinned by 'an unrecognised range falls back to the default instead of failing'.
 
 Wayfinder emits these from `resources/js/routes/admin/index.ts`, so the imports are `import { dashboard, analytics, errors, deployments } from '@/routes/admin'` - `@/routes` does not export them. Regenerate with `php artisan wayfinder:generate --with-form`; without the flag the `.form` variants the CRUD pages rely on disappear and `tsc` fails across a dozen files.

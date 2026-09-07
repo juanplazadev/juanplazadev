@@ -32,3 +32,10 @@ Why the split matters beyond tidiness: `/releases/` takes no `statsPeriod`, so t
 `RELEASE_LIMIT` is 20: `per_page` costs one request whichever number it carries, and this is a page now rather than a card in a column. Still never `/releases/{version}/deploys/` - that is N calls against an API that rate-limits on caller identity.
 
 `running` (`config('sentry.release')`) stays an eager prop on both the deployments page and the overview. The caches hold 15 minutes and a deploy does not clear them, so a cached copy would report drift already fixed a quarter of an hour ago.
+
+## A release's permalink is constructed, not returned
+Sentry hands an issue its own `permalink`. A release row does not: the `url` field on that payload belongs to the repository the release was cut from and is usually null. ErrorInsights::releaseUrl() builds one.
+
+The host comes off `services.sentry.api_url` with its path stripped - https://us.sentry.io/api/0 gives https://us.sentry.io - because the region is already encoded in the credential and guessing it a second time sends the reader to another region's empty account. The path form is the legacy /organizations/{slug}/releases/{version}/, which redirects correctly whichever URL scheme the org is on; the org-subdomain form would have to be assembled from a slug that may not be the subdomain.
+
+It returns null when the api_url has no scheme+host rather than a half-built URL, and the row then drops its link. A scheme-less SENTRY_API_URL is a live env typo, not a hypothetical - and note that a NULL api_url is a different case entirely, because SentryApiClient::isConfigured() then reports the whole account unconfigured before any of this runs. Pinned by 'a release carries no link when the api url has no host to build one from'.

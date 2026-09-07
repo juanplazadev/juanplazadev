@@ -61,9 +61,23 @@ function cloudflareBody(array $overrides = []): array
                         rumGroup(['requestPath' => '/blog'], visits: 6, pageViews: 39),
                     ],
                     'topReferrers' => [rumGroup(['refererHost' => ''], visits: 13, pageViews: 69)],
-                    'topCountries' => [rumGroup(['countryName' => 'United States'], visits: 13, pageViews: 69)],
-                    'browsers' => [rumGroup(['userAgentBrowser' => 'Chrome'], visits: 13, pageViews: 69)],
-                    'devices' => [rumGroup(['deviceType' => 'desktop'], visits: 13, pageViews: 69)],
+                    // These three are the live vocabulary, captured from the
+                    // real API - not tidied. countryName reports an alpha-2
+                    // CODE despite its name, and userAgentBrowser folds the
+                    // platform into CamelCase. A fixture that said "United
+                    // States" and "Safari" is what hid both for this long.
+                    'topCountries' => [
+                        rumGroup(['countryName' => 'US'], visits: 9, pageViews: 49),
+                        rumGroup(['countryName' => 'GB'], visits: 4, pageViews: 20),
+                    ],
+                    'browsers' => [
+                        rumGroup(['userAgentBrowser' => 'Chrome'], visits: 9, pageViews: 49),
+                        rumGroup(['userAgentBrowser' => 'MobileSafari'], visits: 4, pageViews: 20),
+                    ],
+                    'devices' => [
+                        rumGroup(['deviceType' => 'desktop'], visits: 9, pageViews: 49),
+                        rumGroup(['deviceType' => ''], visits: 4, pageViews: 20),
+                    ],
                 ]],
             ],
         ],

@@ -1,3 +1,4 @@
+import { ChartLine } from 'lucide-react';
 import {
     Area,
     AreaChart,
@@ -9,6 +10,7 @@ import {
 } from 'recharts';
 
 import type { AnalyticsPoint } from '@/types/analytics';
+import { formatDay } from '@/components/admin/format';
 import PanelCard from '@/components/admin/panel-card';
 
 type TrafficChartProps = {
@@ -29,7 +31,7 @@ type TrafficChartProps = {
  */
 export default function TrafficChart({ series }: TrafficChartProps) {
     return (
-        <PanelCard title="Traffic">
+        <PanelCard title="Traffic" icon={ChartLine}>
             <div className="mt-4 h-64">
                 <ResponsiveContainer
                     width="100%"
@@ -123,17 +125,4 @@ export default function TrafficChart({ series }: TrafficChartProps) {
             </div>
         </PanelCard>
     );
-}
-
-/** "2026-09-05" -> "Sep 5". Parsed as UTC to match Cloudflare's day boundary. */
-function formatDay(value: string): string {
-    const date = new Date(`${value}T00:00:00Z`);
-
-    if (Number.isNaN(date.getTime())) return value;
-
-    return date.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'UTC',
-    });
 }

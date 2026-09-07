@@ -1,3 +1,5 @@
+import { PenLine } from 'lucide-react';
+
 import SectionCard from '@/components/overview/section-card';
 import PostController from '@/actions/App/Http/Controllers/Admin/PostController';
 import type { ContentSnapshot } from '@/types/overview';
@@ -14,6 +16,7 @@ export default function ContentCard({ content }: { content: ContentSnapshot }) {
     return (
         <SectionCard
             title="Content"
+            icon={PenLine}
             href={PostController.index.url()}
             linkLabel="Manage"
         >

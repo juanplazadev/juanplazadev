@@ -33,7 +33,7 @@ use Throwable;
  * @phpstan-type ErrorInsightsTotals array{errors: int, dropped: int, users: int, issues: int, accepted: int, quota: int}
  * @phpstan-type ErrorInsightsPoint array{date: string, accepted: int, dropped: int}
  * @phpstan-type ErrorInsightsIssue array{id: string, shortId: string, title: string, culprit: string, level: string, count: int, userCount: int, lastSeen: string, permalink: string, sparkline: list<int>}
- * @phpstan-type ErrorInsightsRelease array{version: string, shortVersion: string, newGroups: int, deployedAt: string|null, environment: string|null}
+ * @phpstan-type ErrorInsightsRelease array{version: string, shortVersion: string, newGroups: int, deployedAt: string|null, environment: string|null, permalink: string|null}
  * @phpstan-type ErrorInsightsStats array{series: list<ErrorInsightsPoint>, accepted: int}
  * @phpstan-type ErrorInsightsSummary array{
  *     range: string,
@@ -92,6 +92,7 @@ final readonly class ErrorInsights
         private ?string $organization,
         private ?string $project,
         private int $monthlyQuota,
+        private ?string $apiUrl = null,
     ) {}
 
     /**
@@ -376,10 +377,42 @@ final readonly class ErrorInsights
                 'newGroups' => (int) ($release['newGroups'] ?? 0),
                 'deployedAt' => $this->deployedAt($release),
                 'environment' => $this->environment($release),
+                'permalink' => $this->releaseUrl($version),
             ];
         }
 
         return $releases;
+    }
+
+    /**
+     * The Sentry web UI's page for a release.
+     *
+     * Constructed rather than read, unlike an issue's permalink: the release
+     * endpoint hands back no link to itself. Its `url` field belongs to the
+     * repository the release was cut from and is usually null.
+     *
+     * The host comes off the API URL with its path stripped - so
+     * `https://us.sentry.io/api/0` gives `https://us.sentry.io` - because the
+     * region is already encoded in the credential and guessing it a second time
+     * is how you send a reader to another region's empty account. The legacy
+     * `/organizations/{slug}/` path form is deliberate: it redirects correctly
+     * whichever URL scheme the organization is on, while the org-subdomain form
+     * would have to be assembled from a slug that may not be the subdomain.
+     */
+    private function releaseUrl(string $version): ?string
+    {
+        $host = parse_url((string) $this->apiUrl, PHP_URL_HOST);
+        $scheme = parse_url((string) $this->apiUrl, PHP_URL_SCHEME);
+
+        if (! is_string($host) || $host === '' || ! is_string($scheme) || $scheme === '') {
+            return null;
+        }
+
+        $url = "{$scheme}://{$host}/organizations/{$this->organization}/releases/".rawurlencode($version).'/';
+
+        return $this->project === null || $this->project === ''
+            ? $url
+            : $url.'?project='.rawurlencode($this->project);
     }
 
     /**

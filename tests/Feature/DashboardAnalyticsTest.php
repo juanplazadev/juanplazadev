@@ -47,6 +47,27 @@ test('an empty referer host is reported as direct traffic', function (): void {
         ->toBe('Direct');
 });
 
+test('an empty dimension that is not a referer is unknown rather than direct', function (): void {
+    fakeCloudflare();
+
+    // "Direct" is a fact about a referer and nonsense about a device. The
+    // fallback used to be shared, which stayed invisible only because the
+    // devices breakdown was fetched and never rendered.
+    expect(analytics()->summary(AnalyticsRange::Last7Days)['breakdowns']['devices'][1]['label'])
+        ->toBe('Unknown');
+});
+
+test('it passes the country code through untouched for the frontend to resolve', function (): void {
+    fakeCloudflare();
+
+    // Cloudflare's `countryName` dimension reports an alpha-2 code. Nothing
+    // server-side may "helpfully" expand it: the flag is derived from the code,
+    // and resolving a display name back to a code returns deprecated ones that
+    // share a name (Germany -> DD, Russia -> SU).
+    expect(array_column(analytics()->summary(AnalyticsRange::Last7Days)['breakdowns']['topCountries'], 'label'))
+        ->toBe(['US', 'GB']);
+});
+
 test('it multiplies sampled groups by their sample interval', function (): void {
     $body = cloudflareBody();
     $body['data']['viewer']['accounts'][0]['series'] = [

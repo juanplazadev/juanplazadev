@@ -1,3 +1,4 @@
+import { Activity } from 'lucide-react';
 import {
     Area,
     AreaChart,
@@ -9,6 +10,7 @@ import {
 } from 'recharts';
 
 import type { ErrorPoint } from '@/types/errors';
+import { formatDay } from '@/components/admin/format';
 import PanelCard from '@/components/admin/panel-card';
 
 type ErrorVolumeChartProps = {
@@ -30,7 +32,7 @@ type ErrorVolumeChartProps = {
  */
 export default function ErrorVolumeChart({ series }: ErrorVolumeChartProps) {
     return (
-        <PanelCard title="Event volume">
+        <PanelCard title="Event volume" icon={Activity}>
             <div className="mt-4 h-64">
                 <ResponsiveContainer
                     width="100%"
@@ -124,17 +126,4 @@ export default function ErrorVolumeChart({ series }: ErrorVolumeChartProps) {
             </div>
         </PanelCard>
     );
-}
-
-/** "2026-09-05" -> "Sep 5". Parsed as UTC to match Sentry's day boundary. */
-function formatDay(value: string): string {
-    const date = new Date(`${value}T00:00:00Z`);
-
-    if (Number.isNaN(date.getTime())) return value;
-
-    return date.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'UTC',
-    });
 }

@@ -14,8 +14,8 @@ const HEIGHT = 20;
  *
  * Hand-rolled SVG rather than a recharts instance: ten of these on the errors
  * page would each mount a ResponsiveContainer and a resize observer to draw
- * what is, at this size, a polyline. That is also what keeps the overview off
- * recharts entirely - it wants the shape of a week, not an axis.
+ * what is, at this size, a polyline. It is also the overview's Suspense
+ * fallback - the same week, drawn coarsely, while the real chart is fetched.
  *
  * Scaled against its own peak, so the shape reads whatever the magnitude.
  */

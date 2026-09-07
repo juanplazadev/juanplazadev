@@ -70,6 +70,29 @@ test('a release with no version is skipped rather than listed blank', function (
         ->and($mapped[0]['shortVersion'])->toBe('9f8e7d6');
 });
 
+test('it links each release to its page in sentry', function (): void {
+    fakeSentry();
+
+    $release = insights()->deployments()['releases'][0];
+
+    // Constructed, not returned: unlike an issue, a release carries no link to
+    // itself. The host comes off the API URL so the region travels with the
+    // credential rather than being guessed a second time.
+    expect($release['permalink'])
+        ->toBe('https://us.sentry.io/organizations/test-org/releases/1a2b3c4d5e6f7a8b9c0d/?project=test-project');
+});
+
+test('a release carries no link when the api url has no host to build one from', function (): void {
+    // A scheme-less SENTRY_API_URL is a live env typo rather than a hypothetical,
+    // and it leaves the client configured - only the link cannot be built.
+    config(['services.sentry.api_url' => 'us.sentry.io/api/0']);
+    fakeSentry();
+
+    // A half-built URL would send a reader somewhere worse than nowhere, so the
+    // row drops its link instead.
+    expect(insights()->deployments()['releases'][0]['permalink'])->toBeNull();
+});
+
 test('it asks for more releases than a card would have shown', function (): void {
     fakeSentry();
 

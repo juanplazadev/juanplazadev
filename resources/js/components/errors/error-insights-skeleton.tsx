@@ -4,8 +4,8 @@ import { Skeleton } from '@/components/ui/skeleton';
  * The deferred prop's empty state.
  *
  * Shaped like the panel it replaces - four tiles, the chart beside the quota
- * meter, then the issue list full width - so the layout does not jump when the
- * real numbers land.
+ * meter, then the severity strip over the issue list - so the layout does not
+ * jump when the real numbers land.
  */
 export default function ErrorInsightsSkeleton() {
     return (
@@ -22,6 +22,9 @@ export default function ErrorInsightsSkeleton() {
                 <Skeleton className="h-[336px] rounded-xl lg:col-span-2" />
                 <Skeleton className="h-[336px] rounded-xl" />
             </div>
+
+            {/* Severity is a part-to-whole bar, not a list: wide and short. */}
+            <Skeleton className="h-[108px] rounded-xl" />
 
             <Skeleton className="h-80 rounded-xl" />
         </div>

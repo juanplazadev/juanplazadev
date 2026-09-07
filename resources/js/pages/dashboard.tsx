@@ -1,7 +1,6 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
 
 import AttentionList from '@/components/overview/attention-list';
-import BuildCard from '@/components/overview/build-card';
 import CardSkeleton from '@/components/overview/card-skeleton';
 import ContentCard from '@/components/overview/content-card';
 import DeliveriesCard from '@/components/overview/deliveries-card';
@@ -37,9 +36,15 @@ type OverviewProps = {
  * what makes a throttled Sentry cost the error card alone - the traffic card
  * beside it resolves on its own request and paints when it is ready.
  *
- * No chart library on this page by design. The traffic card draws its week with
- * the shared SVG sparkline, so the admin root never pulls in recharts; the two
- * pages that need real axes pay for it and nothing else does.
+ * recharts reaches this page, but only through the lazy boundary inside
+ * TrafficCard, so it lands in its own async chunk rather than the admin root's
+ * entry. That is safe here specifically because the chart sits inside the
+ * deferred `traffic` prop and therefore never renders during SSR; see
+ * .ai/rules/components-admin.md before charting anything eager.
+ *
+ * One grid of three columns, not two. The traffic chart earns the double width
+ * and "Needs attention" sits beside it, which fills six cells exactly - the old
+ * two-column grid held five cards and left Build alone on the last row.
  */
 export default function Overview({
     content,
@@ -69,21 +74,30 @@ export default function Overview({
                     health={health}
                 />
 
-                <AttentionList
-                    content={content}
-                    deliveries={deliveries}
-                    running={running}
-                    health={health}
-                    deploys={deploys}
-                />
-
-                <div className="grid gap-4 lg:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-3">
                     <Deferred
                         data="traffic"
-                        fallback={<CardSkeleton label="Loading traffic…" />}
+                        fallback={
+                            <CardSkeleton
+                                label="Loading traffic…"
+                                className="h-[300px] lg:col-span-2"
+                            />
+                        }
                     >
-                        {traffic ? <TrafficCard traffic={traffic} /> : null}
+                        {traffic ? (
+                            <div className="lg:col-span-2">
+                                <TrafficCard traffic={traffic} />
+                            </div>
+                        ) : null}
                     </Deferred>
+
+                    <AttentionList
+                        content={content}
+                        deliveries={deliveries}
+                        running={running}
+                        health={health}
+                        deploys={deploys}
+                    />
 
                     <Deferred
                         data="health"
@@ -95,15 +109,6 @@ export default function Overview({
                     <ContentCard content={content} />
 
                     <DeliveriesCard deliveries={deliveries} />
-
-                    <Deferred
-                        data="deploys"
-                        fallback={<CardSkeleton label="Loading deploys…" />}
-                    >
-                        {deploys ? (
-                            <BuildCard running={running} deploys={deploys} />
-                        ) : null}
-                    </Deferred>
                 </div>
             </div>
         </>
