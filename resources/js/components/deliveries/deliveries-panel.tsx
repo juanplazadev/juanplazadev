@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { ListFilter } from 'lucide-react';
 
 import PanelHeader from '@/components/admin/panel-header';
 import RangePicker from '@/components/admin/range-picker';
@@ -52,12 +53,24 @@ export default function DeliveriesPanel({
             {/* The same button group as the range picker, reused rather than
                 re-rolled: it is already generic over {value, label}, and
                 .ai/rules/components-admin.md is explicit that these primitives
-                exist so the pages stay in step. */}
+                exist so the pages stay in step.
+
+                Which is also why it needs the label. Reusing the picker means
+                this page draws two identical pill groups, where every other
+                section page draws one - so without a word saying which is
+                which, the second reads as a duplicate rather than a different
+                question. The aria-label alone said it to exactly the readers
+                who were never going to be confused by the ambiguity. */}
             <div
                 role="group"
                 aria-label="Filter by status"
                 className="flex flex-wrap items-center gap-2"
             >
+                <span className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
+                    <ListFilter aria-hidden className="size-3.5 shrink-0" />
+                    Status
+                </span>
+
                 <RangePicker
                     value={status ?? ALL}
                     options={[{ value: ALL, label: 'All' }, ...statuses]}

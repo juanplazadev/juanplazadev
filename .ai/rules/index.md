@@ -13,6 +13,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Content/**,app/Models/{Post,Architecture}.php,app/Concerns/{Publishable,RendersMarkdownBody}.php | .ai/rules/concerns.md |
 | resources/css/additional-styles/prose.css,resources/js/components/content/** | .ai/rules/content.md |
 | resources/css/app.css,resources/css/additional-styles/** | .ai/rules/css.md |
+| resources/js/components/deliveries/** | .ai/rules/deliveries.md |
 | resources/js/components/deployments/** | .ai/rules/deployments.md |
 | {docker/Caddyfile,docker-entrypoint.sh,Dockerfile,compose.yaml} | .ai/rules/docker.md |
 | resources/js/components/errors/** | .ai/rules/errors.md |

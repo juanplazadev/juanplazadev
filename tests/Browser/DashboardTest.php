@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Models\Architecture;
+use App\Models\EmailEvent;
 use App\Models\Post;
+use App\Models\ResumeDelivery;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
@@ -363,6 +365,7 @@ it('renders every admin page', function (): void {
         '/dashboard/analytics' => 'Cloudflare Web Analytics',
         '/dashboard/errors' => 'Sentry',
         '/dashboard/deployments' => 'Sentry releases',
+        '/dashboard/deliveries' => 'Résumé deliveries',
         '/dashboard/posts' => 'Everything on the writing page, drafts included.',
         '/dashboard/posts/create' => 'New post',
         "/dashboard/posts/{$post->slug}/edit" => 'Edit post',
@@ -377,4 +380,68 @@ it('renders every admin page', function (): void {
             ->assertNoSmoke()
             ->assertSee($heading);
     }
+});
+
+/*
+ * The delivery detail is the one part of this section a feature test cannot
+ * reach: the props carry `permanent_fail`, a null severity and a raw Message-Id,
+ * and everything that turns those into something readable happens client-side
+ * behind a disclosure that has to be clicked first.
+ *
+ * One delivery, so the toggle and the glyph are unambiguous - `click` and
+ * `assertPresent` both go through a locator that Playwright's strict mode would
+ * throw on if a second row rendered.
+ *
+ * No Http::fake matters here. This is the one section page that reads two local
+ * tables rather than a vendor, which is why it resolves its prop inline instead
+ * of deferring it - see .ai/rules/admin.md.
+ */
+it('makes a delivery readable once its row is expanded', function (): void {
+    $this->actingAs(User::factory()->create());
+
+    $delivery = ResumeDelivery::factory()
+        ->sent()
+        ->create([
+            'email' => 'hiring@example.com',
+            'failure_reason' => 'suppressed by the provider',
+        ]);
+
+    EmailEvent::factory()->for($delivery)->create([
+        'event' => 'accepted',
+        'occurred_at' => now()->subMinutes(3),
+    ]);
+
+    EmailEvent::factory()->for($delivery)->create([
+        'event' => 'permanent_fail',
+        'severity' => 'permanent',
+        'reason' => 'suppress-bounce',
+        'occurred_at' => now()->subMinutes(2),
+    ]);
+
+    visit('/dashboard/deliveries')
+        ->waitForEvent('networkidle')
+        ->assertNoSmoke()
+        // The status glyph beside the badge. The badge's own word is what
+        // carries the meaning; this is the second reading.
+        ->assertPresent('@delivery-glyph')
+        ->assertPresent('@panel-icon')
+        // The detail row exists either way, so aria-controls always resolves -
+        // which is exactly why the collapsed state has to be asserted before
+        // the click, or the test would pass without the disclosure working.
+        ->assertDontSee('Provider events')
+        ->click('@delivery-toggle')
+        ->assertSee('Provider events')
+        // The facts, on the gutter the timeline below them now shares.
+        ->assertSee('Turnstile')
+        ->assertSee('Message-Id')
+        ->assertSee('Failure')
+        ->assertSee('suppressed by the provider')
+        // Not 'permanent_fail'. The underscore form is what the webhook stores
+        // and what the prop carries, so this string reaches the page only if
+        // eventLabel() rewrote it - and nothing else on the site produces it.
+        ->assertSee('Permanent fail')
+        ->assertDontSee('permanent_fail')
+        // Severity and reason read as one phrase now rather than landing in two
+        // columns that agreed with nothing above them.
+        ->assertSee('permanent · suppress-bounce');
 });

@@ -1,7 +1,21 @@
-import { ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import {
+    ChevronRight,
+    Hash,
+    Inbox,
+    MailCheck,
+    Send,
+    TriangleAlert,
+} from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 
 import PanelCard from '@/components/admin/panel-card';
+import {
+    DETAIL_COLUMNS,
+    statusColor,
+    statusGlyph,
+    turnstileGlyph,
+    turnstileLabel,
+} from '@/components/deliveries/delivery-glyphs';
 import EventTimeline from '@/components/deliveries/event-timeline';
 import StatusBadge from '@/components/deliveries/status-badge';
 import { timeAgo } from '@/lib/time';
@@ -23,6 +37,10 @@ type DeliveryTableProps = {
  * question they answer - "did this one actually land?" - is the question the
  * table is already being scanned for. A drill-down would put one extra click in
  * front of the only reason to look.
+ *
+ * `Inbox` rather than the sidebar's MailCheck: a card inside a section page
+ * picks its own icon, the way running-build.tsx uses Server and not Rocket.
+ * Matching the nav is a rule about overview cards that link somewhere.
  */
 export default function DeliveryTable({
     deliveries,
@@ -43,7 +61,7 @@ export default function DeliveryTable({
 
     if (deliveries.length === 0) {
         return (
-            <PanelCard title="Requests">
+            <PanelCard title="Requests" icon={Inbox}>
                 <p className="text-muted-foreground mt-3 text-sm">
                     No résumé requests in this window. The hero dialog writes a
                     row the moment somebody submits it, before the challenge is
@@ -56,6 +74,7 @@ export default function DeliveryTable({
     return (
         <PanelCard
             title="Requests"
+            icon={Inbox}
             action={
                 <span className="text-muted-foreground text-xs tabular-nums">
                     {requested > limit
@@ -117,17 +136,23 @@ function Row({ delivery, expanded, onToggle }: RowProps) {
                     <button
                         type="button"
                         onClick={onToggle}
+                        data-test="delivery-toggle"
                         aria-expanded={expanded}
                         aria-controls={panelId}
                         className="text-foreground hover:text-primary flex items-center gap-2 text-left"
                     >
-                        <ChevronRight
-                            aria-hidden="true"
-                            className={cn(
-                                'text-muted-foreground size-3.5 shrink-0 transition-transform',
-                                expanded && 'rotate-90',
-                            )}
-                        />
+                        {/* A fixed box, so the rail below can be placed on its
+                            centre rather than on a hand-tuned offset. */}
+                        <span className="flex size-4 shrink-0 items-center justify-center">
+                            <ChevronRight
+                                aria-hidden="true"
+                                className={cn(
+                                    'text-muted-foreground size-3.5 transition-transform',
+                                    expanded && 'rotate-90',
+                                )}
+                            />
+                        </span>
+
                         <span className="font-medium break-all">
                             {delivery.email}
                         </span>
@@ -135,10 +160,21 @@ function Row({ delivery, expanded, onToggle }: RowProps) {
                 </td>
 
                 <td className="py-2.5 pr-4">
-                    <StatusBadge
-                        status={delivery.status}
-                        label={delivery.statusLabel}
-                    />
+                    <div className="flex items-center gap-2">
+                        {/* Decorative: the badge beside it carries the word. */}
+                        <span
+                            data-test="delivery-glyph"
+                            className="flex size-4 shrink-0 items-center justify-center"
+                            style={{ color: statusColor(delivery.status) }}
+                        >
+                            {statusGlyph(delivery.status)}
+                        </span>
+
+                        <StatusBadge
+                            status={delivery.status}
+                            label={delivery.statusLabel}
+                        />
+                    </div>
                 </td>
 
                 <td className="text-muted-foreground py-2.5 pr-4">
@@ -161,8 +197,12 @@ function Row({ delivery, expanded, onToggle }: RowProps) {
             {/* Rendered either way and hidden with `hidden`, so the panel the
                 button points at with aria-controls always exists. */}
             <tr id={panelId} hidden={!expanded}>
-                <td colSpan={4} className="pb-3">
-                    <div className="border-border ml-1.5 border-l pl-4">
+                <td colSpan={4} className="pb-4">
+                    {/* ml-2 is half of the chevron's size-4 box, which puts the
+                        rail on the chevron's centre. The old ml-1.5 was aimed
+                        at the email text instead and missed it by the border's
+                        own width. */}
+                    <div className="border-border mt-2 ml-2 space-y-3 border-l pl-4">
                         <Facts delivery={delivery} />
                         <EventTimeline events={delivery.events} />
                     </div>
@@ -175,13 +215,19 @@ function Row({ delivery, expanded, onToggle }: RowProps) {
 /** The parts of the row that are not a timeline: how it was judged, and where it went. */
 function Facts({ delivery }: { delivery: Delivery }) {
     return (
-        <dl className="text-muted-foreground mb-2 grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
-            <Fact label="Turnstile" value={turnstile(delivery.turnstile)} />
+        <dl className="grid gap-x-6 gap-y-1.5 text-xs sm:grid-cols-2">
             <Fact
+                icon={turnstileGlyph(delivery.turnstile, 'size-3.5')}
+                label="Turnstile"
+                value={turnstileLabel(delivery.turnstile)}
+            />
+            <Fact
+                icon={<Send aria-hidden className="size-3.5" />}
                 label="Sent"
                 value={delivery.sentAt ? timeAgo(delivery.sentAt) : 'never'}
             />
             <Fact
+                icon={<MailCheck aria-hidden className="size-3.5" />}
                 label="Delivered"
                 value={
                     delivery.deliveredAt
@@ -189,48 +235,70 @@ function Facts({ delivery }: { delivery: Delivery }) {
                         : 'not confirmed'
                 }
             />
-            <Fact label="Message-Id" value={delivery.messageId ?? '—'} mono />
+            <Fact
+                icon={<Hash aria-hidden className="size-3.5" />}
+                label="Message-Id"
+                value={delivery.messageId ?? '—'}
+                mono
+            />
 
             {delivery.failureReason ? (
-                <div className="sm:col-span-2">
-                    <dt className="inline">Failure </dt>
-                    <dd className="text-destructive inline">
-                        {delivery.failureReason}
-                    </dd>
-                </div>
+                <Fact
+                    icon={<TriangleAlert aria-hidden className="size-3.5" />}
+                    label="Failure"
+                    value={delivery.failureReason}
+                    tone="bad"
+                    className="sm:col-span-2"
+                />
             ) : null}
         </dl>
     );
 }
 
-function Fact({
-    label,
-    value,
-    mono,
-}: {
+type FactProps = {
+    icon: ReactNode;
     label: string;
     value: string;
     mono?: boolean;
-}) {
+    /** Failure is the only fact that is a verdict rather than a reading. */
+    tone?: 'bad';
+    className?: string;
+};
+
+/**
+ * One reading, on the column template the timeline shares.
+ *
+ * `title` carries the whole value, because the one fact long enough to clip is
+ * the Message-Id, and a clipped Message-Id you cannot copy is worse than none.
+ * The mono value stays at text-xs - it used to be text-[11px], which sat that
+ * one row off the baseline of the three beside it.
+ */
+function Fact({ icon, label, value, mono, tone, className }: FactProps) {
+    const bad = tone === 'bad';
+
     return (
-        <div className="flex gap-2">
-            <dt className="w-20 shrink-0">{label}</dt>
+        <div className={cn(DETAIL_COLUMNS, className)}>
+            <span
+                className={cn(
+                    'flex size-4 items-center justify-center',
+                    bad ? 'text-destructive' : 'text-muted-foreground',
+                )}
+            >
+                {icon}
+            </span>
+
+            <dt className="text-muted-foreground">{label}</dt>
+
             <dd
                 className={cn(
-                    'text-foreground truncate',
-                    mono && 'font-mono text-[11px]',
+                    'truncate',
+                    bad ? 'text-destructive' : 'text-foreground',
+                    mono && 'font-mono',
                 )}
+                title={value}
             >
                 {value}
             </dd>
         </div>
     );
-}
-
-/** 'skipped' is "never asked", which is not the same answer as "passed". */
-function turnstile(value: string): string {
-    if (value === 'passed') return 'passed';
-    if (value === 'blocked') return 'refused by Cloudflare';
-
-    return 'not challenged';
 }
