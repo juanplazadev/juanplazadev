@@ -8,6 +8,8 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Services\Cloudflare\CachedSiteAnalytics;
 use App\Services\Cloudflare\CloudflareGraphQlClient;
 use App\Services\Cloudflare\SiteAnalytics;
+use App\Services\Cloudflare\TurnstileVerifier;
+use App\Services\Mailgun\MailgunSignature;
 use App\Services\Sentry\CachedErrorInsights;
 use App\Services\Sentry\ErrorInsights;
 use App\Services\Sentry\SentryApiClient;
@@ -30,6 +32,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->registerAnalytics();
         $this->registerErrorInsights();
+        $this->registerResumeDelivery();
     }
 
     /**
@@ -89,6 +92,25 @@ final class AppServiceProvider extends ServiceProvider
 
         $this->app->scoped(CachedErrorInsights::class, fn ($app): CachedErrorInsights => new CachedErrorInsights(
             $app->make(ErrorInsights::class),
+        ));
+    }
+
+    /**
+     * Wire the two services the résumé form leans on.
+     *
+     * scoped() for the same Octane reason as the two stacks above: each holds a
+     * credential read from config at construction, and a singleton would keep
+     * the value it captured across a config:cache reload.
+     */
+    private function registerResumeDelivery(): void
+    {
+        $this->app->scoped(TurnstileVerifier::class, fn (): TurnstileVerifier => new TurnstileVerifier(
+            config('services.turnstile.secret_key'),
+        ));
+
+        $this->app->scoped(MailgunSignature::class, fn ($app): MailgunSignature => new MailgunSignature(
+            config('services.mailgun.webhook_signing_key'),
+            $app->make('cache.store'),
         ));
     }
 

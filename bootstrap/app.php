@@ -31,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->trustHosts(at: ['juanplaza.dev']);
 
+        // Mailgun cannot carry a CSRF token. The route verifies an HMAC
+        // signature instead - see App\Services\Mailgun\MailgunSignature.
+        $middleware->validateCsrfTokens(except: ['webhooks/mailgun']);
+
         $middleware->encryptCookies(except: ['appearance', 'palette', 'sidebar_state']);
 
         $middleware->web(append: [

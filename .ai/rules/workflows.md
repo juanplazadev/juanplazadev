@@ -38,3 +38,10 @@ The step is last (after `Wait for healthy`) and continue-on-error: a release onl
 `Tag the Sentry release` is therefore two curl calls against the Sentry Web API. If a Docker action is ever genuinely needed here, isolate the login with a job-local DOCKER_CONFIG rather than `docker logout`, which would yank the credential out from under a concurrent job.
 
 The `/releases/{version}/deploys/` call is not decoration. `POST /releases/` alone leaves `lastDeploy` null, and ErrorInsights::environment() and ::deployedAt() read `lastDeploy.environment` and `lastDeploy.dateFinished` to decide the production badge and the timestamp on the deployments page. Re-tagging an existing release answers 208, which is why the step checks the status code instead of using `curl -f`.
+
+## The queue worker is wrapped in a restart loop on purpose
+docker-entrypoint.sh runs THREE processes: Octane, Inertia SSR, and a `queue:work` for App\Jobs\SendResumeEmail. The worker is not a bare background command under the shared `wait -n`, and must not become one: `--max-time=3600` makes it exit ON PURPOSE once an hour to shed accumulated memory, and `wait -n` would read that planned exit as a failure and recreate the whole container every hour.
+
+The supervising subshell also traps TERM and forwards it to whichever `queue:work` is running. Without that, `docker compose down` kills the loop and leaves the worker to be SIGKILLed mid-job after the grace period - and a résumé email interrupted after Mailgun accepted it but before the row was stamped gets sent twice on the retry.
+
+The queue is the `database` driver, so there is nothing else to deploy for it. If a résumé request is never delivered, check this process is alive before suspecting Mailgun: with no worker the job sits in the `jobs` table forever and nothing errors.

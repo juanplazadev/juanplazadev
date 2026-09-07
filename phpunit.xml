@@ -35,6 +35,18 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="SENTRY_LARAVEL_DSN" value=""/>
+        <!--
+            Blanked, like the Sentry DSN above, because phpunit.xml does not
+            otherwise shadow .env: with real keys present the browser tests try
+            to fetch Cloudflare's challenge script from an in-process server on
+            a random port and every résumé test fails on a challenge that could
+            never have loaded. Unset is also the state these suites assert - see
+            the Turnstile section of .ai/rules/analytics.md.
+        -->
+        <env name="TURNSTILE_SITE_KEY" value=""/>
+        <env name="TURNSTILE_SECRET_KEY" value=""/>
+        <env name="MAILGUN_SECRET" value=""/>
+        <env name="MAILGUN_WEBHOOK_SIGNING_KEY" value=""/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
