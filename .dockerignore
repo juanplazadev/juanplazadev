@@ -27,3 +27,6 @@
 /.ai
 /.claude
 /.github
+
+# Documentation, not part of the runtime image.
+/docs
