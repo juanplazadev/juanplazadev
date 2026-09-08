@@ -4,6 +4,7 @@ import {
     FolderGit2,
     Gauge,
     House,
+    Layers,
     MailCheck,
     Network,
     PenLine,
@@ -33,6 +34,7 @@ import {
     deliveries,
     deployments,
     errors,
+    queue,
 } from '@/routes/admin';
 import type { NavItem } from '@/types';
 
@@ -68,6 +70,11 @@ const monitoringNavItems: NavItem[] = [
         title: 'Deliveries',
         href: deliveries(),
         icon: MailCheck,
+    },
+    {
+        title: 'Queue',
+        href: queue(),
+        icon: Layers,
     },
 ];
 

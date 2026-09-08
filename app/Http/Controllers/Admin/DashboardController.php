@@ -8,6 +8,7 @@ use App\Content\ContentSnapshot;
 use App\Enums\AnalyticsRange;
 use App\Http\Controllers\Controller;
 use App\Mail\ResumeDeliverySnapshot;
+use App\Queue\QueueSnapshot;
 use App\Services\Cloudflare\CachedSiteAnalytics;
 use App\Services\Sentry\CachedErrorInsights;
 use Inertia\Inertia;
@@ -20,6 +21,7 @@ final class DashboardController extends Controller
         private readonly CachedErrorInsights $insights,
         private readonly ContentSnapshot $content,
         private readonly ResumeDeliverySnapshot $deliveries,
+        private readonly QueueSnapshot $queue,
     ) {}
 
     /**
@@ -53,6 +55,15 @@ final class DashboardController extends Controller
             // fourth deferred group: a group costs a parallel HTTP request,
             // which is the wrong trade for six counts against one table.
             'deliveries' => $this->deliveries->overview($range),
+
+            // Counts against the two queue tables plus one cache read, so it
+            // is eager for the same reason `deliveries` is - and deliberately
+            // NOT a fourth deferred group, which would cost a parallel HTTP
+            // request and break the group count the overview test pins.
+            //
+            // ::status(), not ::summary(): the overview states the verdict and
+            // the queue page lists the rows behind it.
+            'queue' => $this->queue->status(),
 
             // The build this container is running. Eager, and deliberately not
             // read from any cached summary: the caches hold for fifteen minutes

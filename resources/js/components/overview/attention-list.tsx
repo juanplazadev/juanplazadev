@@ -10,16 +10,19 @@ import {
     deliveries as deliveriesRoute,
     deployments,
     errors,
+    queue as queueRoute,
 } from '@/routes/admin';
 import type { DeliveryOverview } from '@/types/deliveries';
 import type { Deployments } from '@/types/deployments';
 import type { ErrorInsights } from '@/types/errors';
 import type { ContentSnapshot } from '@/types/overview';
+import type { QueueStatus } from '@/types/queue';
 
 type AttentionListProps = {
     content: ContentSnapshot;
     deliveries: DeliveryOverview;
     running: string | null;
+    queue: QueueStatus;
     health?: ErrorInsights;
     deploys?: Deployments;
 };
@@ -43,10 +46,11 @@ export default function AttentionList({
     content,
     deliveries,
     running,
+    queue,
     health,
     deploys,
 }: AttentionListProps) {
-    const items = collect(content, deliveries, running, health, deploys);
+    const items = collect(content, deliveries, running, queue, health, deploys);
 
     return (
         <PanelCard title="Needs attention" icon={ListChecks}>
@@ -77,10 +81,46 @@ function collect(
     content: ContentSnapshot,
     deliveries: DeliveryOverview,
     running: string | null,
+    queue: QueueStatus,
     health?: ErrorInsights,
     deploys?: Deployments,
 ): Item[] {
     const items: Item[] = [];
+
+    // First, and stated without a count. A queue nothing is reading is the one
+    // failure on this panel that is otherwise completely silent - the résumé
+    // dialog still answers 201 and nothing is ever logged - and with no worker
+    // the depth is beside the point: zero waiting and fifty waiting are the
+    // same situation.
+    if (queue.state === 'down') {
+        items.push({
+            key: 'worker',
+            href: queueRoute.url(),
+            text: 'The queue worker is not running',
+        });
+    }
+
+    // Only while the worker IS alive, so this never doubles up with the entry
+    // above: a dead worker is why its jobs are stuck, not a second problem.
+    if (queue.state === 'stalled') {
+        const count = queue.totals.stalled;
+
+        items.push({
+            key: 'stalled',
+            href: queueRoute.url(),
+            text: `${count.toLocaleString()} queued ${count === 1 ? 'job is' : 'jobs are'} stuck`,
+        });
+    }
+
+    if (queue.totals.failed > 0) {
+        const count = queue.totals.failed;
+
+        items.push({
+            key: 'failed-jobs',
+            href: queueRoute.url(),
+            text: `${count.toLocaleString()} ${count === 1 ? 'job' : 'jobs'} failed and stopped retrying`,
+        });
+    }
 
     // Failures only. A blocked request is the challenge working as intended,
     // not something asking you for a decision.
