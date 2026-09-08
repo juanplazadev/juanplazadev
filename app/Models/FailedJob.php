@@ -8,6 +8,8 @@ use Carbon\CarbonImmutable;
 use Database\Factories\FailedJobFactory;
 use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,15 +31,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable $failed_at
  */
 #[RouteKey('uuid')]
+#[Table(name: 'failed_jobs')]
+#[WithoutTimestamps]
 final class FailedJob extends Model
 {
     /** @use HasFactory<FailedJobFactory> */
     use HasFactory;
-
-    /** `failed_at` is the only time column, and the provider sets it. */
-    public $timestamps = false;
-
-    protected $table = 'failed_jobs';
 
     /** The job class behind the payload. Same envelope as a live QueuedJob. */
     public function name(): string

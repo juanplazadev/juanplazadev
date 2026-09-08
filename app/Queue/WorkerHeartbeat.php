@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Queue;
 
 use Carbon\CarbonImmutable;
-use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -79,20 +78,18 @@ final class WorkerHeartbeat
     {
         $seen = self::lastSeenAt();
 
-        return $seen !== null
+        return $seen instanceof CarbonImmutable
             && $seen->getTimestamp() > now()->getTimestamp() - self::STALE_AFTER;
     }
 
-    public function handle(Looping $event): void
+    public function handle(): void
     {
         $now = now()->getTimestamp();
-
         if ($this->lastPingAt !== null && $now - $this->lastPingAt < self::PING_EVERY) {
             return;
         }
 
         $this->lastPingAt = $now;
-
         Cache::put(self::KEY, $now, self::REMEMBER_FOR);
     }
 }

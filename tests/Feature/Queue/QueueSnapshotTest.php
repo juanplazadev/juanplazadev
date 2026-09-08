@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Jobs\SendResumeEmail;
 use App\Models\FailedJob;
 use App\Models\QueuedJob;
 use App\Queue\QueueSnapshot;
@@ -17,7 +18,7 @@ function workerIsAlive(): void
 it('reports an idle queue when the worker is alive and there is nothing to do', function (): void {
     workerIsAlive();
 
-    $status = app(QueueSnapshot::class)->status();
+    $status = resolve(QueueSnapshot::class)->status();
 
     expect($status['state'])->toBe('idle')
         ->and($status['worker']['alive'])->toBeTrue()
@@ -29,7 +30,7 @@ it('reports a working queue when the worker is alive and jobs are moving', funct
     QueuedJob::factory()->create();
     QueuedJob::factory()->reserved()->create();
 
-    $status = app(QueueSnapshot::class)->status();
+    $status = resolve(QueueSnapshot::class)->status();
 
     expect($status['state'])->toBe('working')
         ->and($status['totals']['pending'])->toBe(1)
@@ -45,7 +46,7 @@ it('reports a working queue when the worker is alive and jobs are moving', funct
 it('reports down when no worker has reported in, however deep the queue', function (): void {
     QueuedJob::factory()->count(3)->create();
 
-    $status = app(QueueSnapshot::class)->status();
+    $status = resolve(QueueSnapshot::class)->status();
 
     expect($status['state'])->toBe('down')
         ->and($status['worker']['alive'])->toBeFalse()
@@ -53,14 +54,14 @@ it('reports down when no worker has reported in, however deep the queue', functi
 });
 
 it('reports down over an empty queue too', function (): void {
-    expect(app(QueueSnapshot::class)->status()['state'])->toBe('down');
+    expect(resolve(QueueSnapshot::class)->status()['state'])->toBe('down');
 });
 
 it('reports stalled when a job has been available past the grace period', function (): void {
     workerIsAlive();
     QueuedJob::factory()->waiting()->create();
 
-    $status = app(QueueSnapshot::class)->status();
+    $status = resolve(QueueSnapshot::class)->status();
 
     expect($status['state'])->toBe('stalled')
         ->and($status['totals']['stalled'])->toBe(1);
@@ -70,7 +71,7 @@ it('reports stalled when a reserved job outlives retry_after', function (): void
     workerIsAlive();
     QueuedJob::factory()->abandoned()->create();
 
-    $status = app(QueueSnapshot::class)->status();
+    $status = resolve(QueueSnapshot::class)->status();
 
     expect($status['state'])->toBe('stalled')
         ->and($status['totals']['stalled'])->toBe(1)
@@ -86,7 +87,7 @@ it('does not call a job stalled while it serves out its backoff window', functio
     workerIsAlive();
     QueuedJob::factory()->backingOff()->create();
 
-    $status = app(QueueSnapshot::class)->status();
+    $status = resolve(QueueSnapshot::class)->status();
 
     expect($status['state'])->toBe('working')
         ->and($status['totals']['stalled'])->toBe(0);
@@ -99,7 +100,7 @@ it('reads retry_after from config rather than assuming ninety', function (): voi
     // Abandoned half an hour ago: stalled under the default 90s, not under 3600.
     QueuedJob::factory()->abandoned()->create();
 
-    $status = app(QueueSnapshot::class)->status();
+    $status = resolve(QueueSnapshot::class)->status();
 
     expect($status['retryAfter'])->toBe(3600)
         ->and($status['totals']['stalled'])->toBe(0)
@@ -110,7 +111,7 @@ it('counts failed jobs without letting them change the state', function (): void
     workerIsAlive();
     FailedJob::factory()->count(2)->create();
 
-    $status = app(QueueSnapshot::class)->status();
+    $status = resolve(QueueSnapshot::class)->status();
 
     expect($status['totals']['failed'])->toBe(2)
         ->and($status['state'])->toBe('idle');
@@ -121,7 +122,7 @@ it('names the oldest waiting job as the one holding things up', function (): voi
     QueuedJob::factory()->waiting(60)->create();
     QueuedJob::factory()->create();
 
-    $status = app(QueueSnapshot::class)->status();
+    $status = resolve(QueueSnapshot::class)->status();
 
     expect($status['oldestPendingAt'])->toBe(now()->subMinutes(60)->toIso8601String());
 });
@@ -131,7 +132,7 @@ it('lists the queue in the order the worker will read it', function (): void {
     $first = QueuedJob::factory()->waiting(10)->create();
     $second = QueuedJob::factory()->create();
 
-    $jobs = app(QueueSnapshot::class)->summary()['jobs'];
+    $jobs = resolve(QueueSnapshot::class)->summary()['jobs'];
 
     expect(array_column($jobs, 'id'))->toBe([$first->id, $second->id]);
 });
@@ -141,17 +142,17 @@ it('takes the job name off the payload envelope', function (): void {
     QueuedJob::factory()->create();
     FailedJob::factory()->create();
 
-    $summary = app(QueueSnapshot::class)->summary();
+    $summary = resolve(QueueSnapshot::class)->summary();
 
-    expect($summary['jobs'][0]['name'])->toBe('App\Jobs\SendResumeEmail')
-        ->and($summary['failed'][0]['name'])->toBe('App\Jobs\SendResumeEmail');
+    expect($summary['jobs'][0]['name'])->toBe(SendResumeEmail::class)
+        ->and($summary['failed'][0]['name'])->toBe(SendResumeEmail::class);
 });
 
 it('says so plainly when a payload is not one the driver wrote', function (): void {
     workerIsAlive();
     QueuedJob::factory()->create(['payload' => '{"not":"an envelope"}']);
 
-    expect(app(QueueSnapshot::class)->summary()['jobs'][0]['name'])->toBe('Unrecognised job');
+    expect(resolve(QueueSnapshot::class)->summary()['jobs'][0]['name'])->toBe('Unrecognised job');
 });
 
 /*
@@ -162,7 +163,7 @@ it('reduces a stored trace to its first line', function (): void {
     workerIsAlive();
     FailedJob::factory()->create();
 
-    expect(app(QueueSnapshot::class)->summary()['failed'][0]['reason'])
+    expect(resolve(QueueSnapshot::class)->summary()['failed'][0]['reason'])
         ->toBe('Symfony\Component\Mailer\Exception\TransportException: Connection refused');
 });
 
@@ -171,7 +172,7 @@ it('lists newest failures first', function (): void {
     $older = FailedJob::factory()->create(['failed_at' => now()->subDay()]);
     $newer = FailedJob::factory()->create(['failed_at' => now()->subMinute()]);
 
-    $failed = app(QueueSnapshot::class)->summary()['failed'];
+    $failed = resolve(QueueSnapshot::class)->summary()['failed'];
 
     expect(array_column($failed, 'uuid'))->toBe([$newer->uuid, $older->uuid]);
 });
@@ -188,7 +189,7 @@ it('agrees between the stalled total and the stalled row flag', function (): voi
     QueuedJob::factory()->create();
     QueuedJob::factory()->backingOff()->create();
 
-    $summary = app(QueueSnapshot::class)->summary();
+    $summary = resolve(QueueSnapshot::class)->summary();
     $flagged = count(array_filter(array_column($summary['jobs'], 'stalled')));
 
     expect($flagged)->toBe($summary['status']['totals']['stalled'])
@@ -199,7 +200,7 @@ it('caps both lists without letting the totals lie', function (): void {
     workerIsAlive();
     QueuedJob::factory()->count(QueueSnapshot::RECENT_LIMIT + 5)->create();
 
-    $summary = app(QueueSnapshot::class)->summary();
+    $summary = resolve(QueueSnapshot::class)->summary();
 
     expect($summary['jobs'])->toHaveCount(QueueSnapshot::RECENT_LIMIT)
         ->and($summary['status']['totals']['pending'])->toBe(QueueSnapshot::RECENT_LIMIT + 5)

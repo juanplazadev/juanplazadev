@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Jobs\SendResumeEmail;
 use App\Models\FailedJob;
 use App\Models\QueuedJob;
 use App\Models\User;
@@ -45,7 +46,7 @@ test('the page resolves its queue inline rather than deferring it', function ():
             ->where('queue.status.totals.failed', 1)
             ->has('queue.jobs', 1)
             ->has('queue.failed', 1)
-            ->where('queue.jobs.0.name', 'App\Jobs\SendResumeEmail'),
+            ->where('queue.jobs.0.name', SendResumeEmail::class),
         );
 });
 

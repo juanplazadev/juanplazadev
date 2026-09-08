@@ -7,6 +7,8 @@ namespace App\Models;
 use Carbon\CarbonImmutable;
 use Database\Factories\QueuedJobFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,19 +33,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $available_at
  * @property int $created_at
  */
+#[Table(name: 'jobs')]
+#[WithoutTimestamps]
 final class QueuedJob extends Model
 {
     /** @use HasFactory<QueuedJobFactory> */
     use HasFactory;
-
-    /**
-     * The three time columns are unsigned unix integers, not timestamps, and
-     * there is no `updated_at` at all - so Eloquent's own timestamp handling has
-     * nothing to touch here.
-     */
-    public $timestamps = false;
-
-    protected $table = 'jobs';
 
     /**
      * The job class named in a raw queue payload, or a stand-in.

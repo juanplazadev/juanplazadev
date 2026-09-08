@@ -7,7 +7,7 @@ use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Cache;
 
 it('stamps the cache the first time the worker loops', function (): void {
-    app(WorkerHeartbeat::class)->handle(new Looping('database', 'default'));
+    resolve(WorkerHeartbeat::class)->handle();
 
     expect(Cache::get(WorkerHeartbeat::KEY))->toBe(now()->getTimestamp());
 });
@@ -18,25 +18,25 @@ it('stamps the cache the first time the worker loops', function (): void {
  * writes to the cache table twenty times a minute forever.
  */
 it('does not write again inside the ping interval', function (): void {
-    $heartbeat = app(WorkerHeartbeat::class);
+    $heartbeat = resolve(WorkerHeartbeat::class);
     $event = new Looping('database', 'default');
 
-    $heartbeat->handle($event);
+    $heartbeat->handle();
 
     $this->travel(WorkerHeartbeat::PING_EVERY - 1)->seconds();
-    $heartbeat->handle($event);
+    $heartbeat->handle();
 
     expect(Cache::get(WorkerHeartbeat::KEY))->toBe(now()->subSeconds(WorkerHeartbeat::PING_EVERY - 1)->getTimestamp());
 });
 
 it('writes again once the ping interval has passed', function (): void {
-    $heartbeat = app(WorkerHeartbeat::class);
+    $heartbeat = resolve(WorkerHeartbeat::class);
     $event = new Looping('database', 'default');
 
-    $heartbeat->handle($event);
+    $heartbeat->handle();
 
     $this->travel(WorkerHeartbeat::PING_EVERY)->seconds();
-    $heartbeat->handle($event);
+    $heartbeat->handle();
 
     expect(Cache::get(WorkerHeartbeat::KEY))->toBe(now()->getTimestamp());
 });
@@ -47,7 +47,7 @@ it('writes again once the ping interval has passed', function (): void {
  * dispatch would restart the throttle every loop and silently undo it.
  */
 it('resolves as one instance so the throttle survives the loop', function (): void {
-    expect(app(WorkerHeartbeat::class))->toBe(app(WorkerHeartbeat::class));
+    expect(resolve(WorkerHeartbeat::class))->toBe(resolve(WorkerHeartbeat::class));
 });
 
 it('reports no worker when nothing has ever reported in', function (): void {
