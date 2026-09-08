@@ -26,6 +26,20 @@ services:
             XDG_DATA_HOME: /var/www/html/data
         volumes:
             - '.:/var/www/html'
+            # node_modules is the container's own, masked out of the bind mount
+            # above. The two sides run different platforms AND different Node
+            # majors (linux-x64 / Node 24 here, whatever the host has out
+            # there), and npm installs native bindings only for the platform it
+            # runs on - so one shared directory means whichever side installed
+            # last is the only one that can build. Nine packages here ship
+            # per-platform binaries (rolldown, oxlint, oxfmt, lightningcss,
+            # tailwindcss/oxide, rollup, yuku x2, vite-plus), so the failure is
+            # not one missing package but a whole set.
+            #
+            # Named rather than anonymous so it survives `docker compose down`
+            # and can be dropped deliberately. After recreating the container,
+            # run `sail npm ci` once to fill it.
+            - 'sail-node-modules:/var/www/html/node_modules'
         networks:
             - sail
         depends_on:
@@ -68,4 +82,6 @@ networks:
         driver: bridge
 volumes:
     sail-pgsql:
+        driver: local
+    sail-node-modules:
         driver: local

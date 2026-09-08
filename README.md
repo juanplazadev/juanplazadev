@@ -1,188 +1,84 @@
-# juanplaza.dev
+## Juan Plaza
 
-Personal site and portfolio: writing, architecture write-ups, and a résumé,
-with a first-party content editor behind it.
+Software engineer with 8+ years building and modernizing production web applications
+across defense manufacturing, regulated healthcare, and high-volume logistics. Six of
+those years fully remote. I own systems end to end — data model, REST APIs, queues,
+integrations, and deployment — and I have a track record of turning brittle legacy code
+into maintainable, well-tested platforms.
 
-> ⚠️ **The production path is currently broken.** `compose.prod.yaml` and
-> `.github/workflows/deploy.yml` still build `context: ./frontend`, the
-> standalone React SPA this application replaced. Both need to be repointed at
-> the Laravel image before the next deploy. Everything below is local
-> development, via Laravel Sail.
+Every environment I've worked in has been one where getting security wrong is expensive:
+HIPAA-regulated healthcare, then defense and government contracts inside a SOX-audited
+public company. It shaped how I build — least privilege, auditable by default, hardened
+before it ships.
 
-## Stack
+Currently an Application Developer at **RBC Bearings**, replacing aging internal tooling
+with React + TypeScript front ends over Java / Spring Boot and Laravel services, without
+disrupting the plants that run on them daily.
 
-| Layer              | Technology                                              |
-| ------------------ | ------------------------------------------------------- |
-| Backend            | Laravel 13                                              |
-| Language           | PHP 8.5                                                 |
-| Application server | Octane on FrankenPHP                                    |
-| Testing            | Pest 5 (87 tests)                                       |
-| Database           | PostgreSQL 18 · SQLite in-memory for the test suite     |
-| Frontend           | React 19 · TypeScript · Inertia.js v3 · Tailwind CSS v4 |
-| Build              | Vite 8 (via `vite-plus`)                                |
-| Mail               | Mailpit (local)                                         |
+---
 
-## Laravel Packages & Tooling
+### 🚚 [check-in-v2](https://github.com/juanplazadev/check-in-v2) · [live demo ↗](https://ci.thatdevjp.com)
 
-| Tool      | Purpose                                                                                        |
-| --------- | ---------------------------------------------------------------------------------------------- |
-| Sail      | Docker-based local development environment                                                     |
-| Octane    | High-performance application server (FrankenPHP), running in watch mode                        |
-| Inertia   | Server-driven SPA - React pages rendered from Laravel controllers, with SSR                    |
-| Fortify   | Headless authentication backend - login, password reset and passkeys (custom Inertia/React UI) |
-| Wayfinder | Generates TypeScript functions for Laravel routes and controller actions                       |
-| Pint      | PHP code style fixer (wrapper around PHP-CS-Fixer), with a custom ruleset                      |
-| Larastan  | Static analysis (PHPStan for Laravel) at level 8                                               |
-| Pest      | Test runner (wrapper around PHPUnit)                                                           |
-| Pail      | Tails the application log from the command line                                                |
-| Pao       | Agent-optimized output for PHP testing tools                                                   |
-| Boost     | MCP server exposing schema, logs and documentation search to AI agents                         |
+An appointment scheduling and check-in platform for operations that run on arrivals —
+drivers book a slot, arrive, and check in against it across sites.
 
-Registration is deliberately not enabled: this is a single-author site, so the
-only account is the one the seeder creates.
+The first version of this shipped in 2018 and ran nine distribution centers across all
+four continental U.S. time zones, so every slot, reminder, and daylight-saving shift has
+to resolve in the site's local time rather than the server's. Smoothing truck arrivals at
+peak harvest cut produce spoilage 50%, because loaded melons stopped idling on a dock
+waiting for a free bay. v2 is the rebuild.
 
-## Requirements
+Distance-gated check-in · per-location weekly schedules with per-date overrides, resolved
+in each location's own timezone · queued confirmations and reminders · per-location
+authorization scoping · passkeys · short links · PDF rendering and hand-rolled Code 39
+barcodes as inline SVG.
 
-- [Composer](https://getcomposer.org/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+`Laravel` `Inertia + React` `TypeScript` `PostgreSQL` `Redis + Horizon` `Pest` `Playwright`
 
-```bash
-# Install Composer (macOS)
-brew install composer
-```
+### 🌐 [juanplaza.dev](https://juanplaza.dev) · [source](https://github.com/juanplazadev/juanplazadev)
 
-## Installation
+My personal site, and the repo you're reading this in. Markdown posts and architecture
+write-ups compiled at save time, so the public read path never parses markdown and there
+is no cache to invalidate.
 
-```bash
-# 1. Clone the repository
-git clone git@github.com:juanplazadev/juanplazadev.git && cd juanplazadev
+Behind auth it's an operations console rather than a CMS: Cloudflare analytics, a queue
+monitor, Sentry errors and deployment history, and résumé email delivery tracked through
+Mailgun webhooks.
 
-# 2. Install PHP dependencies (Sail itself lives here, so this comes first)
-composer install
+`Laravel 13` `PHP 8.5` `Octane / FrankenPHP` `Inertia v3 + React 19 (SSR)` `Tailwind v4` `PostgreSQL`
 
-# 3. Copy environment file
-cp .env.example .env
+### 🗄️ [phinx — IBM DB2 for i adapter](https://github.com/juanplazadev/phinx/tree/feature/db2-adapter)
 
-# 4. Start Docker containers
-./vendor/bin/sail up -d
+A DB2 for i (AS400/iSeries) migration adapter for `cakephp/phinx`, connecting through
+`pdo_odbc`. Running against a live Db2 workload before I propose it upstream.
 
-# 5. Generate application key
-./vendor/bin/sail artisan key:generate
+---
 
-# 6. Install frontend dependencies
-./vendor/bin/sail npm install
+### How I ship
 
-# 7. Run migrations and seed the content
-./vendor/bin/sail artisan migrate --seed
+Every push to juanplaza.dev is gated on one `composer ci:check` run — frontend lint,
+`tsc --noEmit`, and the full suite. The suite is not just "tests pass":
 
-# 8. Start the Vite dev server
-./vendor/bin/sail npm run dev
-```
+- **≥96% code coverage** and **≥80% type coverage**, both enforced as hard minimums
+- **PHPStan / Larastan at level 8**
+- `pint --test` and `rector --dry-run`, so style and refactors are checked, not just applied
+- Playwright browser tests alongside Pest feature and unit tests
 
-Seeding creates `test@example.com` / `password` and loads the posts and
-architecture entries from `database/seeders/content/`.
+Production deploys are gated on a green CI run, keyed to the exact commit CI tested, and
+tagged as Sentry releases so an error on the dashboard maps to the build that caused it.
 
-## Accessing the Application
+### Stack
 
-| Service         | URL                   |
-| --------------- | --------------------- |
-| Web application | http://localhost:8080 |
-| Vite dev server | http://localhost:5180 |
-| Mailpit inbox   | http://localhost:8025 |
+- **Backend** — PHP / Laravel · Java / Spring Boot · PostgreSQL · MySQL · Redis · IBM Db2 for i
+- **Frontend** — TypeScript / React · Inertia · Tailwind CSS
+- **Infra** — Docker · Linux · AWS · nginx / Caddy · GitHub Actions · Sentry
+- **Security** — Role-based access control · per-site authorization scoping · least-privilege access design · encrypted PHI handling · HIPAA compliance · PCI-aware payment flows
 
-Both ports are set once in `.env` (`APP_PORT`, `VITE_PORT`) and read from there
-by `compose.yaml`, so they cannot drift. 5180 rather than Vite's default 5173,
-which another local site already holds.
+### Elsewhere
 
-## Development
+[juanplaza.dev](https://juanplaza.dev) · [LinkedIn](https://www.linkedin.com/in/juan-plaza-59a6a9296) · [juan@juanplaza.dev](mailto:juan@juanplaza.dev)
 
-> 💡 Octane runs with `--watch`, so backend changes are picked up with no server
-> restart. See `SUPERVISOR_PHP_COMMAND` in `compose.yaml`.
+---
 
-### Frontend
-
-```bash
-./vendor/bin/sail npm run dev        # dev server, with SSR
-./vendor/bin/sail npm run build      # client bundle
-./vendor/bin/sail npm run build:ssr  # client + SSR bundle, what CI builds
-```
-
-SSR is enabled (`config/inertia.php`) and served by the `@inertiajs/vite` plugin
-in development - no separate `inertia:start-ssr` process is needed locally.
-
-The build is also what generates the Wayfinder output under
-`resources/js/{actions,routes,wayfinder}`. Those directories are gitignored, so
-a fresh clone must build once before type checking will pass.
-
-### Content
-
-`Post` and `Architecture` store a markdown `body` plus named JSON `blocks`
-(diagrams, spec lists). `App\Content\BodyRenderer` splits the body on
-`::block{key="..."}` directives and compiles the result into the `rendered`
-column on save, so the public read path never parses markdown and there is no
-cache to invalidate. A row with a null or future `published_at` is a draft:
-guests get a 404, an authenticated user sees it at its real URL.
-
-Both are edited in the dashboard, at `/dashboard/posts` and
-`/dashboard/architectures`.
-
-### Environment
-
-The hero's location pill shows current conditions from
-[Open-Meteo](https://open-meteo.com), which is keyless and CORS-open, so the
-browser calls it directly.
-
-| Variable                 |                       |
-| ------------------------ | --------------------- |
-| `VITE_WEATHER_LATITUDE`  | Shelton, CT 06484     |
-| `VITE_WEATHER_LONGITUDE` |                       |
-| `VITE_WEATHER_TIMEZONE`  | `America/New_York`    |
-| `VITE_WEATHER_API_URL`   | the forecast endpoint |
-
-Blank or non-numeric coordinates disable the weather and the pill falls back to
-plain `Shelton, CT`; a failed request does the same. It never renders an error.
-Vite inlines `VITE_*` at build time, so a changed value means a rebuild, not a
-restart.
-
-### Code Style (Pint)
-
-Uses extensive custom rules defined in `pint.json` - including
-`declare_strict_types`, `final_class`, `strict_comparison`,
-`ordered_class_elements`, and more. See `pint.json` for the full ruleset.
-
-```bash
-./vendor/bin/pint            # fix all files
-./vendor/bin/pint --dirty    # fix only uncommitted files
-./vendor/bin/pint --test     # dry-run (report without fixing)
-```
-
-### Static Analysis (Larastan)
-
-Runs at **level 8** (out of 10). Configuration in `phpstan.neon`.
-
-```bash
-./vendor/bin/phpstan analyse --memory-limit=2G
-```
-
-### Frontend Checks
-
-```bash
-./vendor/bin/sail npm run check        # lint (type-aware, warnings are errors)
-./vendor/bin/sail npm run check:fix    # lint and format in place
-./vendor/bin/sail npm run types:check  # tsc --noEmit
-```
-
-### Tests
-
-The suite runs against SQLite in memory (`phpunit.xml`), so it does not touch
-the Postgres container.
-
-```bash
-./vendor/bin/sail artisan test                                     # all tests
-./vendor/bin/sail artisan test --compact                           # compact output
-./vendor/bin/sail artisan test --parallel                          # run in parallel
-./vendor/bin/sail artisan test --filter="raw html never survives"  # a single test
-./vendor/bin/sail pest tests/Unit/BodyRendererTest.php             # a single file
-```
-
-`./vendor/bin/pest` runs the same suite directly, with the same arguments.
+<sub>This repo is both my GitHub profile and the source of juanplaza.dev. To run the site
+locally, see **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**.</sub>

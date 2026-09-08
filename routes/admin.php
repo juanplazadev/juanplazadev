@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\DeploymentsController;
 use App\Http\Controllers\Admin\ErrorsController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\PreviewController;
+use App\Http\Controllers\Admin\QueueController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,6 +35,23 @@ Route::middleware(['auth', 'verified'])
         Route::get('errors', [ErrorsController::class, 'index'])->name('errors');
         Route::get('deployments', [DeploymentsController::class, 'index'])->name('deployments');
         Route::get('deliveries', [DeliveriesController::class, 'index'])->name('deliveries');
+        Route::get('queue', [QueueController::class, 'index'])->name('queue');
+
+        /*
+          The panel's only routes that reach past the request, so the only ones
+          carrying a throttle. Each maps to one fixed Artisan command and takes
+          no argument but a route-bound uuid - see App\Queue\QueueControl for
+          why that boundary is the whole point.
+        */
+        Route::post('queue/restart', [QueueController::class, 'restart'])
+            ->middleware('throttle:6,1')
+            ->name('queue.restart');
+        Route::post('queue/failed/{failedJob}/retry', [QueueController::class, 'retry'])
+            ->middleware('throttle:20,1')
+            ->name('queue.failed.retry');
+        Route::delete('queue/failed/{failedJob}', [QueueController::class, 'forget'])
+            ->middleware('throttle:20,1')
+            ->name('queue.failed.forget');
         Route::resource('posts', PostController::class)->except('show');
         Route::resource('architectures', ArchitectureController::class)->except('show');
         Route::post('content/preview', PreviewController::class)->name('content.preview');

@@ -15,6 +15,7 @@ import type { DeliveryOverview } from '@/types/deliveries';
 import type { Deployments } from '@/types/deployments';
 import type { ErrorInsights } from '@/types/errors';
 import type { ContentSnapshot } from '@/types/overview';
+import type { QueueStatus } from '@/types/queue';
 
 type OverviewProps = {
     /** Two table scans, resolved with the page. Never absent. */
@@ -23,6 +24,8 @@ type OverviewProps = {
     deliveries: DeliveryOverview;
     /** config('sentry.release'). Eager so it can never be a stale cached copy. */
     running: string | null;
+    /** Two queue-table counts and a cache read. Eager, like the two above. */
+    queue: QueueStatus;
     traffic?: Analytics;
     health?: ErrorInsights;
     deploys?: Deployments;
@@ -50,6 +53,7 @@ export default function Overview({
     content,
     deliveries,
     running,
+    queue,
     traffic,
     health,
     deploys,
@@ -64,6 +68,7 @@ export default function Overview({
                 <OverviewHeader
                     name={firstName(auth.user.name)}
                     running={running}
+                    queue={queue}
                     deploys={deploys}
                 />
 
@@ -95,6 +100,7 @@ export default function Overview({
                         content={content}
                         deliveries={deliveries}
                         running={running}
+                        queue={queue}
                         health={health}
                         deploys={deploys}
                     />

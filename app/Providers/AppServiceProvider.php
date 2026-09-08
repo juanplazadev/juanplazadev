@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Queue\WorkerHeartbeat;
 use App\Services\Cloudflare\CachedSiteAnalytics;
 use App\Services\Cloudflare\CloudflareGraphQlClient;
 use App\Services\Cloudflare\SiteAnalytics;
@@ -15,7 +16,9 @@ use App\Services\Sentry\ErrorInsights;
 use App\Services\Sentry\SentryApiClient;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -33,6 +36,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->registerAnalytics();
         $this->registerErrorInsights();
         $this->registerResumeDelivery();
+        $this->registerWorkerHeartbeat();
     }
 
     /**
@@ -42,6 +46,20 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureErrorPages();
+        $this->watchTheQueueWorker();
+    }
+
+    /**
+     * Let the queue worker prove it is alive.
+     *
+     * Registered here rather than discovered from app/Listeners because there
+     * is no listener directory and this is not really an application event -
+     * it is instrumentation for the one long-running process the container
+     * cannot healthcheck. See App\Queue\WorkerHeartbeat.
+     */
+    private function watchTheQueueWorker(): void
+    {
+        Event::listen(Looping::class, [WorkerHeartbeat::class, 'handle']);
     }
 
     /**
@@ -94,6 +112,22 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(CachedErrorInsights::class, fn ($app): CachedErrorInsights => new CachedErrorInsights(
             $app->make(ErrorInsights::class),
         ));
+    }
+
+    /**
+     * The one deliberate singleton in this provider.
+     *
+     * Every binding above is scoped() because Octane reuses the container
+     * across requests. This one is the exception and has to be: the listener
+     * throttles itself with an instance property, and a per-dispatch instance
+     * would start from null every loop and write to the cache table every three
+     * seconds instead of every fifteen. It is safe to outlive a request because
+     * it never runs inside one - Looping is dispatched only by `queue:work`,
+     * in its own process, where a container that persists is the point.
+     */
+    private function registerWorkerHeartbeat(): void
+    {
+        $this->app->singleton(WorkerHeartbeat::class);
     }
 
     /**

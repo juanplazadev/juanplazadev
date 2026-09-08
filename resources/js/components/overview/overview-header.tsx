@@ -1,14 +1,25 @@
 import { Link } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 
 import {
     deployVerdict,
     verdictTone,
 } from '@/components/deployments/release-glyphs';
+import {
+    stateLabel,
+    stateNote,
+    stateTone,
+    toneDotClass,
+} from '@/components/queue/queue-glyphs';
 import { cn } from '@/lib/utils';
 import { timeAgo } from '@/lib/time';
-import { deployments as deploymentsRoute } from '@/routes/admin';
+import {
+    deployments as deploymentsRoute,
+    queue as queueRoute,
+} from '@/routes/admin';
 import type { DeployVerdict } from '@/components/deployments/release-glyphs';
 import type { Deployments } from '@/types/deployments';
+import type { QueueStatus } from '@/types/queue';
 
 type BuildChipProps = {
     running: string | null;
@@ -18,6 +29,7 @@ type BuildChipProps = {
 
 type OverviewHeaderProps = BuildChipProps & {
     name: string;
+    queue: QueueStatus;
 };
 
 /**
@@ -32,11 +44,18 @@ type OverviewHeaderProps = BuildChipProps & {
  *
  * The chip is present from the first paint and only its version and age fill in
  * when the deploys group lands, so the header does not shift under the reader.
+ *
+ * The worker chip sits beside it and is the same idea for the other
+ * always-on process: what is serving, and what is processing. It is here rather
+ * than in the grid because a healthy queue has no card's worth to say and the
+ * grid is already six cells exactly - and because "the worker is alive" is a
+ * fact worth stating positively, which "Needs attention" by design cannot do.
  */
 export default function OverviewHeader({
     name,
     running,
     deploys,
+    queue,
 }: OverviewHeaderProps) {
     return (
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -47,8 +66,79 @@ export default function OverviewHeader({
                 <p className="text-muted-foreground text-xs">{today()}</p>
             </div>
 
-            <BuildChip running={running} deploys={deploys} />
+            <div className="flex flex-wrap items-center gap-2">
+                <BuildChip running={running} deploys={deploys} />
+                <WorkerChip queue={queue} />
+            </div>
         </div>
+    );
+}
+
+/**
+ * The pill both chips are drawn as.
+ *
+ * Extracted when the second one arrived rather than copied: the two state
+ * different facts but are the same object, and a near-duplicate is exactly what
+ * components/admin exists to prevent.
+ */
+function Chip({
+    href,
+    tone,
+    label,
+    value,
+    note,
+}: {
+    href: string;
+    tone: 'good' | 'bad' | 'muted';
+    label: string;
+    value: ReactNode;
+    note?: ReactNode;
+}) {
+    return (
+        <Link
+            href={href}
+            className={cn(
+                'border-border bg-card hover:border-muted-foreground/40 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors',
+                tone === 'bad' && 'border-destructive/40',
+            )}
+        >
+            <span
+                aria-hidden
+                className={cn('size-1.5 shrink-0 rounded-full', dotClass(tone))}
+            />
+
+            <span className="text-muted-foreground">{label}</span>
+
+            {value}
+
+            {note ? (
+                <span className="text-muted-foreground">{note}</span>
+            ) : null}
+        </Link>
+    );
+}
+
+/**
+ * Is anything reading the queue.
+ *
+ * Never muted the way the build chip is: this prop is eager, so unlike the
+ * deploys group there is no "not checked yet" state to be honest about - the
+ * answer is in hand on first paint. The wording and the colour both come from
+ * queue-glyphs, which the queue page reads too.
+ */
+function WorkerChip({ queue }: { queue: QueueStatus }) {
+    return (
+        <Chip
+            href={queueRoute.url()}
+            tone={stateTone(queue.state)}
+            label="Worker"
+            value={
+                <span className="text-foreground">
+                    {stateLabel(queue.state)}
+                </span>
+            }
+            note={`· ${stateNote(queue)}`}
+        />
     );
 }
 
@@ -69,32 +159,21 @@ function BuildChip({ running, deploys }: BuildChipProps) {
     const tone = settled ? verdictTone(verdict) : 'muted';
 
     return (
-        <Link
+        <Chip
             href={deploymentsRoute.url()}
-            className={cn(
-                'border-border bg-card hover:border-muted-foreground/40 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors',
-                tone === 'bad' && 'border-destructive/40',
-            )}
-        >
-            <span
-                aria-hidden
-                className={cn('size-1.5 shrink-0 rounded-full', dotClass(tone))}
-            />
-
-            <span className="text-muted-foreground">Build</span>
-
-            {running === null ? (
-                <span className="text-muted-foreground">not reported</span>
-            ) : (
-                <span className="text-foreground font-mono">
-                    {current?.shortVersion ?? running}
-                </span>
-            )}
-
-            <span className="text-muted-foreground">
-                {note(verdict, current, deploys)}
-            </span>
-        </Link>
+            tone={tone}
+            label="Build"
+            value={
+                running === null ? (
+                    <span className="text-muted-foreground">not reported</span>
+                ) : (
+                    <span className="text-foreground font-mono">
+                        {current?.shortVersion ?? running}
+                    </span>
+                )
+            }
+            note={note(verdict, current, deploys)}
+        />
     );
 }
 
@@ -111,10 +190,7 @@ function BuildChip({ running, deploys }: BuildChipProps) {
  * `untagged` now, which the shared verdict rates as badly as drift.
  */
 function dotClass(tone: 'good' | 'bad' | 'muted'): string {
-    if (tone === 'bad') return 'bg-destructive';
-    if (tone === 'good') return 'bg-chart-2';
-
-    return 'bg-muted-foreground/40';
+    return toneDotClass(tone);
 }
 
 /** The trailing half: why this build is interesting, or when it shipped. */

@@ -3,12 +3,16 @@
 declare(strict_types=1);
 
 use App\Enums\AnalyticsRange;
+use App\Models\FailedJob;
 use App\Models\Post;
+use App\Models\QueuedJob;
 use App\Models\ResumeDelivery;
 use App\Models\User;
+use App\Queue\WorkerHeartbeat;
 use App\Services\Cloudflare\CachedSiteAnalytics;
 use App\Services\Sentry\CachedErrorInsights;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 
@@ -273,5 +277,65 @@ test('the content prop carries the drafts the attention list names', function ()
             ->has('content.staleDrafts', 1)
             ->where('content.staleDrafts.0.title', 'Zero Trust')
             ->where('content.staleDrafts.0.slug', $stale->slug),
+        );
+});
+
+test('the overview resolves the queue verdict inline alongside the deliveries', function (): void {
+    fakeBothVendors();
+
+    Cache::put(WorkerHeartbeat::KEY, now()->getTimestamp(), 3600);
+    QueuedJob::factory()->create();
+
+    $this->actingAs(User::factory()->create());
+
+    // Two counts and a cache read, so it is eager for the same reason the
+    // delivery counts are - and deliberately not a fourth deferred group,
+    // which 'each deferred group is announced under its own name' would fail.
+    $this->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('queue.state', 'working')
+            ->where('queue.worker.alive', true)
+            ->where('queue.totals.pending', 1)
+            // The verdict and the counts behind it, never the rows - the list
+            // of jobs belongs to /dashboard/queue.
+            ->missing('queue.jobs'),
+        );
+});
+
+/*
+ * The state the header chip exists for. An empty `jobs` table is the normal
+ * resting state here, so a dead worker cannot be inferred from the queue at
+ * all - only the missing heartbeat says so.
+ */
+test('the overview reports a dead worker over an empty queue', function (): void {
+    fakeBothVendors();
+    $this->actingAs(User::factory()->create());
+
+    $this->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('queue.state', 'down')
+            ->where('queue.worker.alive', false)
+            ->where('queue.totals.pending', 0),
+        );
+});
+
+test('the queue prop carries the failure count the attention list names', function (): void {
+    fakeBothVendors();
+
+    Cache::put(WorkerHeartbeat::KEY, now()->getTimestamp(), 3600);
+    FailedJob::factory()->count(2)->create();
+
+    $this->actingAs(User::factory()->create());
+
+    // Failures do not change the state: the worker is still fine, and these are
+    // a separate entry in "Needs attention" rather than a reason to call the
+    // queue broken.
+    $this->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('queue.state', 'idle')
+            ->where('queue.totals.failed', 2),
         );
 });

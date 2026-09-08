@@ -57,3 +57,17 @@ Same shape as the Vite note above: `SUPERVISOR_PHP_COMMAND` starts Octane and no
 The failure is silent and looks like a bug in the feature: the résumé dialog answers 201 and shows its success panel, no mail arrives, and nothing is logged. Check `php artisan queue:monitor default` before suspecting Mailgun or Mailpit.
 
 Drain by hand with `sail artisan queue:work --stop-when-empty`, or keep a worker up with `sail artisan queue:listen --tries=1`. Use `listen`, not `work`, in development: `queue:work` caches the job classes at boot and keeps running the old code after an edit, which Octane's `--watch` does not cover.
+
+## node_modules is the container's own volume, never the bind mount
+`compose.yaml` mounts `.:/var/www/html` and then masks `node_modules` with the named volume `sail-node-modules`. Both halves are load-bearing and the mask must not be removed.
+
+One shared `node_modules` cannot serve both sides. npm installs native bindings only for the platform it is running on, and ten packages here ship per-platform binaries: rolldown, oxlint, oxfmt, oxlint-tsgolint, lightningcss, tailwindcss/oxide, rollup, yuku-parser, yuku-codegen and vite-plus. Whichever side installed last was the only one that could build; the other died on `Error: Cannot find native binding` naming only the first of the ten, which reads like one missing package rather than a whole set. The host and the container also run different Node majors, so sharing the directory was never supported regardless of platform.
+
+So each side installs for itself: `npm ci` on the host, `sail npm ci` in the container. Neither prunes the other any more.
+
+Two traps when the volume is created fresh (a first `up`, or after `docker compose down -v`):
+
+- Docker creates the mount point root-owned, so `sail npm ci` cannot write to it. `docker compose exec -u root juanplazadev chown sail:sail node_modules` once, then install as `sail` - the same reason every other container command runs as `sail`.
+- The volume starts empty, which kills the Vite dev server along with it. Recreating this container therefore costs an `npm ci` AND the `npm run dev` restart the Vite note above already describes.
+
+Browser tests read assets through `public/hot` when the dev server is up, so the first run against a freshly started Vite can exceed Playwright's 5s timeout and fail on text that is genuinely there. Re-run before believing it - a cold dev server is not a rendering bug.
