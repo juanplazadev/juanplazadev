@@ -47,7 +47,7 @@ worker=$!
 # --caddyfile points at our copy of Octane's stub, which adds immutable
 # Cache-Control for /build/assets. $(pwd) rather than a literal path so this
 # does not depend on the image's WORKDIR.
-php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=8080 --admin-port=2019 \
+php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=8080 --admin-port=2020 \
     --caddyfile="$(pwd)/docker/Caddyfile" &
 octane=$!
 

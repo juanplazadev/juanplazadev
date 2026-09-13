@@ -10,8 +10,6 @@ jobs:
   quality:
     runs-on: ubuntu-latest
 
-    # phpunit.xml sets DB_DATABASE=testing but leaves DB_CONNECTION at the
-    # .env default of pgsql, so the suite needs a real Postgres to talk to.
     services:
       postgres:
         image: postgres:18-alpine
