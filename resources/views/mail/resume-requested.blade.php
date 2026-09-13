@@ -59,7 +59,7 @@
                             <p style="margin:0 0 16px 0;">
                                 Thanks for asking. I&rsquo;m a software engineer who owns production
                                 systems end to end &mdash; data model to deploy &mdash; mostly in
-                                Laravel, Spring Boot and React with TypeScript.
+                                Laravel and React with TypeScript.
                             </p>
                             <p style="margin:0 0 16px 0;">
                                 Eight years of it has been inside regulated environments: HIPAA

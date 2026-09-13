@@ -46,7 +46,7 @@ const items: {
         location: 'Oxford, CT',
         blurb: 'Precision bearings and engineered components for defense, aerospace, and industrial markets.',
         highlights: [
-            'Modernizing the internal application landscape - replacing aging legacy tooling with React + TypeScript front ends over Java / Spring Boot and Laravel REST services, without disrupting the plants that run on them daily.',
+            'Modernizing the internal application landscape - replacing aging legacy tooling with React + TypeScript front ends over Laravel REST services, without disrupting the plants that run on them daily.',
             'Introduced version control and automated delivery to a team that had neither: Git branching and review workflows, and GitHub Actions pipelines that run static analysis at PHPStan level 8, the test suite, and the deploy on every push. Manual releases became a repeatable, auditable process.',
             'Building against contract-driven security requirements for defense, aerospace, and government programs: least-privilege access, hardened authentication, and auditability designed in rather than retrofitted.',
             'Delivering changes under SOX IT general controls at a publicly traded company - documented change management, segregation of duties, and access reviews that stand up to external audit.',

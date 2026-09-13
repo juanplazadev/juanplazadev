@@ -2,8 +2,7 @@ Here's the résumé
 =================
 
 Thanks for asking. I'm a software engineer who owns production systems end to
-end - data model to deploy - mostly in Laravel, Spring Boot and React with
-TypeScript.
+end - data model to deploy - mostly in Laravel and React with TypeScript.
 
 Eight years of it has been inside regulated environments: HIPAA healthcare, then
 defense and government contracts in a SOX-audited public company. That shaped how
