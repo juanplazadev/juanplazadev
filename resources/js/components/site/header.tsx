@@ -47,7 +47,7 @@ const delay = (ms: number) => ({ '--hero-delay': `${ms}ms` }) as CSSProperties;
 const stats = [
     { value: '8+', label: 'Years', detail: 'In production' },
     { value: '9', label: 'Sites', detail: 'Four US time zones' },
-    { value: '100%', label: 'Regulated', detail: 'HIPAA · SOX · Defense' },
+    { value: '100%', label: 'Regulated', detail: 'HIPAA · SOX · FIPS' },
 ];
 
 export default function Header() {
@@ -170,12 +170,8 @@ export default function Header() {
                 >
                     Software engineer who owns production systems end to end -
                     data model to deploy. Built with{' '}
-                    <span className="text-foreground font-medium">Laravel</span>
-                    ,{' '}
-                    <span className="text-foreground font-medium">
-                        Spring Boot
-                    </span>
-                    , and{' '}
+                    <span className="text-foreground font-medium">Laravel</span>{' '}
+                    and{' '}
                     <span className="text-foreground font-medium">
                         React + TypeScript
                     </span>

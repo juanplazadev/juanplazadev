@@ -90,7 +90,7 @@ export default function CurrentlyBuilding() {
             active: false,
             description:
                 'Member registration, payments, and building access in one system, with an app that shows members their own attendance history.',
-            stack: 'Spring Boot · React · TypeScript',
+            stack: 'Laravel · React · TypeScript',
         },
     ];
 

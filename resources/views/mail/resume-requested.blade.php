@@ -59,13 +59,14 @@
                             <p style="margin:0 0 16px 0;">
                                 Thanks for asking. I&rsquo;m a software engineer who owns production
                                 systems end to end &mdash; data model to deploy &mdash; mostly in
-                                Laravel, Spring Boot and React with TypeScript.
+                                Laravel and React with TypeScript.
                             </p>
                             <p style="margin:0 0 16px 0;">
                                 Eight years of it has been inside regulated environments: HIPAA
                                 healthcare, then defense and government contracts in a SOX-audited
-                                public company. That shaped how I build &mdash; least privilege,
-                                auditable by default, hardened before it ships.
+                                public company where encryption has to be FIPS 140-3 validated.
+                                That shaped how I build &mdash; least privilege, auditable by
+                                default, hardened before it ships.
                             </p>
                             <p style="margin:0;">
                                 If any of that looks like a fit, just reply to this email.

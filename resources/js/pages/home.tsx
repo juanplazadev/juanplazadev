@@ -18,7 +18,7 @@ export default function Home() {
             <Head title="Software Engineer">
                 <meta
                     name="description"
-                    content="Juan Plaza is a software engineer who owns production systems end to end, building with Laravel, Spring Boot, React and TypeScript."
+                    content="Juan Plaza is a software engineer who owns production systems end to end, building with Laravel, React and TypeScript."
                     head-key="description"
                 />
             </Head>

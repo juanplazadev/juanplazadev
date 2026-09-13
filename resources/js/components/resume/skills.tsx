@@ -33,7 +33,6 @@ export default function Skills() {
             label: 'Stack',
             items: [
                 'PHP / Laravel',
-                'Java / Spring Boot',
                 'TypeScript / React',
                 'Inertia',
                 'TailwindCSS',
@@ -60,13 +59,13 @@ export default function Skills() {
                 'Per-site authorization scoping',
                 'Least-privilege access design',
                 'Encrypted PHI handling',
+                'FIPS 140-3 validated encryption',
             ],
         },
         {
             label: 'Testing & Quality',
             items: [
                 'Pest / PHPUnit',
-                'JUnit',
                 'Playwright',
                 'Larastan / PHPStan',
                 'Rector',
