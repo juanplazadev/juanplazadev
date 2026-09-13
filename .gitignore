@@ -35,8 +35,11 @@ yarn-error.log
 # existing rule files were force-added past this. Without the negation every
 # new rule Boost records is silently ignored and the team never inherits it.
 /.ai/*
-!/.ai/rules/
+#!/.ai/rules/
 /.claude
+.mcp.json
+boost.json
+CLAUDE.md
 
 **/caddy
 frankenphp

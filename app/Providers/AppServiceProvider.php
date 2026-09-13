@@ -231,9 +231,7 @@ final class AppServiceProvider extends ServiceProvider
 
     private function strictModels(): void
     {
-        if (! app()->isProduction()) {
-            Model::shouldBeStrict();
-        }
+        Model::shouldBeStrict();
     }
 
     private function unguardModels(): void
