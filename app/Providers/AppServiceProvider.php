@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
@@ -178,8 +179,7 @@ final class AppServiceProvider extends ServiceProvider
 
         $this->defaultTimezone();
 
-        // TODO: Enable once in prod
-        // $this->prohibitDestructiveCommands();
+        $this->prohibitDestructiveCommands();
 
         $this->setPasswordDefault();
 
@@ -234,6 +234,38 @@ final class AppServiceProvider extends ServiceProvider
         Model::shouldBeStrict();
     }
 
+    /**
+     * Block migrate:fresh, migrate:refresh, migrate:reset and db:wipe in
+     * production.
+     *
+     * Nothing in the deploy path needs them - deploy.yml runs `migrate
+     * --force` and nothing else - so the only way one reaches production is by
+     * hand, against the database that holds every resume delivery and email
+     * event. The flag is passed rather than the call being guarded by an `if`
+     * so that the non-production case stays explicit: the test suite's
+     * RefreshDatabase runs migrate:fresh on every test and must not be
+     * prohibited.
+     */
+    private function prohibitDestructiveCommands(): void
+    {
+        DB::prohibitDestructiveCommands($this->app->isProduction());
+    }
+
+    /**
+     * Mass assignment protection is off application-wide, deliberately.
+     *
+     * The allowlist lives one layer up instead: every write either names its
+     * columns literally (LogResumeDeliveryAction, MailgunWebhookController,
+     * SecurityController) or is fed a Form Request's validated() payload, whose
+     * rules are the allowlist (ProfileController, and the post and architecture
+     * actions behind PostRequest and ArchitectureRequest). No request data
+     * reaches a model without passing one of those two gates, so a $fillable
+     * array would restate the validation rules rather than add a check.
+     *
+     * This is load-bearing: no model here declares $fillable or $guarded, so
+     * scoping the unguard would fail every create() the moment it ran. Add
+     * $fillable to all of app/Models before changing it.
+     */
     private function unguardModels(): void
     {
         Model::unguard();
