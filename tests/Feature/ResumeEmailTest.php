@@ -36,6 +36,9 @@ it('renders the wordmark and the address it was sent to', function (): void {
         // The Ember accent, hard-coded because no mail client resolves the CSS
         // custom properties the site itself uses.
         ->toContain('#a03c12')
+        // The regulated-environment line is the same claim the site and the
+        // resume carry; it travels with the email or the three disagree.
+        ->toContain('FIPS 140-3')
         ->toContain('hiring@example.com');
 });
 

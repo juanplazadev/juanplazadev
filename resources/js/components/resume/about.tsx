@@ -19,7 +19,8 @@ export default function About() {
                     Every environment I've worked in has been one where getting
                     security wrong is expensive - HIPAA-regulated healthcare,
                     then defense and government contracts inside a SOX-audited
-                    public company - and it shaped how I build: least privilege,
+                    public company where the encryption has to be FIPS 140-3
+                    validated - and it shaped how I build: least privilege,
                     auditable by default, hardened before it ships.
                 </p>
             </div>

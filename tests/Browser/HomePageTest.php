@@ -10,7 +10,12 @@ it('renders the landing page', function (): void {
         ->assertSee('Juan Plaza')
         ->assertSee('Shelton, CT')
         ->assertSee('Get In Touch')
-        ->assertSee('Experience');
+        ->assertSee('Experience')
+        // The hero stat row is only allowed to name what a bullet below
+        // substantiates, so the cell and the RBC bullet are asserted together:
+        // dropping the bullet without dropping the cell fails here.
+        ->assertSee('HIPAA · SOX · FIPS')
+        ->assertSee('FIPS 140-3');
 });
 
 /*

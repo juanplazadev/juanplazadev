@@ -59,6 +59,7 @@ export default function Skills() {
                 'Per-site authorization scoping',
                 'Least-privilege access design',
                 'Encrypted PHI handling',
+                'FIPS 140-3 validated encryption',
             ],
         },
         {
