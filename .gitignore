@@ -31,15 +31,22 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-# .ai holds nothing but rules/, which is shared and committed - the four
-# existing rule files were force-added past this. Without the negation every
-# new rule Boost records is silently ignored and the team never inherits it.
-/.ai/*
-#!/.ai/rules/
+# Agent tooling is local-only and deliberately not published: the rules under
+# .ai/rules are working notes about this codebase, not documentation, and they
+# read as clutter to anyone browsing the repo. They stay on disk so local
+# tooling keeps working - nothing here should ever be force-added back.
+/.ai
 /.claude
 .mcp.json
 boost.json
+AGENTS.md
 CLAUDE.md
+
+# Job-search working files kept beside the project, never part of it. The app
+# does not read them - the resume dialog emails a message, not a file - and the
+# repo is public.
+/RESUME-PLAN.md
+/Juan_Plaza_Software_Engineer_Resume.*
 
 **/caddy
 frankenphp
