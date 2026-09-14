@@ -8,12 +8,14 @@ into maintainable, well-tested platforms.
 
 Every environment I've worked in has been one where getting security wrong is expensive:
 HIPAA-regulated healthcare, then defense and government contracts inside a SOX-audited
-public company. It shaped how I build — least privilege, auditable by default, hardened
-before it ships.
+public company where the encryption has to be FIPS 140-3 validated. It shaped how I
+build — least privilege, auditable by default, hardened before it ships.
 
 Currently an Application Developer at **RBC Bearings**, replacing aging internal tooling
-with React + TypeScript front ends over Laravel services, without
-disrupting the plants that run on them daily.
+with React + TypeScript front ends over Laravel services, without disrupting the plants
+that run on them daily. The work ships against contract-driven security requirements for
+defense, aerospace, and government programs — least-privilege access, hardened
+authentication, and FIPS 140-3 validated cryptography at rest and in transit.
 
 ---
 
@@ -72,7 +74,7 @@ tagged as Sentry releases so an error on the dashboard maps to the build that ca
 - **Backend** — PHP / Laravel · PostgreSQL · MySQL · Redis · IBM Db2 for i
 - **Frontend** — TypeScript / React · Inertia · Tailwind CSS
 - **Infra** — Docker · Linux · AWS · nginx / Caddy · GitHub Actions · Sentry
-- **Security** — Role-based access control · per-site authorization scoping · least-privilege access design · encrypted PHI handling · HIPAA compliance · PCI-aware payment flows
+- **Security** — Role-based access control · per-site authorization scoping · least-privilege access design · encrypted PHI handling · FIPS 140-3 validated encryption · HIPAA compliance · PCI-aware payment flows
 
 ### Elsewhere
 
