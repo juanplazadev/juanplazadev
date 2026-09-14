@@ -140,9 +140,9 @@ jobs:
             # ErrorInsights lets an optional half fail without taking the page.
             #
             # The token is the ORGANIZATION auth token (org:ci), not the user
-            # token in .env - see .ai/rules/sentry.md. They are opposites: the
-            # org one creates releases and cannot read issues, the user one
-            # reads issues and cannot create releases.
+            # token in .env. They are opposites: the org one creates releases
+            # and cannot read issues, the user one reads issues and cannot
+            # create releases.
             #
             # Two curl calls rather than getsentry/action-release, which is a
             # Docker action: `Log in to GHCR` above leaves the repo-scoped

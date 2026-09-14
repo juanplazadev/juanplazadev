@@ -2,24 +2,26 @@
 
 Software engineer with 8+ years building and modernizing production web applications
 across defense manufacturing, regulated healthcare, and high-volume logistics. Six of
-those years fully remote. I own systems end to end — data model, REST APIs, queues,
-integrations, and deployment — and I have a track record of turning brittle legacy code
+those years fully remote. I own systems end to end - data model, REST APIs, queues,
+integrations, and deployment - and I have a track record of turning brittle legacy code
 into maintainable, well-tested platforms.
 
 Every environment I've worked in has been one where getting security wrong is expensive:
 HIPAA-regulated healthcare, then defense and government contracts inside a SOX-audited
-public company. It shaped how I build — least privilege, auditable by default, hardened
-before it ships.
+public company where the encryption has to be FIPS 140-3 validated. It shaped how I
+build - least privilege, auditable by default, hardened before it ships.
 
 Currently an Application Developer at **RBC Bearings**, replacing aging internal tooling
-with React + TypeScript front ends over Laravel services, without
-disrupting the plants that run on them daily.
+with React + TypeScript front ends over Laravel services, without disrupting the plants
+that run on them daily. The work ships against contract-driven security requirements for
+defense, aerospace, and government programs - least-privilege access, hardened
+authentication, and FIPS 140-3 validated cryptography at rest and in transit.
 
 ---
 
 ### 🚚 [check-in-v2](https://github.com/juanplazadev/check-in-v2) · [live demo ↗](https://ci.thatdevjp.com)
 
-An appointment scheduling and check-in platform for operations that run on arrivals —
+An appointment scheduling and check-in platform for operations that run on arrivals -
 drivers book a slot, arrive, and check in against it across sites.
 
 The first version of this shipped in 2018 and ran nine distribution centers across all
@@ -47,7 +49,7 @@ Mailgun webhooks.
 
 `Laravel 13` `PHP 8.5` `Octane / FrankenPHP` `Inertia v3 + React 19 (SSR)` `Tailwind v4` `PostgreSQL`
 
-### 🗄️ [phinx — IBM DB2 for i adapter](https://github.com/juanplazadev/phinx/tree/feature/db2-adapter)
+### 🗄️ [phinx - IBM DB2 for i adapter](https://github.com/juanplazadev/phinx/tree/feature/db2-adapter)
 
 A DB2 for i (AS400/iSeries) migration adapter for `cakephp/phinx`, connecting through
 `pdo_odbc`. Running against a live Db2 workload before I propose it upstream.
@@ -56,7 +58,7 @@ A DB2 for i (AS400/iSeries) migration adapter for `cakephp/phinx`, connecting th
 
 ### How I ship
 
-Every push to juanplaza.dev is gated on one `composer ci:check` run — frontend lint,
+Every push to juanplaza.dev is gated on one `composer ci:check` run - frontend lint,
 `tsc --noEmit`, and the full suite. The suite is not just "tests pass":
 
 - **≥96% code coverage** and **≥80% type coverage**, both enforced as hard minimums
@@ -69,10 +71,10 @@ tagged as Sentry releases so an error on the dashboard maps to the build that ca
 
 ### Stack
 
-- **Backend** — PHP / Laravel · PostgreSQL · MySQL · Redis · IBM Db2 for i
-- **Frontend** — TypeScript / React · Inertia · Tailwind CSS
-- **Infra** — Docker · Linux · AWS · nginx / Caddy · GitHub Actions · Sentry
-- **Security** — Role-based access control · per-site authorization scoping · least-privilege access design · encrypted PHI handling · HIPAA compliance · PCI-aware payment flows
+- **Backend** - PHP / Laravel · PostgreSQL · MySQL · Redis · IBM Db2 for i
+- **Frontend** - TypeScript / React · Inertia · Tailwind CSS
+- **Infra** - Docker · Linux · AWS · nginx / Caddy · GitHub Actions · Sentry
+- **Security** - Role-based access control · per-site authorization scoping · least-privilege access design · encrypted PHI handling · FIPS 140-3 validated encryption · HIPAA compliance · PCI-aware payment flows
 
 ### Elsewhere
 
