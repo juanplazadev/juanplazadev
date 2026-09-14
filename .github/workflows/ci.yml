@@ -10,26 +10,14 @@ jobs:
   quality:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_DB: testing
-          POSTGRES_USER: sail
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U sail -d testing"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    env:
-      DB_HOST: 127.0.0.1
-      DB_PORT: 5432
-      DB_USERNAME: sail
-      DB_PASSWORD: password
+    # No database service. phpunit.xml pins DB_CONNECTION=sqlite and
+    # DB_DATABASE=:memory:, which shadows whatever .env.example says, and
+    # nothing else in `composer ci:check` opens a connection - so a Postgres
+    # service here would sit idle. Production runs Postgres 18; the suite
+    # trades that fidelity for an in-memory database it can rebuild per test,
+    # which the browser suite also depends on (its server runs in the same PHP
+    # process as the test). Anything that turns on Postgres-specific SQL needs
+    # this decision revisited, not worked around.
 
     steps:
       - uses: actions/checkout@v6
@@ -37,10 +25,9 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.5'
-          extensions: pdo_pgsql, pgsql
-          # composer test:unit runs `pest --coverage --exactly`, which needs a
-          # real coverage driver. pcov over xdebug: it is markedly faster and
-          # this suite only needs line coverage.
+          # composer test:unit runs `pest --parallel --coverage --min=96`,
+          # which needs a real coverage driver. pcov over xdebug: it is
+          # markedly faster and this suite only needs line coverage.
           coverage: pcov
           # PHPStan (directly, and in-process under pest --type-coverage)
           # exhausts the default 128M and crashes its parallel workers.
