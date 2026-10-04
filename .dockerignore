@@ -30,3 +30,6 @@
 
 # Documentation, not part of the runtime image.
 /docs
+
+# Generated profile README assets (juanplazadev/profile-readme)
+/profile
