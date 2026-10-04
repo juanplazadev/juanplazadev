@@ -96,6 +96,10 @@ export default defineConfig({
             'CLAUDE.md',
             'AGENTS.md',
             'boost.json',
+            // The profile workflow regenerates these daily from
+            // juanplazadev/profile-readme; hand formatting would be overwritten.
+            'README.md',
+            'profile/**',
         ],
         sortTailwindcss: {
             functions: ['clsx', 'cn', 'cva'],
