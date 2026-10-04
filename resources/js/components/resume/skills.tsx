@@ -18,12 +18,20 @@ export default function Skills() {
     grounds - check-in authenticates with Fortify sessions and authorizes with
     Spatie Permission, and nothing shipped uses the other three. What replaced
     them is what the Experience bullets actually describe.
+
+    A second rule out of the same group: a badge is a thing, not a principle.
+    "Least-privilege access design" came out because it is the abstraction over
+    the two badges above it - least privilege is what role-based access control
+    and per-site scoping implement, so it claimed credit for its own neighbours.
+    The phrase keeps its place in prose, under RBC in Experience and in About,
+    where there is room to say what it meant in practice.
   */
     const groups = [
         {
             label: 'Domain Expertise',
             items: [
                 'HIPAA compliance',
+                'SOX IT general controls',
                 'EMR / e-prescription integration',
                 'PCI-aware payment flows',
                 'IBM Db2 for i',
@@ -57,7 +65,6 @@ export default function Skills() {
             items: [
                 'Role-based access control',
                 'Per-site authorization scoping',
-                'Least-privilege access design',
                 'Encrypted PHI handling',
                 'FIPS 140-3 validated encryption',
             ],

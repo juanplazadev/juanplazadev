@@ -47,7 +47,7 @@ const CalendarIcon = () => (
     </svg>
 );
 
-const DumbbellIcon = () => (
+const GlobeIcon = () => (
     <svg
         className="stroke-primary"
         xmlns="http://www.w3.org/2000/svg"
@@ -58,14 +58,30 @@ const DumbbellIcon = () => (
         strokeLinecap="round"
         strokeLinejoin="round"
     >
-        <rect x="1.75" y="6.75" width="3.5" height="6.5" rx="1.25" />
-        <rect x="14.75" y="6.75" width="3.5" height="6.5" rx="1.25" />
-        <path d="M5.25 10h9.5" />
+        <circle cx="10" cy="10" r="7.5" />
+        <path d="M2.5 10h15" />
+        <path d="M10 2.5a11.5 11.5 0 0 1 0 15a11.5 11.5 0 0 1 0-15z" />
     </svg>
 );
 
 export default function CurrentlyBuilding() {
     const items: Item[] = [
+        {
+            title: 'juanplaza.dev',
+            icon: <GlobeIcon />,
+            status: 'Live',
+            active: true,
+            description:
+                'This site and everything behind it - the content is rows in Postgres, published through an authenticated admin, and the container publishes no host ports at all. Every push runs one CI gate before it deploys itself.',
+            stack: 'Laravel · Inertia + React · PostgreSQL · Caddy',
+            href: architectureShow('juanplaza-dev'),
+            links: [
+                {
+                    label: 'Source',
+                    href: 'https://github.com/juanplazadev/juanplazadev',
+                },
+            ],
+        },
         {
             title: 'Check-in',
             icon: <CalendarIcon />,
@@ -82,15 +98,6 @@ export default function CurrentlyBuilding() {
                     href: 'https://github.com/juanplazadev/check-in-v2',
                 },
             ],
-        },
-        {
-            title: 'Gym management system',
-            icon: <DumbbellIcon />,
-            status: 'Next up',
-            active: false,
-            description:
-                'Member registration, payments, and building access in one system, with an app that shows members their own attendance history.',
-            stack: 'Laravel · React · TypeScript',
         },
     ];
 

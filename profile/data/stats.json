@@ -1,0 +1,33 @@
+{
+    "updated": "2026-10-04",
+    "year": 2026,
+    "created_at": "2018-06-27T14:05:03Z",
+    "stars": 0,
+    "forks": 0,
+    "followers": 0,
+    "commits_year": 286,
+    "commits_all": 286,
+    "contributions_year": 371,
+    "contributions_all": 374,
+    "prs": 80,
+    "prs_merged": 80,
+    "streak_current": 1,
+    "streak_longest": 5,
+    "languages": {
+        "PHP": 1491742,
+        "TypeScript": 1118699,
+        "Blade": 49491,
+        "CSS": 33540,
+        "Dockerfile": 15271,
+        "Python": 7924,
+        "Shell": 5598,
+        "JavaScript": 4990
+    },
+    "repo_stars": {
+        "discord-show-reminder": 0,
+        "solicitarr": 0,
+        "check-in-v2": 0,
+        "juanplazadev": 0,
+        "profile-readme": 0
+    }
+}
