@@ -42,11 +42,10 @@ boost.json
 AGENTS.md
 CLAUDE.md
 
-# Job-search working files kept beside the project, never part of it. The app
-# does not read them - the resume dialog emails a message, not a file - and the
-# repo is public.
-/RESUME-PLAN.md
-/Juan_Plaza_Software_Engineer_Resume.*
+
+# Word lock files. Word writes one beside any open .docx and leaves it behind
+# if it exits badly.
+~$*
 
 **/caddy
 frankenphp
