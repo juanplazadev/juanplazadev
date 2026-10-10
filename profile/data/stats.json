@@ -1,23 +1,24 @@
 {
-    "updated": "2026-10-04",
+    "updated": "2026-10-10",
     "year": 2026,
     "created_at": "2018-06-27T14:05:03Z",
     "stars": 0,
     "forks": 0,
     "followers": 0,
-    "commits_year": 286,
-    "commits_all": 286,
-    "contributions_year": 371,
-    "contributions_all": 374,
-    "prs": 80,
-    "prs_merged": 80,
+    "commits_year": 293,
+    "commits_all": 293,
+    "contributions_year": 380,
+    "contributions_all": 383,
+    "prs": 81,
+    "prs_merged": 81,
     "streak_current": 1,
     "streak_longest": 5,
     "languages": {
-        "PHP": 1491742,
-        "TypeScript": 1118699,
+        "PHP": 1657660,
+        "TypeScript": 1353809,
         "Blade": 49491,
-        "CSS": 33540,
+        "CSS": 37539,
+        "HTML": 18156,
         "Dockerfile": 15271,
         "Python": 7924,
         "Shell": 5598,
@@ -28,6 +29,7 @@
         "solicitarr": 0,
         "check-in-v2": 0,
         "juanplazadev": 0,
-        "profile-readme": 0
+        "profile-readme": 0,
+        "thatdevjp": 0
     }
 }
